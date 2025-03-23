@@ -18,7 +18,7 @@ import static org.springframework.mail.javamail.MimeMessageHelper.MULTIPART_MODE
 
 @Service
 @RequiredArgsConstructor
-public class EmailService {
+public class    EmailService {
 
     private final JavaMailSender mailSender;
     private final SpringTemplateEngine templateEngine;
@@ -63,6 +63,5 @@ public class EmailService {
         helper.setText(template, true);
 
         mailSender.send(mimeMessage);
-
     }
 }

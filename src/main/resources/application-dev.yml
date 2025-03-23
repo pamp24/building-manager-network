@@ -1,12 +1,12 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/building_manager_db
-    username: FileUser
-    password: FileUser!
+    url: jdbc:postgresql://localhost:5432/building-manager-network
+    username: username
+    password: password
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: false
     properties:
       hibernate:
@@ -16,8 +16,8 @@ spring:
   mail:
     host: localhost
     port: 1025
-    username: fotis
-    password: fotis
+    username: ali
+    password: ali
     properties:
       mail:
         smtp:
@@ -33,9 +33,15 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: "http://localhost:9090/realms/building-manager-network"
+          expiration: 3600000
+          secretKey: asdasd
+
 application:
   file:
     uploads:
       photos-output-path: ./uploads
+  mailing:
+    frontend:
+      activation-url: "http://localhost:4200/activate-account"
 server:
   port: 8088

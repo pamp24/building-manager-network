@@ -33,7 +33,7 @@ public class AuthenticationService {
     private final EmailService emailService;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-    @Value("application.mailing.frontend.activation-url")
+    @Value("${application.mailing.frontend.activation-url}")
     private String activationUrl;
 
     public void register(RegistrationRequest request) throws MessagingException {
@@ -102,13 +102,13 @@ public class AuthenticationService {
         );
         var claims = new HashMap<String, Object>();
         var user = ((User)auth.getPrincipal());
-        claims.put("fullname", user.fullName());
+        claims.put("fullName", user.fullName());
         var jwtToken = jwtService.generateToken(claims, user);
         return AuthenticationResponse.builder().token(jwtToken).build();
     }
 
     public void activateAccount(String token) throws MessagingException {
-        Token savedToken = tokenRepository.findByUserToken(token)
+        Token savedToken = tokenRepository.findByToken(token)
                 //todo exception has to be defined
                 .orElseThrow(() -> new RuntimeException("Invalid Token"));
         if(LocalDateTime.now().isAfter(savedToken.getExpiresAt())){
