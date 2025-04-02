@@ -1,47 +1,45 @@
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/building-manager-network
-    username: username
-    password: password
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: create
-    show-sql: false
-    properties:
+  spring:
+    datasource:
+      url: jdbc:postgresql://localhost:5432/postgres
+      username: postgres
+      password: password
+      driver-class-name: org.postgresql.Driver
+    jpa:
+      database-platform: org.hibernate.dialect.PostgreSQLDialect
       hibernate:
-        format_sql: true
-    database: postgresql
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-  mail:
-    host: localhost
-    port: 1025
-    username: ali
-    password: ali
-    properties:
-      mail:
-        smtp:
-          trust: "*"
-        auth: true
-        starttls:
-          enabled: true
-        connectiontimeout: 5000
-        timeout: 3000
-        writetimeout: 5000
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: "http://localhost:9090/realms/building-manager-network"
-          expiration: 3600000
-          secretKey: asdasd
+        ddl-auto: update
+      properties:
+        hibernate:
+          format_sql: true
+    sql:
+      init:
+        mode: always
 
-application:
-  file:
-    uploads:
-      photos-output-path: ./uploads
-  mailing:
-    frontend:
-      activation-url: "http://localhost:4200/activate-account"
-server:
-  port: 8088
+    security:
+      oauth2:
+        resourceserver:
+          jwt:
+            expiration: 3600
+            secretKey: password
+    application:
+      mailing:
+        frontend:
+          activation-url: "http://localhost:4200/activate-account"
+
+    mail:
+      host: localhost
+      port: 1025
+      username: username
+      password: password
+      properties:
+        mail:
+          smtp:
+            trust: "*"
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
+
+
