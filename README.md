@@ -1,2 +1,2 @@
 # building-manager-network
-Springboot Project fot Building Manager Network
+Springboot Project for Building Manager Network
