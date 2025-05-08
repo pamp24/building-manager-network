@@ -1,7 +1,7 @@
 package com.BuildingManager.building_manager_network;
 
-import com.BuildingManager.building_manager_network.Roles.Role;
-import com.BuildingManager.building_manager_network.Roles.RoleRepository;
+import com.BuildingManager.building_manager_network.roles.Role;
+import com.BuildingManager.building_manager_network.roles.RoleRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -14,9 +14,8 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 
 @SpringBootApplication
-@EnableJpaAuditing
+@EnableJpaAuditing(auditorAwareRef = "auditorAware")
 @EnableAsync
-@ComponentScan(basePackages = "com.BuildingManager.building_manager_network") // ✅ Ensure all beans are found
 @EnableJpaRepositories(basePackages = "com.BuildingManager.building_manager_network")
 public class BuildingManagerNetworkApiApplication extends SpringBootServletInitializer {
 	public static void main(String[] args) {
