@@ -13,13 +13,12 @@ import lombok.Setter;
 @Builder
 public class AuthenticationRequest {
 
-    @Email(message = "Email is not formated")
-    @NotEmpty(message = "Email is Mandatory")
-    @NotBlank(message = "Email is Mandatory")
+    @Email(message = "Το email δεν είναι σωστά διαμορφωμένο")
+    @NotBlank(message = "Το email είναι υποχρεωτικό")
     private String email;
-    @NotEmpty(message = "Password is Mandatory")
-    @NotBlank(message = "Password is Mandatory")
-    @Size(min = 8, message = "Password should be 8 characters long minimum" )
+
+    @NotBlank(message = "Ο κωδικός είναι υποχρεωτικός")
+    @Size(min = 8, message = "Ο κωδικός πρέπει να περιέχει τουλάχιστον 8 χαρακτήρες")
     private String password;
 
 }
