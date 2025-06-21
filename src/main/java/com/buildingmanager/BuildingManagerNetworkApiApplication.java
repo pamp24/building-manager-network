@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableAsync;
 
+import java.util.List;
+
 
 @SpringBootApplication
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
@@ -22,13 +24,14 @@ public class BuildingManagerNetworkApiApplication extends SpringBootServletIniti
 		SpringApplication.run(BuildingManagerNetworkApiApplication.class, args);
 	}
 	@Bean
-	public CommandLineRunner runner(RoleRepository roleRepository){
+	public CommandLineRunner runner(RoleRepository roleRepository) {
 		return args -> {
-			if (roleRepository.findByName("USER").isEmpty()){
-				roleRepository.save(
-						Role.builder().name("USER").build()
-				);
-			}
+			List<String> roles = List.of("User", "Admin", "PropertyManager", "BuildingManager", "Owner", "Resident");
+			roles.forEach(roleName -> {
+				if (roleRepository.findByName(roleName).isEmpty()) {
+					roleRepository.save(Role.builder().name(roleName).build());
+				}
+			});
 		};
 	}
 }

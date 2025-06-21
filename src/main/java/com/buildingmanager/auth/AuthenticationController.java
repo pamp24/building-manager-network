@@ -1,5 +1,6 @@
 package com.buildingmanager.auth;
 
+import com.buildingmanager.token.TokenRequest;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
@@ -32,10 +33,11 @@ public class AuthenticationController {
         return ResponseEntity.ok(authenticationService.authenticate(request));
     }
 
-    @GetMapping("/activate-account")
-    public void confirm(
-            @RequestParam String token
+    @PostMapping("/activate-account")
+    public ResponseEntity<?> confirm(
+            @RequestBody TokenRequest request
     ) throws MessagingException {
-        authenticationService.activateAccount(token);
+        authenticationService.activateAccount(request.getToken());
+        return ResponseEntity.ok().build();
     }
 }

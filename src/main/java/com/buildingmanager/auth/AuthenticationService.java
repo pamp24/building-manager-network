@@ -5,10 +5,9 @@ import com.buildingmanager.email.EmailService;
 import com.buildingmanager.email.EmailTemplateName;
 import com.buildingmanager.role.RoleRepository;
 import com.buildingmanager.security.JwtService;
-import com.buildingmanager.user.Token;
-import com.buildingmanager.user.TokenRepository;
-import com.buildingmanager.user.User;
-import com.buildingmanager.user.UserRepository;
+import com.buildingmanager.token.Token;
+import com.buildingmanager.token.TokenRepository;
+import com.buildingmanager.user.*;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,9 +36,9 @@ public class AuthenticationService {
     private String activationUrl;
 
     public void register(RegistrationRequest request) throws MessagingException {
-        var userRole = roleRepository.findByName("USER")
+        var userRole = roleRepository.findByName("User")
                 //todo - better exception handling
-                .orElseThrow(()-> new IllegalStateException("ROLE USER was not initialized"));
+                .orElseThrow(()-> new IllegalStateException("Ο ρόλος δεν έχει αρχικοποιηθεί"));
         var user = User.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -101,11 +100,33 @@ public class AuthenticationService {
                 )
         );
         var claims = new HashMap<String, Object>();
-        var user = ((User)auth.getPrincipal());
+        var user = ((User) auth.getPrincipal());
         claims.put("fullName", user.fullName());
+
+        // Find main role
+        String mainRole = user.getRoles().stream()
+                .findFirst()
+                .map(role -> role.getName())
+                .orElse("USER"); // default if no role found
+
         var jwtToken = jwtService.generateToken(claims, user);
-        return AuthenticationResponse.builder().token(jwtToken).build();
+
+        // Create UserResponse object
+        UserResponse userResponse = UserResponse.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .name(user.fullName())
+                .role(mainRole)
+                .build();
+
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .user(userResponse)
+                .build();
     }
+
 
     public void activateAccount(String token) throws MessagingException {
         Token savedToken = tokenRepository.findByToken(token)
