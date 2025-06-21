@@ -24,7 +24,7 @@
     application:
       mailing:
         frontend:
-          activation-url: "http://localhost:4200/activate-account"
+          activation-url: "http://localhost:4200/code-verify"
 
     mail:
       host: localhost

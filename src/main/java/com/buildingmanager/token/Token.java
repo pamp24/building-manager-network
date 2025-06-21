@@ -1,5 +1,6 @@
-package com.buildingmanager.user;
+package com.buildingmanager.token;
 
+import com.buildingmanager.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 

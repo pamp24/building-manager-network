@@ -1,5 +1,7 @@
 package com.buildingmanager.auth;
 
+
+import com.buildingmanager.user.UserResponse;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,4 +12,6 @@ import lombok.Setter;
 public class AuthenticationResponse {
 
     private String token;
+    private UserResponse user;
+
 }
