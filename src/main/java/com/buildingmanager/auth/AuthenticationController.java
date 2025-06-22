@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -39,5 +40,25 @@ public class AuthenticationController {
     ) throws MessagingException {
         authenticationService.activateAccount(request.getToken());
         return ResponseEntity.ok().build();
+    }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        try {
+            authenticationService.sendPasswordResetToken(request.getEmail());
+            return ResponseEntity.ok("Email επαναφοράς στάλθηκε");
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ο χρήστης δεν βρέθηκε.");
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Σφάλμα κατά την αποστολή email.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Άγνωστο σφάλμα.");
+        }
+    }
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+        authenticationService.resetPassword(request.getToken(), request.getNewPassword());
+        return ResponseEntity.ok("Password reset successfully");
     }
 }

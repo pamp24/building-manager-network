@@ -2,11 +2,13 @@ package com.buildingmanager.auth;
 
 
 import com.buildingmanager.email.EmailService;
-import com.buildingmanager.email.EmailTemplateName;
+import com.buildingmanager.email.EmailTemplateActivateAccount;
+import com.buildingmanager.email.EmailTemplateForgotPassword;
 import com.buildingmanager.role.RoleRepository;
 import com.buildingmanager.security.JwtService;
 import com.buildingmanager.token.Token;
 import com.buildingmanager.token.TokenRepository;
+import com.buildingmanager.token.TokenService;
 import com.buildingmanager.user.*;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +37,7 @@ public class AuthenticationService {
     private final JwtService jwtService;
     @Value("${spring.application.mailing.frontend.activation-url}")
     private String activationUrl;
-
+    private final TokenService tokenService;
     public void register(RegistrationRequest request) throws MessagingException {
         var userRole = roleRepository.findByName("User")
                 //todo - better exception handling
@@ -58,10 +61,10 @@ public class AuthenticationService {
         emailService.sendEmail(
                 user.getEmail(),
                 user.fullName(),
-                EmailTemplateName.ACTIVATE_ACCOUNT,
+                EmailTemplateActivateAccount.ACTIVATE_ACCOUNT,
                 activationUrl,
                 newToken,
-                "Account Activation"
+                "Ενεργοποίηση Λογαριασμού"
         );
 
     }
@@ -108,9 +111,7 @@ public class AuthenticationService {
                 .findFirst()
                 .map(role -> role.getName())
                 .orElse("USER"); // default if no role found
-
         var jwtToken = jwtService.generateToken(claims, user);
-
         // Create UserResponse object
         UserResponse userResponse = UserResponse.builder()
                 .id(user.getId())
@@ -142,5 +143,45 @@ public class AuthenticationService {
         userRepository.save(user);
         savedToken.setValidatedAt(LocalDateTime.now());
         tokenRepository.save(savedToken);
+    }
+
+    public void sendPasswordResetToken(String email) throws MessagingException {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Ο χρήστης δεν βρέθηκε."));
+
+        String token = UUID.randomUUID().toString();
+        tokenService.savePasswordResetToken(user, token);
+
+        String resetUrl = "http://localhost:4200/auth/reset-password?token=" + token;
+
+        try {
+            emailService.sendEmail(
+                    user.getEmail(),
+                    user.fullName(),
+                    EmailTemplateForgotPassword.RESET_PASSWORD,
+                    resetUrl,
+                    token,
+                    "Επαναφορά Κωδικού Πρόσβασης"
+            );
+        } catch (MessagingException e) {
+            // Καταγραφή του σφάλματος πριν το πετάξεις
+            System.err.println("Σφάλμα αποστολής email: " + e.getMessage());
+            throw e;
+        }
+    }
+    public void resetPassword(String token, String newPassword) {
+        Token resetToken = tokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Δεν είναι έγκυρο!"));
+
+        if (resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Ληξή");
+        }
+
+        User user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        resetToken.setValidatedAt(LocalDateTime.now());
+        tokenRepository.save(resetToken);
     }
 }

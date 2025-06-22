@@ -1,53 +1,46 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="el" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Activation</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-        .container {
-            max-width: 600px;
-            margin: 10px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .activation-code {
-            font-size: 36px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .activation-link {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-        }
-        .activation-link a {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-    </style>
+    <title>Ενεργοποίηση Λογαριασμού</title>
 </head>
-<body>
-<div class="container">
-    <h1>Account Activation</h1>
-    <p class="greeting" th:text="'Hello ' + ${username} + ','"></p>
-    <p>Thank you for signing up! Please use the following activation code to activate your account:</p>
-    <div class="activation-code"><span th:text="${activation_code}"></span></div>
-    <div class="activation-link">
-        <a th:href="${confirmationUrl}" target="_blank">Activate your account</a>
-    </div>
-</div>
+<body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px 0;">
+    <tr>
+        <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; padding: 30px; border-radius: 6px; box-shadow: 0 0 10px rgba(0,0,0,0.05);">
+                <tr>
+                    <td>
+                        <h1 style="text-align: center; color: #333;">Ενεργοποίηση Λογαριασμού</h1>
+                        <p style="font-size: 16px; color: #555;" th:text="'Γεια σου ' + ${username} + ','">Γεια σου Χρήστη,</p>
+                        <p style="font-size: 16px; color: #555;">
+                            Σε ευχαριστούμε για την εγγραφή σου! Παρακάτω θα βρεις τον κωδικό ενεργοποίησης:
+                        </p>
+                        <div style="font-size: 32px; font-weight: bold; color: #007bff; text-align: center; margin: 30px 0;">
+                            <span th:text="${activation_code}">123456</span>
+                        </div>
+                        <p style="font-size: 16px; color: #555; text-align: center;">
+                            Ή κάνε κλικ στο κουμπί για να ενεργοποιήσεις τον λογαριασμό σου:
+                        </p>
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a th:href="${confirmationUrl}" target="_blank"
+                               style="display: inline-block; background-color: #007bff; color: #ffffff;
+                                          padding: 12px 24px; border-radius: 5px; text-decoration: none;
+                                          font-weight: bold;">
+                                Ενεργοποίηση Λογαριασμού
+                            </a>
+                        </div>
+                        <p style="font-size: 14px; color: #999; text-align: center;">
+                            Αν δεν έχεις ζητήσει εγγραφή, μπορείς να αγνοήσεις αυτό το email.
+                        </p>
+                        <p style="font-size: 14px; color: #bbb; margin-top: 40px; text-align: center;">
+                            — Η ομάδα του Building Manager
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
 </body>
 </html>
