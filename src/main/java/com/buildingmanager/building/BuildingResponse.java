@@ -10,10 +10,13 @@ import lombok.*;
 @Builder
 public class BuildingResponse {
 
+    private String buildingCode;
     private Integer id;
     private String name;
-    private String street;
-    private String stNumber;
+    private String street1;
+    private String stNumber1;
+    private String street2;
+    private String stNumber2;
     private String city;
     private String region;
     private String postalCode;
@@ -24,9 +27,15 @@ public class BuildingResponse {
     private String sqMetersCommonSpaces;
     private boolean parkingExists;
     private int parkingSpacesNum;
+    private String buildingDescription;
     private boolean active;
     private boolean enable;
 
     private String User;
+    private String managerFullName;
+    private String managerEmail;
+    private String managerPhone;
+    private String managerAddress1;
+    private String managerCity;
 
 }

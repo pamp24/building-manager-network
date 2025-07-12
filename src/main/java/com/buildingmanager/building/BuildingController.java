@@ -1,35 +1,39 @@
 package com.buildingmanager.building;
 
 import com.buildingmanager.common.PageResponse;
+import com.buildingmanager.user.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+
 import org.springframework.web.bind.annotation.*;
 
+
+
 @RestController
-@RequestMapping("api/buildings")
+@RequestMapping("/buildings")
 @RequiredArgsConstructor
 @Tag(name = "Building")
 public class BuildingController {
 
-
-    private final BuildingService service;
+    private final UserService userService;
+    private final BuildingService buildingService;
 
     @PostMapping
     public ResponseEntity<Integer> saveBuilding(
             @Valid @RequestBody BuildingRequest request,
             Authentication connectedUser
     ){
-        return ResponseEntity.ok(service.save(request, connectedUser));
+        return ResponseEntity.ok(buildingService.save(request, connectedUser));
     }
 
     @GetMapping("{building-id}")
     public ResponseEntity<BuildingResponse> findBuildingById(
             @PathVariable("building-id") Integer buildingId
     ){
-        return ResponseEntity.ok(service.findById(buildingId));
+        return ResponseEntity.ok(buildingService.findById(buildingId));
     }
 
     @GetMapping
@@ -39,7 +43,7 @@ public class BuildingController {
             Authentication connectedUser
 
             ){
-        return ResponseEntity.ok(service.findAllBuildings(page, size, connectedUser));
+        return ResponseEntity.ok(buildingService.findAllBuildings(page, size, connectedUser));
     }
     @GetMapping("/manager")
     public ResponseEntity<PageResponse<BuildingResponse>> findAllBuildingsByManager(
@@ -47,6 +51,11 @@ public class BuildingController {
             @RequestParam(name = "size", defaultValue = "10", required = false) int size,
             Authentication connectedUser
     ){
-        return ResponseEntity.ok(service.findAllBuildingsByManager(page, size, connectedUser));
+        return ResponseEntity.ok(buildingService.findAllBuildingsByManager(page, size, connectedUser));
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<BuildingResponse> getMyBuilding(Authentication connectedUser) {
+        return ResponseEntity.ok(buildingService.findBuildingOfCurrentUser(connectedUser));
     }
 }

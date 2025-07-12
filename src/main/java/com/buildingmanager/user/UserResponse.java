@@ -1,8 +1,11 @@
 package com.buildingmanager.user;
 
+import com.buildingmanager.role.Role;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -14,5 +17,5 @@ public class UserResponse {
     private String email;
     private String password;
     private String name;
-    private String role;
+    private List<String> roles;
 }

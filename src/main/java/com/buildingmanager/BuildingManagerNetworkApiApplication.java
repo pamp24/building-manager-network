@@ -26,7 +26,7 @@ public class BuildingManagerNetworkApiApplication extends SpringBootServletIniti
 	@Bean
 	public CommandLineRunner runner(RoleRepository roleRepository) {
 		return args -> {
-			List<String> roles = List.of("User", "Admin", "PropertyManager", "BuildingManager", "Owner", "Resident");
+			List<String> roles = List.of("User");
 			roles.forEach(roleName -> {
 				if (roleRepository.findByName(roleName).isEmpty()) {
 					roleRepository.save(Role.builder().name(roleName).build());

@@ -30,7 +30,7 @@ public class ApartmentService {
         if (building.isEnable() || !building.isActive()) {
             throw new OperationNotPermittedException("You cannot make any changes to this apartment");
         }
-        User user = ((User) connectedUser.getPrincipal());
+        User userEntity = ((User) connectedUser.getPrincipal());
         if (Objects.equals(building.getCreatedBy(), connectedUser.getName())) {
             throw new OperationNotPermittedException("You cannot make any changes to this apartment since you are not the owner");
         }
@@ -41,10 +41,10 @@ public class ApartmentService {
     @Transactional
     public PageResponse<ApartmentResponse> findAllApartmentsByBuilding(Integer buildingId, int page, int size, Authentication connectedUser) {
         Pageable pageable = PageRequest.of(page, size);
-        User user = ((User) connectedUser.getPrincipal());
+        User userEntity = ((User) connectedUser.getPrincipal());
         Page<Apartment> apartments = apartmentRepository.findAllByBuildingId(buildingId, pageable);
         List<ApartmentResponse> apartmentResponses = apartments.stream()
-                .map(f -> (ApartmentResponse) apartmentMapper.toApartmentResponse(f, user.getId()))
+                .map(f -> (ApartmentResponse) apartmentMapper.toApartmentResponse(f, userEntity.getId()))
                 .toList();
         return new PageResponse<>(
                 apartmentResponses,

@@ -38,6 +38,18 @@ public class User implements UserDetails {
     @Column(unique = true)
     private String email;
     private String password;
+    private String phoneNumber;
+    private String profileImageUrl;
+    private String address1;
+    private String addressNumber1;
+    private String address2;
+    private String addressNumber2;
+    private LocalDateTime lastLoginDate;
+    private String country;
+    private String state;
+    private String city;
+    private String region;
+    private String postalCode;
     private boolean accountLocked;
     private boolean enable;
 
@@ -47,6 +59,9 @@ public class User implements UserDetails {
 
     @ManyToMany(mappedBy = "users")
     private List<Building> buildings;
+
+        @OneToMany(mappedBy = "manager")
+        private List<Building> managedBuildings;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
