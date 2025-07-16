@@ -54,7 +54,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
 
                 var claims = jwtService.extractAllClaims(jwt);
-                var roles = (List<String>) claims.get("authorities"); // assumption: array of strings
+                var roles = (List<String>) claims.get("authorities");
                 var authorities = roles.stream()
                         .map(SimpleGrantedAuthority::new)
                         .toList();

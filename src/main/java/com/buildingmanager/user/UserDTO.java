@@ -31,7 +31,7 @@ public class UserDTO {
     private String city;
     private String region;
     private String postalCode;
-
+    private String role;
     private LocalDateTime createdDate;
     private LocalDateTime lastModifiedDate;
     private LocalDateTime lastLoginDate;
@@ -39,7 +39,6 @@ public class UserDTO {
     private boolean enabled;
     private boolean accountLocked;
 
-    private List<String> roles;
 
     public static UserDTO fromUser(User user) {
         return UserDTO.builder()
@@ -67,7 +66,8 @@ public class UserDTO {
                 .enabled(user.isEnabled())
                 .accountLocked(user.isAccountNonLocked() == false)
 
-                .roles(user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
+                .role(user.getRole().getName())
+
                 .build();
     }
 }

@@ -23,20 +23,22 @@ public record BuildingRequest(
         @NotBlank(message = "106")
         String country,
         @NotBlank(message = "107")
+        String state,
+        @NotBlank(message = "108")
         String floors,
-        @NotNull(message = "108")
+        @NotNull(message = "109")
         Integer apartmentsNum,
-        @NotBlank(message = "109")
-        String sqMetersTotal,
         @NotBlank(message = "110")
+        String sqMetersTotal,
+        @NotBlank(message = "111")
         String sqMetersCommonSpaces,
-        @NotNull(message = "111")
-        Boolean parkingExists,
         @NotNull(message = "112")
-        Integer parkingSpacesNum,
+        Boolean parkingExists,
         @NotNull(message = "113")
-        Boolean active,
+        Integer parkingSpacesNum,
         @NotNull(message = "114")
+        Boolean active,
+        @NotNull(message = "115")
         Boolean enable,
         String buildingDescription
 ) {}

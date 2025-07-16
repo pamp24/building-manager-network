@@ -4,13 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
-
 public class UserResponseDTO {
     private Integer id;
     private String firstName;
@@ -28,7 +24,7 @@ public class UserResponseDTO {
     private String region;
     private String postalCode;
     private LocalDate dateOfBirth;
-    private List<String> roles;
+    private String role;
 
     public UserResponseDTO(User user) {
         this.id = user.getId();
@@ -47,9 +43,6 @@ public class UserResponseDTO {
         this.region = user.getRegion();
         this.postalCode = user.getPostalCode();
         this.dateOfBirth = user.getDateOfBirth();
-        this.roles = user.getRoles().stream()
-                .map(role -> role.getName())
-                .collect(Collectors.toList());
+        this.role = user.getRole() != null ? user.getRole().getName() : null;
     }
-
 }

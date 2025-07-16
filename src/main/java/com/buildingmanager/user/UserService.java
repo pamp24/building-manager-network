@@ -13,8 +13,7 @@ public class UserService {
 
     public boolean updateUserRole(Integer userId, Role newRole) {
         return userRepository.findById(userId).map(user -> {
-            user.getRoles().clear();
-            user.getRoles().add(newRole);
+            user.setRole(newRole);
             userRepository.save(user);
             return true;
         }).orElse(false);

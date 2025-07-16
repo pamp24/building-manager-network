@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -53,7 +52,7 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .accountLocked(false)
                 .enable(false)
-                .roles(List.of(userRole))
+                .role(userRole)
                 .build();
         userRepository.save(user);
         sendValidationEmail(user);
@@ -106,16 +105,16 @@ public class AuthenticationService {
                         authenticationRequest.getPassword()
                 )
         );
-        var claims = new HashMap<String, Object>();
+
         var user = ((User) auth.getPrincipal());
+
+        var claims = new HashMap<String, Object>();
         claims.put("fullName", user.fullName());
 
-        // Find main role
-        String mainRole = user.getRoles().stream()
-                .findFirst()
-                .map(roles -> roles.getName())
-                .orElse("USER"); // default if no role found
+        String mainRole = user.getRole() != null ? user.getRole().getName() : "USER";
+
         var jwtToken = jwtService.generateToken(claims, user);
+
         // Create UserResponse object
         UserResponse userResponse = UserResponse.builder()
                 .id(user.getId())
@@ -123,9 +122,7 @@ public class AuthenticationService {
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .name(user.fullName())
-                .roles(user.getRoles().stream()
-                        .map(Role::getName)
-                        .collect(Collectors.toList()))
+                .role(mainRole)
                 .build();
 
         return AuthenticationResponse.builder()
@@ -133,6 +130,7 @@ public class AuthenticationService {
                 .user(userResponse)
                 .build();
     }
+
 
 
     public void activateAccount(String token) throws MessagingException {
@@ -170,7 +168,6 @@ public class AuthenticationService {
                     "Επαναφορά Κωδικού Πρόσβασης"
             );
         } catch (MessagingException e) {
-            // Καταγραφή του σφάλματος πριν το πετάξεις
             System.err.println("Σφάλμα αποστολής email: " + e.getMessage());
             throw e;
         }
