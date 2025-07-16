@@ -26,7 +26,7 @@ public class Role{
     private int id;
     @Column(unique = true)
     private String name;
-    @ManyToMany(mappedBy = "roles")
+    @OneToMany(mappedBy = "role")
     private List<User> users;
     @CreatedDate
     @Column(nullable = false, updatable = false)

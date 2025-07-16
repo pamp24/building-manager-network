@@ -30,10 +30,11 @@ public class JwtService {
         return claimResolver.apply(claims);
     }
 
-    private Claims extractAllClaims(String token) {
+    public Claims extractAllClaims(String token) {
         return Jwts
                 .parserBuilder()
                 .setSigningKey(getSignInKey())
+                .setAllowedClockSkewSeconds(30)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();

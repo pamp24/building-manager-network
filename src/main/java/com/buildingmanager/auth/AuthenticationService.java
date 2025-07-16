@@ -4,6 +4,7 @@ package com.buildingmanager.auth;
 import com.buildingmanager.email.EmailService;
 import com.buildingmanager.email.EmailTemplateActivateAccount;
 import com.buildingmanager.email.EmailTemplateForgotPassword;
+import com.buildingmanager.exceptions.UserNotFoundException;
 import com.buildingmanager.role.RoleRepository;
 import com.buildingmanager.security.JwtService;
 import com.buildingmanager.token.Token;
@@ -18,11 +19,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.buildingmanager.role.Role;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -49,7 +52,7 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .accountLocked(false)
                 .enable(false)
-                .roles(List.of(userRole))
+                .role(userRole)
                 .build();
         userRepository.save(user);
         sendValidationEmail(user);
@@ -102,16 +105,16 @@ public class AuthenticationService {
                         authenticationRequest.getPassword()
                 )
         );
-        var claims = new HashMap<String, Object>();
+
         var user = ((User) auth.getPrincipal());
+
+        var claims = new HashMap<String, Object>();
         claims.put("fullName", user.fullName());
 
-        // Find main role
-        String mainRole = user.getRoles().stream()
-                .findFirst()
-                .map(role -> role.getName())
-                .orElse("USER"); // default if no role found
+        String mainRole = user.getRole() != null ? user.getRole().getName() : "USER";
+
         var jwtToken = jwtService.generateToken(claims, user);
+
         // Create UserResponse object
         UserResponse userResponse = UserResponse.builder()
                 .id(user.getId())
@@ -127,6 +130,7 @@ public class AuthenticationService {
                 .user(userResponse)
                 .build();
     }
+
 
 
     public void activateAccount(String token) throws MessagingException {
@@ -146,25 +150,24 @@ public class AuthenticationService {
     }
 
     public void sendPasswordResetToken(String email) throws MessagingException {
-        User user = userRepository.findByEmail(email)
+        User userEntity = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Ο χρήστης δεν βρέθηκε."));
 
         String token = UUID.randomUUID().toString();
-        tokenService.savePasswordResetToken(user, token);
+        tokenService.savePasswordResetToken(userEntity, token);
 
         String resetUrl = "http://localhost:4200/auth/reset-password?token=" + token;
 
         try {
             emailService.sendEmail(
-                    user.getEmail(),
-                    user.fullName(),
+                    userEntity.getEmail(),
+                    userEntity.fullName(),
                     EmailTemplateForgotPassword.RESET_PASSWORD,
                     resetUrl,
                     token,
                     "Επαναφορά Κωδικού Πρόσβασης"
             );
         } catch (MessagingException e) {
-            // Καταγραφή του σφάλματος πριν το πετάξεις
             System.err.println("Σφάλμα αποστολής email: " + e.getMessage());
             throw e;
         }
@@ -177,11 +180,21 @@ public class AuthenticationService {
             throw new RuntimeException("Ληξή");
         }
 
-        User user = resetToken.getUser();
-        user.setPassword(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
+        User userEntity = resetToken.getUser();
+        userEntity.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(userEntity);
 
         resetToken.setValidatedAt(LocalDateTime.now());
         tokenRepository.save(resetToken);
+    }
+
+    public UserDTO getUserByEmail(String email) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            throw new UserNotFoundException("User with email '" + email + "' not found");
+        }
+
+        User user = userOpt.get();
+        return UserDTO.fromUser(user);
     }
 }

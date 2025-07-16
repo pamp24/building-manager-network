@@ -38,15 +38,30 @@ public class User implements UserDetails {
     @Column(unique = true)
     private String email;
     private String password;
+    private String phoneNumber;
+    private String profileImageUrl;
+    private String address1;
+    private String addressNumber1;
+    private String address2;
+    private String addressNumber2;
+    private LocalDateTime lastLoginDate;
+    private String country;
+    private String state;
+    private String city;
+    private String region;
+    private String postalCode;
     private boolean accountLocked;
     private boolean enable;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JsonIgnore
-    private List<Role> roles;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id")
+    private Role role;
 
     @ManyToMany(mappedBy = "users")
     private List<Building> buildings;
+
+        @OneToMany(mappedBy = "manager")
+        private List<Building> managedBuildings;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
@@ -57,10 +72,12 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
-                .collect(Collectors.toList());
+        if (role == null) {
+            return List.of();
+        }
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.getName()));
     }
+
     @Override
     public String getPassword() {
 

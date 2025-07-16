@@ -19,19 +19,26 @@ import java.util.List;
 @Table(name = "building")
 public class Building extends BaseEntity {
 
+    @Column(unique = true, nullable = false)
+    private String buildingCode;
+
     private String name;
-    private String street;
-    private String stNumber;
+    private String street1;
+    private String stNumber1;
+    private String street2;
+    private String stNumber2;
     private String city;
+    private String state;
     private String region;
     private String postalCode;
     private String country;
-    private String floors;
-    private int apartmentsNum;
+    private Integer floors;
+    private Integer apartmentsNum;
     private String sqMetersTotal;
     private String sqMetersCommonSpaces;
     private boolean parkingExists;
-    private int parkingSpacesNum;
+    private Integer parkingSpacesNum;
+    private String buildingDescription;
     private boolean active;
     private boolean enable;
 
@@ -42,6 +49,10 @@ public class Building extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private List<User> users;
+
+    @ManyToOne
+    @JoinColumn(name = "manager_id")
+    private User manager;
 
     @OneToMany(mappedBy = "building")
     private List<Apartment> apartments;

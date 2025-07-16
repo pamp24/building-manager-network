@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Pageable;
 import java.util.List;
+import java.util.UUID;
 
 
 @Service
@@ -20,11 +21,18 @@ import java.util.List;
 public class BuildingService {
     private final BuildingRepository buildingRepository;
     private final BuildingMapper buildingMapper;
+
     public Integer save(BuildingRequest request, Authentication connectedUser) {
-        User user = ((User) connectedUser.getPrincipal());
+        User users = ((User) connectedUser.getPrincipal());
         Building building = buildingMapper.toBuilding(request);
-        building.setUsers(List.of(user));
+        building.setUsers(List.of(users));
+
+        building.setBuildingCode(generateBuildingCode());
+
         return buildingRepository.save(building).getId();
+    }
+    private String generateBuildingCode() {
+        return UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 
     public BuildingResponse findById(Integer buildingId){
@@ -70,5 +78,15 @@ public class BuildingService {
                 buildings.isLast()
         );
     }
+    public BuildingResponse findBuildingOfCurrentUser(Authentication connectedUser) {
+        User user = (User) connectedUser.getPrincipal();
+
+        return buildingRepository.findAllByUserId(user.getId()).stream()
+                .findFirst() // αν περιμένεις μία μόνο πολυκατοικία
+                .map(buildingMapper::toBuildingResponse)
+                .orElseThrow(() -> new EntityNotFoundException("Ο χρήστης δεν ανήκει σε καμία πολυκατοικία."));
+    }
+
+
 
 }

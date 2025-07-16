@@ -19,7 +19,7 @@
       oauth2:
         resourceserver:
           jwt:
-            expiration: 3600
+            expiration: 1800000
             secretKey: L6PjdqNHoHk8kTiB8uFzPMy4rFQzyJoD35qFhT3EfMk=
     application:
       mailing:
