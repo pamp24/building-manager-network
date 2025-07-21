@@ -1,10 +1,23 @@
 package com.buildingmanager.building;
 
+import com.buildingmanager.user.User;
+import com.buildingmanager.user.UserRepository;
 import org.springframework.stereotype.Service;
 
 @Service
 public class BuildingMapper {
+    private final UserRepository userRepository;
+
+    public BuildingMapper(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
     public Building toBuilding(BuildingRequest request) {
+        User manager = null;
+        if (request.managerId() != null) {
+            manager = userRepository.findById(Integer.valueOf(request.managerId()))
+                    .orElseThrow(() -> new IllegalArgumentException("Δεν βρέθηκε χρήστης με ID: " + request.managerId()));
+        }
         return Building.builder()
                 .id(request.id())
                 .name(request.name())
@@ -16,12 +29,15 @@ public class BuildingMapper {
                 .region(request.region())
                 .postalCode(request.postalCode())
                 .country(request.country())
+                .state(request.state())
                 .floors(Integer.valueOf(request.floors()))
                 .apartmentsNum(request.apartmentsNum())
                 .sqMetersTotal(request.sqMetersTotal())
                 .sqMetersCommonSpaces(request.sqMetersCommonSpaces())
                 .parkingExists(request.parkingExists())
                 .parkingSpacesNum(request.parkingSpacesNum())
+                .buildingDescription(request.buildingDescription())
+                .manager(manager)
                 .active(request.active())
                 .enable(request.enable())
                 .build();
@@ -39,6 +55,7 @@ public class BuildingMapper {
                 .region(building.getRegion())
                 .postalCode(building.getPostalCode())
                 .country(building.getCountry())
+                .state(building.getState())
                 .floors(String.valueOf(building.getFloors()))
                 .apartmentsNum(building.getApartmentsNum())
                 .sqMetersTotal(building.getSqMetersTotal())

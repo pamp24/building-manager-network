@@ -2,10 +2,13 @@ package com.buildingmanager.user;
 
 
 import com.buildingmanager.building.Building;
+import com.buildingmanager.common.BaseEntity;
+import com.buildingmanager.company.Company;
 import com.buildingmanager.role.Role;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -21,13 +24,13 @@ import java.util.stream.Collectors;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name= "_user")
 @EntityListeners(AuditingEntityListener.class)
-public class User implements UserDetails {
+public class User extends BaseEntity implements UserDetails {
 
     @Id
     @GeneratedValue
@@ -63,12 +66,6 @@ public class User implements UserDetails {
         @OneToMany(mappedBy = "manager")
         private List<Building> managedBuildings;
 
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdDate;
-    @LastModifiedDate
-    @Column(insertable = false)
-    private LocalDateTime lastModifiedDate;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -117,4 +114,7 @@ public class User implements UserDetails {
 
         return firstName + " " + lastName;
     }
+    @OneToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
 }

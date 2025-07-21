@@ -55,7 +55,9 @@ public class BuildingController {
     }
 
     @GetMapping("/my")
-    public ResponseEntity<BuildingResponse> getMyBuilding(Authentication connectedUser) {
-        return ResponseEntity.ok(buildingService.findBuildingOfCurrentUser(connectedUser));
+    public ResponseEntity<BuildingResponse> getMyBuilding(Authentication auth) {
+        return buildingService.findBuildingOfCurrentUser(auth)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
     }
 }

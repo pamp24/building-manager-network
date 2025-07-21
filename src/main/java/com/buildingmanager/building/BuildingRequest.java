@@ -40,6 +40,7 @@ public record BuildingRequest(
         Boolean active,
         @NotNull(message = "115")
         Boolean enable,
-        String buildingDescription
+        String buildingDescription,
+        String managerId
 ) {}
 

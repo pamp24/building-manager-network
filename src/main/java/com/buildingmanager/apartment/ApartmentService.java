@@ -6,6 +6,7 @@ import com.buildingmanager.building.BuildingRepository;
 import com.buildingmanager.common.PageResponse;
 import com.buildingmanager.user.User;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,13 +28,13 @@ public class ApartmentService {
     public Object save(ApartmentRequest request, Authentication connectedUser) {
         Building building = buildingRepository.findById(request.buildingId())
                 .orElseThrow(()-> new EntityNotFoundException("No Building found with ID:: " + request.buildingId()));
-        if (building.isEnable() || !building.isActive()) {
-            throw new OperationNotPermittedException("You cannot make any changes to this apartment");
-        }
+
         User userEntity = ((User) connectedUser.getPrincipal());
-        if (Objects.equals(building.getCreatedBy(), connectedUser.getName())) {
-            throw new OperationNotPermittedException("You cannot make any changes to this apartment since you are not the owner");
+
+        if (!Objects.equals(building.getCreatedBy(), userEntity.getId())) {
+            throw new OperationNotPermittedException("You are not the owner of this building.");
         }
+
         Apartment apartment = apartmentMapper.toApartment(request);
         return apartmentRepository.save(apartment).getId();
     }
@@ -56,4 +57,23 @@ public class ApartmentService {
                 apartments.isLast()
         );
     }
+
+    @Transactional
+    public void saveAll(List<ApartmentRequest> requests, Authentication connectedUser) {
+        User userEntity = (User) connectedUser.getPrincipal();
+
+        for (ApartmentRequest request : requests) {
+            Building building = buildingRepository.findById(request.buildingId())
+                    .orElseThrow(() -> new EntityNotFoundException("No Building found with ID:: " + request.buildingId()));
+
+
+            if (!Objects.equals(building.getCreatedBy(), userEntity.getId())) {
+                throw new OperationNotPermittedException("You are not the owner of this building.");
+            }
+
+            Apartment apartment = apartmentMapper.toApartment(request);
+            apartmentRepository.save(apartment);
+        }
+    }
+
 }

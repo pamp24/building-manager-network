@@ -6,21 +6,21 @@ import jakarta.validation.constraints.NotNull;
 
 
 public record ApartmentRequest(
-
-        @NotBlank(message = "200")
-        String name,
-        @NotBlank(message = "201")
-        String number,
-        @NotBlank(message = "202")
-        String sqMetersApart,
-        @NotNull(message = "203")
-        int floor,
-        @NotNull(message = "204")
-        Boolean parkingSpace,
-        @NotNull(message = "205")
-        Boolean active,
-        @NotNull(message = "206")
-        Boolean enable,
-        @NotNull(message = "207")
-        Integer buildingId
+        @NotBlank String fullName,
+        @NotBlank String number,
+        @NotNull Integer floor,
+        @NotNull String sqMetersApart,
+        @NotNull Double commonPercent,
+        @NotNull Double elevatorPercent,
+        @NotNull Double heatingPercent,
+        @NotNull Boolean isRented,
+        String tenantFullName,
+        @NotNull Boolean parkingSpace,
+        String parkingSlot,
+        @NotNull Boolean active,
+        @NotNull Boolean enable,
+        @NotNull Integer buildingId
 ) {}
+
+
+

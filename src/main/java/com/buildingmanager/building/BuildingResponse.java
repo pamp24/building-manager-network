@@ -21,6 +21,7 @@ public class BuildingResponse {
     private String region;
     private String postalCode;
     private String country;
+    private String state;
     private String floors;
     private int apartmentsNum;
     private String sqMetersTotal;
@@ -31,7 +32,7 @@ public class BuildingResponse {
     private boolean active;
     private boolean enable;
 
-    private String User;
+    private String managerId;
     private String managerFullName;
     private String managerEmail;
     private String managerPhone;
