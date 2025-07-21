@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/apartments")
 @RequiredArgsConstructor
@@ -32,6 +34,16 @@ public class ApartmentController {
             Authentication connectedUser
     ){
         return ResponseEntity.ok(service.findAllApartmentsByBuilding(buildingId, page, size, connectedUser));
+    }
+
+    @PostMapping("/batch")
+    public ResponseEntity<?> saveMultipleApartments(
+            @Valid @RequestBody List<ApartmentRequest> requests,
+            Authentication connectedUser
+    ) {
+        requests.forEach(r -> System.out.println("Received: " + r));
+        service.saveAll(requests, connectedUser);
+        return ResponseEntity.ok().build();
     }
 
 

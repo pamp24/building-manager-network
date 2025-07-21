@@ -3,6 +3,7 @@ package com.buildingmanager.building;
 import com.buildingmanager.apartment.Apartment;
 import com.buildingmanager.bill.Bill;
 import com.buildingmanager.common.BaseEntity;
+import com.buildingmanager.company.Company;
 import com.buildingmanager.parking.Parking;
 import com.buildingmanager.user.User;
 import jakarta.persistence.*;
@@ -39,6 +40,7 @@ public class Building extends BaseEntity {
     private boolean parkingExists;
     private Integer parkingSpacesNum;
     private String buildingDescription;
+    private String documentPath;
     private boolean active;
     private boolean enable;
 
@@ -62,6 +64,10 @@ public class Building extends BaseEntity {
 
     @OneToMany(mappedBy = "building")
     private List<Bill> bills;
+
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
 
 }
 

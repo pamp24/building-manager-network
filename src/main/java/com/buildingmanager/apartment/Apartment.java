@@ -21,14 +21,23 @@ import java.util.List;
 @Table(name = "apartment")
 public class Apartment extends BaseEntity {
 
+    private String fullName; // Ιδιοκτήτης
     private String number;
     private String sqMetersApart;
-    private int floor;
+    private Integer floor;
     private boolean parkingSpace;
+
+    private Boolean isRented;
+    private String tenantFullName;
+
+    private String parkingSlot;
+
+    private Double commonPercent;
+    private Double elevatorPercent;
+    private Double heatingPercent;
+
     private boolean active;
     private boolean enable;
-
-
 
     @ManyToOne
     @JoinColumn(name = "building_id", nullable = false)
@@ -41,9 +50,7 @@ public class Apartment extends BaseEntity {
     @OneToMany(mappedBy = "apartment")
     private List<ApartmentBillShare> sharedBills;
 
-    public String fullApartmentName(){
-
+    public String fullApartmentName() {
         return number + " " + floor;
     }
-
 }

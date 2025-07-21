@@ -28,5 +28,6 @@ public class BuildingDTO {
     private String parkingSpacesNum;
     private String buildingDescription;
     private String buildingCode;
+    private String description;
 }
 
