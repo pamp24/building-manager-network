@@ -1,25 +1,66 @@
 services:
   postgres:
     container_name: postgres-sql-bmdb
-    image: postgres
+    image: postgres:15-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       PGDATA: /var/lib/postgresql/data
       POSTGRES_DB: building-manager-network_postgres
     volumes:
-      - postgres:/data/postgres
+      - postgres:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - "5432:5432"
     networks:
       - spring-demo
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   mail-dev:
     container_name: mail-dev-bmdb
-    image: maildev/maildev
+    image: maildev/maildev:latest
     ports:
-      - 1080:1080
-      - 1025:1025
+      - "1080:1080"
+      - "1025:1025"
+    networks:
+      - spring-demo
+    restart: unless-stopped
+
+  app:
+    container_name: building-manager-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/postgres
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_MAIL_HOST=mail-dev
+      - SPRING_MAIL_PORT=1025
+      - SPRING_MAIL_USERNAME=username
+      - SPRING_MAIL_PASSWORD=password
+      - SPRING_APPLICATION_MAILING_FRONTEND_ACTIVATION_URL=http://localhost:4200/code-verify
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mail-dev:
+        condition: service_started
+    networks:
+      - spring-demo
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/v1/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
 networks:
   spring-demo:
