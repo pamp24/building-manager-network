@@ -63,9 +63,8 @@ public class User extends BaseEntity implements UserDetails {
     @ManyToMany(mappedBy = "users")
     private List<Building> buildings;
 
-        @OneToMany(mappedBy = "manager")
-        private List<Building> managedBuildings;
-
+    @OneToMany(mappedBy = "manager")
+    private List<Building> managedBuildings;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -94,26 +93,27 @@ public class User extends BaseEntity implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-
         return !accountLocked;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-
         return true;
     }
 
     @Override
     public boolean isEnabled() {
-
         return enable;
     }
 
     public String fullName(){
-
         return firstName + " " + lastName;
     }
+
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
+
     @OneToOne
     @JoinColumn(name = "company_id")
     private Company company;

@@ -32,6 +32,13 @@ public class BuildingResponse {
     private boolean active;
     private boolean enable;
 
+    private boolean undergroundFloorExists;
+    private boolean halfFloorExists;
+    private boolean overTopFloorExists;
+    private boolean managerHouseExists;
+    private boolean storageExists;
+    private Integer storageNum;
+
     private String managerId;
     private String managerFullName;
     private String managerEmail;

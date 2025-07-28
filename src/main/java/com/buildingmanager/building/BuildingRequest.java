@@ -41,6 +41,13 @@ public record BuildingRequest(
         @NotNull(message = "115")
         Boolean enable,
         String buildingDescription,
-        String managerId
+        String managerId,
+
+        boolean undergroundFloorExists,
+        boolean halfFloorExists,
+        boolean overTopFloorExists,
+        boolean managerHouseExists,
+        boolean storageExists,
+        Integer storageNum
 ) {}
 
