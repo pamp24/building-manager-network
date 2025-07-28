@@ -18,7 +18,7 @@ import static org.springframework.mail.javamail.MimeMessageHelper.MULTIPART_MODE
 
 @Service
 @RequiredArgsConstructor
-public class    EmailService {
+public class EmailService {
 
     private final JavaMailSender mailSender;
     private final SpringTemplateEngine templateEngine;
@@ -58,5 +58,15 @@ public class    EmailService {
         helper.setText(template, true);
 
         mailSender.send(mimeMessage);
+    }
+    public void sendInviteEmail(String email, String username, String inviteLink) throws MessagingException {
+        sendEmail(
+                email,
+                username,
+                EmailTemplateInvite.INVITE,
+                inviteLink,
+                "",
+                "Πρόσκληση σε Πολυκατοικία"
+        );
     }
 }

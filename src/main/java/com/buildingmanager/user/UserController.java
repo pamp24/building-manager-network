@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import com.buildingmanager.role.RoleService;
 
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -105,7 +106,20 @@ public class UserController {
         }
     }
 
+    @GetMapping("/same-building")
+    public ResponseEntity<List<UserTableDto>> getUsersInSameBuilding(Authentication authentication) {
+        User currentUser = (User) authentication.getPrincipal();
+        List<UserTableDto> result = userService.getUsersInSameBuilding(currentUser.getId());
+        return ResponseEntity.ok(result);
+    }
 
-
+    @PostMapping("/invite")
+    public ResponseEntity<Void> inviteUserToBuilding(
+            @RequestParam String email,
+            Authentication connectedUser
+    ) {
+        userService.inviteUserToBuilding(email, connectedUser);
+        return ResponseEntity.ok().build();
+    }
 
 }

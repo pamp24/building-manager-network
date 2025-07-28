@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Πρόσκληση σε Πολυκατοικία</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+        .container {
+            padding: 20px;
+        }
+        .button {
+            background-color: #1976d2;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Γεια σου,</h2>
+
+    <p>ο διαχειριστής <span th:text="${username}",>User</span></p>
+    <p>Σας έχει στείλει πρόσκληση για να συμμετάσχετε στην πολυκατοικία.</p>
+    <p>Κάνε κλικ στον παρακάτω σύνδεσμο για να αποδεχτείς την πρόσκληση:</p>
+    <p>
+        <a class="button" th:href="${confirmationUrl}">Αποδοχή Πρόσκλησης</a>
+    </p>
+    <p>Αν δεν περιμένεις αυτή την πρόσκληση, μπορείς να αγνοήσεις αυτό το μήνυμα.</p>
+    <div class="footer">
+        <p>Building Manager Network</p>
+    </div>
+</div>
+</body>
+</html>

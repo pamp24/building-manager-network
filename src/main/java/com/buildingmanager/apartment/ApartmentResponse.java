@@ -14,7 +14,7 @@ public class ApartmentResponse {
     private boolean isRented;
     private String number;
     private String sqMetersApart;
-    private Integer floor;
+    private String floor;
     private boolean parkingSpace;
     private String parkingSlot;
     private boolean active;
@@ -26,8 +26,25 @@ public class ApartmentResponse {
     private double elevatorPercent;
     private double heatingPercent;
 
+    private boolean apStorageExist;
+    private String storageSlot;
+    private boolean isManagerHouse;
+
+    private String apDescription;
+
     private String managerFullName;
     private String managerId;
+
+    private String resident;
+    private String owner;
+
+    private String ownerFullName;
+    private String ownerEmail;
+    private String ownerPhone;
+    private String ownerCity;
+    private String ownerStreet;
+    private String ownerStreetNumber;
+
 
 
 }

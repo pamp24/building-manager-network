@@ -29,5 +29,11 @@ public class BuildingDTO {
     private String buildingDescription;
     private String buildingCode;
     private String description;
+    private boolean undergroundFloorExists;
+    private boolean halfFloorExists;
+    private boolean overTopFloorExists;
+    private boolean managerHouseExists;
+    private boolean storageExists;
+    private Integer storageNum;
 }
 

@@ -40,7 +40,14 @@ public class Building extends BaseEntity {
     private boolean parkingExists;
     private Integer parkingSpacesNum;
     private String buildingDescription;
-    private String documentPath;
+
+    private boolean undergroundFloorExists;
+    private boolean halfFloorExists;
+    private boolean overTopFloorExists;
+    private boolean managerHouseExists;
+    private boolean storageExists;
+    private Integer storageNum;
+    
     private boolean active;
     private boolean enable;
 

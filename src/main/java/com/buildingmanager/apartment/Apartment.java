@@ -5,6 +5,7 @@ import com.buildingmanager.bill.ApartmentBillShare;
 import com.buildingmanager.building.Building;
 import com.buildingmanager.common.BaseEntity;
 import com.buildingmanager.parking.Parking;
+import com.buildingmanager.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -21,10 +22,10 @@ import java.util.List;
 @Table(name = "apartment")
 public class Apartment extends BaseEntity {
 
-    private String fullName; // Ιδιοκτήτης
+    private String fullName;
     private String number;
     private String sqMetersApart;
-    private Integer floor;
+    private String floor;
     private boolean parkingSpace;
 
     private Boolean isRented;
@@ -32,9 +33,16 @@ public class Apartment extends BaseEntity {
 
     private String parkingSlot;
 
+    private boolean apStorageExist;
+    private String storageSlot;
+
+    private boolean isManagerHouse;
+
     private Double commonPercent;
     private Double elevatorPercent;
     private Double heatingPercent;
+
+    private String apDescription;
 
     private boolean active;
     private boolean enable;
@@ -43,8 +51,16 @@ public class Apartment extends BaseEntity {
     @JoinColumn(name = "building_id", nullable = false)
     private Building building;
 
+    @ManyToOne
+    @JoinColumn(name = "resident_id")
+    private User resident;
+
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private User owner;
+
     @OneToMany
-    @JoinColumn(name = "apartment_id")
+    @JoinColumn(name = "parking_id")
     private List<Parking> parking;
 
     @OneToMany(mappedBy = "apartment")
@@ -53,4 +69,6 @@ public class Apartment extends BaseEntity {
     public String fullApartmentName() {
         return number + " " + floor;
     }
+
 }
+

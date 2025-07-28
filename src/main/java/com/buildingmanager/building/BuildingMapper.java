@@ -38,6 +38,12 @@ public class BuildingMapper {
                 .parkingSpacesNum(request.parkingSpacesNum())
                 .buildingDescription(request.buildingDescription())
                 .manager(manager)
+                .undergroundFloorExists(request.undergroundFloorExists())
+                .halfFloorExists(request.halfFloorExists())
+                .overTopFloorExists(request.overTopFloorExists())
+                .managerHouseExists(request.managerHouseExists())
+                .storageExists(request.storageExists())
+                .storageNum(request.storageNum())
                 .active(request.active())
                 .enable(request.enable())
                 .build();
@@ -66,6 +72,14 @@ public class BuildingMapper {
                 .enable(building.isEnable())
                 .buildingCode(building.getBuildingCode())
                 .buildingDescription(building.getBuildingDescription())
+
+                .undergroundFloorExists(building.isUndergroundFloorExists())
+                .halfFloorExists(building.isHalfFloorExists())
+                .overTopFloorExists(building.isOverTopFloorExists())
+                .managerHouseExists(building.isManagerHouseExists())
+                .storageExists(building.isStorageExists())
+                .storageNum(building.getStorageNum())
+
                 .managerFullName(
                         building.getManager() != null ? building.getManager().fullName() : null
                 )
