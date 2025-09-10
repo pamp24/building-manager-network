@@ -2,6 +2,7 @@ package com.buildingmanager.auth;
 
 import com.buildingmanager.token.TokenRequest;
 import com.buildingmanager.user.*;
+import com.buildingmanager.user.UserResponseDTO;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;

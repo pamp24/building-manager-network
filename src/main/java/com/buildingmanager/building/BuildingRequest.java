@@ -33,7 +33,7 @@ public record BuildingRequest(
         @NotBlank(message = "111")
         String sqMetersCommonSpaces,
         @NotNull(message = "112")
-        Boolean parkingExists,
+        Boolean parkingExist,
         @NotNull(message = "113")
         Integer parkingSpacesNum,
         @NotNull(message = "114")
@@ -42,12 +42,16 @@ public record BuildingRequest(
         Boolean enable,
         String buildingDescription,
         String managerId,
+        @NotNull
+        boolean hasCentralHeating,
+        String heatingType,
+        Double heatingCapacityLitres,
 
-        boolean undergroundFloorExists,
-        boolean halfFloorExists,
-        boolean overTopFloorExists,
-        boolean managerHouseExists,
-        boolean storageExists,
+        boolean undergroundFloorExist,
+        boolean halfFloorExist,
+        boolean overTopFloorExist,
+        boolean managerHouseExist,
+        boolean storageExist,
         Integer storageNum
 ) {}
 

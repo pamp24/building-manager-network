@@ -11,6 +11,7 @@ import com.buildingmanager.token.Token;
 import com.buildingmanager.token.TokenRepository;
 import com.buildingmanager.token.TokenService;
 import com.buildingmanager.user.*;
+import com.buildingmanager.user.UserDTO;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

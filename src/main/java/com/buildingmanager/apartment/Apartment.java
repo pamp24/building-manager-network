@@ -22,14 +22,17 @@ import java.util.List;
 @Table(name = "apartment")
 public class Apartment extends BaseEntity {
 
-    private String fullName;
+    private String ownerFirstName;
+    private String ownerLastName;
     private String number;
     private String sqMetersApart;
     private String floor;
     private boolean parkingSpace;
 
     private Boolean isRented;
-    private String tenantFullName;
+
+    private String residentFirstName;
+    private String residentLastName;
 
     private String parkingSlot;
 

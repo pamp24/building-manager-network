@@ -24,16 +24,19 @@ public class BuildingDTO {
     private Integer apartmentsNum;
     private double sqMetersTotal;
     private double sqMetersCommonSpaces;
-    private boolean parkingExists;
+    private boolean parkingExist;
     private String parkingSpacesNum;
     private String buildingDescription;
+    private boolean hasCentralHeating;
+    private String heatingType;
+    private Double heatingCapacityLitres;
     private String buildingCode;
     private String description;
-    private boolean undergroundFloorExists;
-    private boolean halfFloorExists;
-    private boolean overTopFloorExists;
-    private boolean managerHouseExists;
-    private boolean storageExists;
+    private boolean undergroundFloorExist;
+    private boolean halfFloorExist;
+    private boolean overTopFloorExist;
+    private boolean managerHouseExist;
+    private boolean storageExist;
     private Integer storageNum;
 }
 

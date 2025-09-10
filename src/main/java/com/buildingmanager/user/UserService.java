@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -41,11 +42,18 @@ public class UserService {
     }
 
     public List<UserTableDto> getUsersInSameBuilding(Integer userId) {
-        Apartment apartment = apartmentRepository.findByResident_Id(userId)
-                .or(() -> apartmentRepository.findByOwner_Id(userId))
-                .orElseThrow(() -> new EntityNotFoundException("Δεν βρέθηκε διαμέρισμα για τον χρήστη."));
+        List<Apartment> apartmentsAsResident = apartmentRepository.findByResident_Id(userId);
+        List<Apartment> apartmentsAsOwner    = apartmentRepository.findByOwner_Id(userId);
 
-        Integer buildingId = apartment.getBuilding().getId();
+        List<Apartment> all = new ArrayList<>();
+        all.addAll(apartmentsAsResident);
+        all.addAll(apartmentsAsOwner);
+
+        if (all.isEmpty()) {
+            throw new EntityNotFoundException("Δεν βρέθηκε διαμέρισμα για τον χρήστη.");
+        }
+
+        Integer buildingId = all.get(0).getBuilding().getId();
         List<Apartment> apartments = apartmentRepository.findAllByBuilding_Id(buildingId);
 
         return apartments.stream()
@@ -56,21 +64,28 @@ public class UserService {
                         u.getFullName(),
                         u.getEmail(),
                         u.getRole().getName(),
-                        "Joined" // μπορείς να προσθέσεις λογική αν χρειάζεται να διαχωρίσεις Invited/Joined
+                        "Joined"
                 ))
                 .toList();
     }
 
-    public void inviteUserToBuilding(String email, Authentication auth) {
+
+
+    public void inviteUserToBuilding(String email, Integer buildingId, Authentication auth) {
         User inviter = (User) auth.getPrincipal();
 
-        Apartment inviterApartment = apartmentRepository.findByResident_Id(inviter.getId())
-                .or(() -> apartmentRepository.findByOwner_Id(inviter.getId()))
-                .orElseThrow(() -> new EntityNotFoundException("Δεν βρέθηκε διαμέρισμα για τον χρήστη"));
+        // Βεβαιωνόμαστε ότι ο inviter έχει διαμέρισμα στο συγκεκριμένο building
+        boolean belongsToBuilding = apartmentRepository
+                .findByOwnerOrResident(inviter, inviter)
+                .stream()
+                .anyMatch(ap -> ap.getBuilding().getId().equals(buildingId));
 
-        Integer buildingId = inviterApartment.getBuilding().getId();
+        if (!belongsToBuilding) {
+            throw new EntityNotFoundException("Ο χρήστης δεν ανήκει στην πολυκατοικία " + buildingId);
+        }
 
-        String inviteLink = "http://localhost:4200/invite-accept?email=" + email + "&buildingId=" + buildingId;
+        String inviteLink =
+                "http://localhost:4200/invite-accept?email=" + email + "&buildingId=" + buildingId;
 
         try {
             emailService.sendInviteEmail(email, inviter.getFullName(), inviteLink);
@@ -78,7 +93,5 @@ public class UserService {
             throw new RuntimeException("Αποτυχία αποστολής email", e);
         }
     }
-
-
 
 }

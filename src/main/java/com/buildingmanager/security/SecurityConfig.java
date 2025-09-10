@@ -3,6 +3,7 @@ package com.buildingmanager.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -48,9 +49,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(withDefaults())
+                .cors(withDefaults()) // ενεργοποιεί το corsConfigurationSource()
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> req
+                        // Επιτρέπουμε τα preflight OPTIONS
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                         // Public endpoints
                         .requestMatchers(
                                 "/auth/**",
@@ -66,11 +70,12 @@ public class SecurityConfig {
                                 "/swagger-ui.html"
                         ).permitAll()
 
-                        // Only Admin role can access /api/buildings endpoints (όλα τα HTTP methods)
+                        // Προστατευμένα endpoints
                         .requestMatchers("/api/v1/buildings/**").authenticated()
                         .requestMatchers("/api/v1/users/*/role").authenticated()
+                        .requestMatchers("/api/v1/building-members/**").authenticated()
 
-                        // Any other requests require authentication
+                        // Όλα τα υπόλοιπα χρειάζονται authentication
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))

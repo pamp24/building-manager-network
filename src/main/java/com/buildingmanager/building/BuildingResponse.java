@@ -26,17 +26,21 @@ public class BuildingResponse {
     private int apartmentsNum;
     private String sqMetersTotal;
     private String sqMetersCommonSpaces;
-    private boolean parkingExists;
+    private boolean parkingExist;
     private int parkingSpacesNum;
     private String buildingDescription;
+    private boolean hasCentralHeating;
+    private String heatingType;
+    private Double heatingCapacityLitres;
+
     private boolean active;
     private boolean enable;
 
-    private boolean undergroundFloorExists;
-    private boolean halfFloorExists;
-    private boolean overTopFloorExists;
-    private boolean managerHouseExists;
-    private boolean storageExists;
+    private boolean undergroundFloorExist;
+    private boolean halfFloorExist;
+    private boolean overTopFloorExist;
+    private boolean managerHouseExist;
+    private boolean storageExist;
     private Integer storageNum;
 
     private String managerId;

@@ -3,13 +3,18 @@ package com.buildingmanager.apartment;
 import com.buildingmanager.common.PageResponse;
 import com.buildingmanager.user.User;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -20,6 +25,9 @@ public class ApartmentController {
 
     private final ApartmentService apartmentService;
     private final ApartmentMapper apartmentMapper;
+    private final ApartmentRepository apartmentRepository;
+    private static final Logger log = LoggerFactory.getLogger(ApartmentController.class);
+
 
     @PostMapping
     public ResponseEntity<Integer> saveApartment(
@@ -49,18 +57,45 @@ public class ApartmentController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/myApartment")
-    public ResponseEntity<ApartmentResponse> getMyApartment(Authentication connectedUser) {
+    @GetMapping("/my-apartments")
+    public ResponseEntity<List<ApartmentResponse>> getMyApartments(Authentication connectedUser) {
         User user = (User) connectedUser.getPrincipal();
-        Apartment apartment = apartmentService.findByUser(user.getId());
-        ApartmentResponse response = apartmentMapper.toApartmentResponse(apartment, user.getId());
+        List<Apartment> apartments = apartmentService.findByUser(user.getId());
+
+        if (apartments.isEmpty()) {
+            log.error("Apartments not found for user id: " + user.getId());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
+        }
+
+        List<ApartmentResponse> response = apartments.stream()
+                .map(ap -> apartmentMapper.toApartmentResponse(ap, user.getId()))
+                .toList();
+
         return ResponseEntity.ok(response);
     }
+
 
     @GetMapping("/same-building")
     public ResponseEntity<List<ApartmentResponse>> getApartmentsInSameBuilding(Authentication authentication) {
         List<ApartmentResponse> result = apartmentService.getApartmentsInSameBuilding(authentication);
+
+        if (result.isEmpty()) {
+            // Προαιρετικά: επιστρέφουμε 404 αν δεν υπάρχει διαμέρισμα
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.emptyList());
+        }
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/building/{buildingId}/list")
+    public ResponseEntity<List<ApartmentResponse>> getApartmentsByBuilding(
+            @PathVariable Integer buildingId
+    ) {
+        List<Apartment> apartments = apartmentRepository.findAllByBuilding_Id(buildingId);
+        List<ApartmentResponse> response = apartments.stream()
+                .map(apartment -> apartmentMapper.toApartmentResponse(apartment, null))
+                .toList();
+        return ResponseEntity.ok(response);
     }
 
 

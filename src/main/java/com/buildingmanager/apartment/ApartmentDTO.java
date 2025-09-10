@@ -9,14 +9,16 @@ import lombok.*;
 public class ApartmentDTO {
     private Long id;
 
-    private String fullName;
+    private String ownerFirstName;
+    private String ownerLastName;
     private String number;
     private String sqMetersApart;
     private String floor;
-
     private Boolean parkingSpace;
+
     private Boolean isRented;
-    private String tenantFullName;
+    private String residentFirstName;
+    private String residentLastName;
     private String parkingSlot;
 
     private Boolean apStorageExist;
@@ -35,8 +37,10 @@ public class ApartmentDTO {
     private Long buildingId;
 
     private String resident;
-    private String owner;
+    private String residentEmail;
+    private String residentPhone;
 
+    private String owner;
     private String ownerEmail;
     private String ownerPhone;
     private String ownerCountry;
