@@ -9,6 +9,8 @@ import com.buildingmanager.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -37,27 +39,29 @@ public class Building extends BaseEntity {
     private Integer apartmentsNum;
     private String sqMetersTotal;
     private String sqMetersCommonSpaces;
-    private boolean parkingExists;
+    private boolean parkingExist;
     private Integer parkingSpacesNum;
     private String buildingDescription;
+    private boolean hasCentralHeating;
 
-    private boolean undergroundFloorExists;
-    private boolean halfFloorExists;
-    private boolean overTopFloorExists;
-    private boolean managerHouseExists;
-    private boolean storageExists;
+    @Enumerated(EnumType.STRING)
+    private HeatingType heatingType;
+
+    private Double heatingCapacityLitres;
+    private boolean undergroundFloorExist;
+    private boolean halfFloorExist;
+    private boolean overTopFloorExist;
+    private boolean managerHouseExist;
+    private boolean storageExist;
     private Integer storageNum;
     
     private boolean active;
     private boolean enable;
 
-    @ManyToMany
-    @JoinTable(
-            name = "user_building",
-            joinColumns = @JoinColumn(name = "building_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private List<User> users;
+    @OneToMany(mappedBy = "building", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<com.buildingmanager.building.BuildingMember> members = new ArrayList<>();
+
+
 
     @ManyToOne
     @JoinColumn(name = "manager_id")

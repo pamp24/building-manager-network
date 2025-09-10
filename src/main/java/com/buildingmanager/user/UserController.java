@@ -58,7 +58,7 @@ public class UserController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<?> updateUser(@RequestBody UserUpdateDTO dto, Authentication authentication) {
+    public ResponseEntity<?> updateUser(@RequestBody com.buildingmanager.user.UserUpdateDTO dto, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -116,10 +116,12 @@ public class UserController {
     @PostMapping("/invite")
     public ResponseEntity<Void> inviteUserToBuilding(
             @RequestParam String email,
-            Authentication connectedUser
+            @RequestParam Integer buildingId,
+            Authentication auth
     ) {
-        userService.inviteUserToBuilding(email, connectedUser);
+        userService.inviteUserToBuilding(email, buildingId, auth);
         return ResponseEntity.ok().build();
     }
+
 
 }

@@ -1,6 +1,7 @@
 package com.buildingmanager.apartment;
 
 
+import com.buildingmanager.user.User;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,12 +22,13 @@ public interface ApartmentRepository extends JpaRepository<Apartment, Integer> {
     Page<Apartment> findAllByBuildingId(Integer buildingId, Pageable pageable);
 
     // Βρίσκει διαμέρισμα με βάση τον ένοικο
-    Optional<Apartment> findByResident_Id(Integer residentId);
+    List<Apartment> findByResident_Id(Integer residentId);
 
-    Optional<Apartment> findByOwner_Id(Integer ownerId);
+    List<Apartment> findByOwner_Id(Integer ownerId);
 
     List<Apartment> findAllByBuilding_Id(Integer buildingId);
 
+    List<Apartment> findByOwnerOrResident(User owner, User resident);
 
 
 }

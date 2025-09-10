@@ -6,7 +6,9 @@ import jakarta.validation.constraints.NotNull;
 
 
 public record ApartmentRequest(
-        @NotBlank String fullName,
+        Integer id,
+        @NotBlank String ownerFirstName,
+        @NotBlank String ownerLastName,
         @NotBlank String number,
         @NotNull String floor,
         @NotNull String sqMetersApart,
@@ -14,12 +16,14 @@ public record ApartmentRequest(
         @NotNull Double elevatorPercent,
         @NotNull Double heatingPercent,
         @NotNull Boolean isRented,
-        String tenantFullName,
+        String residentFirstName,
+        String residentLastName,
         @NotNull Boolean parkingSpace,
         String parkingSlot,
         boolean apStorageExist,
         String storageSlot,
         boolean isManagerHouse,
+        String lastModifiedDate,
 
         String apDescription,
 

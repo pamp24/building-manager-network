@@ -13,6 +13,8 @@ import org.springframework.security.core.Authentication;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/buildings")
@@ -61,7 +63,20 @@ public class    BuildingController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.noContent().build());
     }
+    @GetMapping("/my-buildings")
+    public ResponseEntity<List<BuildingResponse>> getMyBuildings(Authentication authentication) {
+        List<BuildingResponse> result = buildingService.getMyBuildings(authentication);
+        return ResponseEntity.ok(result);
+    }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Integer id, Authentication auth) {
+        buildingService.deleteBuilding(id, auth);
+        return ResponseEntity.noContent().build();
+    }
 
-
+    @GetMapping("/{buildingId}/manager")
+    public ResponseEntity<ManagerDTO> getManager(@PathVariable Integer buildingId) {
+        return ResponseEntity.ok(buildingService.getManagerDTO(buildingId));
+    }
 }

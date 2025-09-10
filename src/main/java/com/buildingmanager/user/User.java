@@ -2,15 +2,13 @@ package com.buildingmanager.user;
 
 
 import com.buildingmanager.building.Building;
+import com.buildingmanager.building.BuildingMember;
 import com.buildingmanager.common.BaseEntity;
 import com.buildingmanager.company.Company;
 import com.buildingmanager.role.Role;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -20,7 +18,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -60,8 +57,9 @@ public class User extends BaseEntity implements UserDetails {
     @JoinColumn(name = "role_id")
     private Role role;
 
-    @ManyToMany(mappedBy = "users")
-    private List<Building> buildings;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BuildingMember> memberships;
+
 
     @OneToMany(mappedBy = "manager")
     private List<Building> managedBuildings;

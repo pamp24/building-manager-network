@@ -14,10 +14,20 @@ public class BuildingMapper {
 
     public Building toBuilding(BuildingRequest request) {
         User manager = null;
+
         if (request.managerId() != null) {
             manager = userRepository.findById(Integer.valueOf(request.managerId()))
                     .orElseThrow(() -> new IllegalArgumentException("Δεν βρέθηκε χρήστης με ID: " + request.managerId()));
         }
+        HeatingType heatingType = null;
+        if (request.heatingType() != null) {
+            try {
+                heatingType = HeatingType.valueOf(request.heatingType().toUpperCase()); // μετατροπή String -> Enum
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Μη έγκυρος τύπος θέρμανσης: " + request.heatingType());
+            }
+        }
+
         return Building.builder()
                 .id(request.id())
                 .name(request.name())
@@ -34,15 +44,18 @@ public class BuildingMapper {
                 .apartmentsNum(request.apartmentsNum())
                 .sqMetersTotal(request.sqMetersTotal())
                 .sqMetersCommonSpaces(request.sqMetersCommonSpaces())
-                .parkingExists(request.parkingExists())
+                .parkingExist(request.parkingExist())
                 .parkingSpacesNum(request.parkingSpacesNum())
                 .buildingDescription(request.buildingDescription())
+                .hasCentralHeating(request.hasCentralHeating())
+                .heatingType(heatingType)
+                .heatingCapacityLitres(request.heatingCapacityLitres())
                 .manager(manager)
-                .undergroundFloorExists(request.undergroundFloorExists())
-                .halfFloorExists(request.halfFloorExists())
-                .overTopFloorExists(request.overTopFloorExists())
-                .managerHouseExists(request.managerHouseExists())
-                .storageExists(request.storageExists())
+                .undergroundFloorExist(request.undergroundFloorExist())
+                .halfFloorExist(request.halfFloorExist())
+                .overTopFloorExist(request.overTopFloorExist())
+                .managerHouseExist(request.managerHouseExist())
+                .storageExist(request.storageExist())
                 .storageNum(request.storageNum())
                 .active(request.active())
                 .enable(request.enable())
@@ -66,18 +79,20 @@ public class BuildingMapper {
                 .apartmentsNum(building.getApartmentsNum())
                 .sqMetersTotal(building.getSqMetersTotal())
                 .sqMetersCommonSpaces(building.getSqMetersCommonSpaces())
-                .parkingExists(building.isParkingExists())
+                .parkingExist(building.isParkingExist())
                 .parkingSpacesNum(building.getParkingSpacesNum())
                 .active(building.isActive())
                 .enable(building.isEnable())
                 .buildingCode(building.getBuildingCode())
                 .buildingDescription(building.getBuildingDescription())
-
-                .undergroundFloorExists(building.isUndergroundFloorExists())
-                .halfFloorExists(building.isHalfFloorExists())
-                .overTopFloorExists(building.isOverTopFloorExists())
-                .managerHouseExists(building.isManagerHouseExists())
-                .storageExists(building.isStorageExists())
+                .hasCentralHeating(building.isHasCentralHeating())
+                .heatingType(building.getHeatingType() != null ? building.getHeatingType().name() : null)
+                .heatingCapacityLitres(building.getHeatingCapacityLitres())
+                .undergroundFloorExist(building.isUndergroundFloorExist())
+                .halfFloorExist(building.isHalfFloorExist())
+                .overTopFloorExist(building.isOverTopFloorExist())
+                .managerHouseExist(building.isManagerHouseExist())
+                .storageExist(building.isStorageExist())
                 .storageNum(building.getStorageNum())
 
                 .managerFullName(

@@ -2,6 +2,8 @@ package com.buildingmanager.apartment;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Builder
@@ -9,8 +11,10 @@ import lombok.*;
 @NoArgsConstructor
 public class ApartmentResponse {
 
-    private String fullName;
-    private String tenantFullName;
+    private String ownerFirstName;
+    private String ownerLastName;
+    private String residentFirstName;
+    private String residentLastName;
     private boolean isRented;
     private String number;
     private String sqMetersApart;
@@ -19,7 +23,13 @@ public class ApartmentResponse {
     private String parkingSlot;
     private boolean active;
     private boolean enable;
+    private LocalDateTime lastModifiedDate;
+
     private String buildingName;
+    private String buildingStreet;
+    private String buildingStreetNumber;
+    private String buildingCity;
+
     private String fullApartmentName;
 
     private double commonPercent;
@@ -36,14 +46,18 @@ public class ApartmentResponse {
     private String managerId;
 
     private String resident;
-    private String owner;
+    private String residentFullName;
+    private String residentEmail;
+    private String residentPhone;
 
+    private String owner;
     private String ownerFullName;
     private String ownerEmail;
     private String ownerPhone;
     private String ownerCity;
     private String ownerStreet;
     private String ownerStreetNumber;
+
 
 
 

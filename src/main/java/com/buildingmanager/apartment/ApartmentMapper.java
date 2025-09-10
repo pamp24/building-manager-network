@@ -10,13 +10,15 @@ import org.springframework.stereotype.Service;
 public class ApartmentMapper {
     public Apartment toApartment(ApartmentRequest request) {
         return Apartment.builder()
-                .fullName(request.fullName())
-                .tenantFullName(request.tenantFullName())
+                .ownerFirstName(request.ownerFirstName())
+                .ownerLastName(request.ownerLastName())
                 .number(request.number())
                 .sqMetersApart(request.sqMetersApart())
                 .floor(request.floor())
                 .parkingSpace(request.parkingSpace())
                 .isRented(request.isRented())
+                .residentFirstName(request.residentFirstName())
+                .residentLastName(request.residentLastName())
                 .parkingSlot(request.parkingSlot())
                 .commonPercent(request.commonPercent())
                 .elevatorPercent(request.elevatorPercent())
@@ -34,16 +36,21 @@ public class ApartmentMapper {
     }
 
 
-    public ApartmentResponse toApartmentResponse(Apartment apartment, int id) {
-
-        User manager = apartment.getBuilding().getManager();
-        User owner = apartment.getOwner();
-
+    public ApartmentResponse toApartmentResponse(Apartment apartment, Integer id) {
+        if (apartment == null) {
+            return null;
+        }
+        Building building = apartment.getBuilding();
+        User manager = (building != null ? building.getManager() : null);
+        User owner   = apartment.getOwner();
+        User resident = apartment.getResident();
         return ApartmentResponse.builder()
                 .fullApartmentName(apartment.fullApartmentName())
-                .fullName(apartment.getFullName())
+                .ownerFirstName(apartment.getOwnerFirstName())
+                .ownerLastName(apartment.getOwnerLastName())
                 .isRented(apartment.getIsRented())
-                .tenantFullName(apartment.getTenantFullName())
+                .residentFirstName(apartment.getResidentFirstName())
+                .residentLastName(apartment.getResidentLastName())
                 .number(apartment.getNumber())
                 .sqMetersApart(String.valueOf(apartment.getSqMetersApart()))
                 .floor(apartment.getFloor())
@@ -56,21 +63,41 @@ public class ApartmentMapper {
                 .storageSlot(apartment.getStorageSlot())
                 .isManagerHouse(apartment.isManagerHouse())
                 .apDescription(apartment.getApDescription())
+
+                .buildingName(apartment.getBuilding().getName())
+                .buildingStreet(apartment.getBuilding().getStreet1())
+                .buildingStreetNumber(apartment.getBuilding().getStNumber1()    )
+                .buildingCity(apartment.getBuilding().getCity())
+
                 .active(false)
                 .enable(false)
-                .managerFullName(manager.fullName())
-                .managerId(String.valueOf(manager.getId()))
-                .resident(apartment.getResident() != null ? String.valueOf(apartment.getResident().getId()) : null)
-                .owner(apartment.getOwner() != null ? String.valueOf(apartment.getOwner().getId()) : null)
+                .lastModifiedDate(apartment.getLastModifiedDate())
+
+                // Manager (null-safe)
+                .managerId(manager != null ? String.valueOf(manager.getId()) : null)
+                .managerFullName(manager != null ? manager.fullName() : null)
+
+                // Resident (null-safe)
+                .resident(resident != null ? String.valueOf(resident.getId()) : null)
+                .residentFullName(resident != null ? resident.fullName() : null)
+                .residentEmail(resident != null ? resident.getEmail() : null)
+                .residentPhone(resident != null ? resident.getPhoneNumber() : null)
+
+                // Owner (null-safe)
                 .owner(owner != null ? String.valueOf(owner.getId()) : null)
-                .ownerFullName(owner.fullName())
+                .ownerFullName(owner != null ? owner.fullName() : null)
                 .ownerEmail(owner != null ? owner.getEmail() : null)
-                .ownerPhone(owner.getPhoneNumber())
-                .ownerStreet(owner.getAddress1())
-                .ownerStreetNumber(owner.getAddressNumber1())
-                .ownerCity(owner.getCity())
+                .ownerPhone(owner != null ? owner.getPhoneNumber() : null)
+                .ownerStreet(owner != null ? owner.getAddress1() : null)
+                .ownerStreetNumber(owner != null ? owner.getAddressNumber1() : null)
+                .ownerCity(owner != null ? owner.getCity() : null)
+
 
                 .build();
 
+    }
+    public ApartmentResponse toApartmentResponse(Apartment apartment) {
+        if (apartment == null) return null;
+        return toApartmentResponse(apartment, apartment.getId());
     }
 }
