@@ -49,15 +49,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(withDefaults()) // ενεργοποιεί το corsConfigurationSource()
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // χρησιμοποίησε το custom cors
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> req
-                        // Επιτρέπουμε τα preflight OPTIONS
+                        // Επιτρέπουμε preflight requests
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // Public endpoints
                         .requestMatchers(
                                 "/auth/**",
+                                "/api/invite/**",       // ✅ πρόσθεσε το invite
                                 "/v2/api-docs",
                                 "/v3/api-docs",
                                 "/v3/api-docs/**",
@@ -90,6 +91,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.of("http://localhost:4200")); // Frontend origin
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true); // Αν στέλνεις cookies ή authorization headers
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

@@ -2,13 +2,14 @@ package com.buildingmanager.invite;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-public class InviteResponseDTO {
+@NoArgsConstructor
+public class InviteAcceptRequest {
+    private String code;
     private String email;
-    private String role;
     private Integer apartmentId;
-    private String token;
-    private String status;
+    private String role;
 }

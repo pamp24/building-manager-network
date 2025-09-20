@@ -4,6 +4,8 @@ import com.buildingmanager.exceptions.OperationNotPermittedException;
 import com.buildingmanager.building.Building;
 import com.buildingmanager.building.BuildingRepository;
 import com.buildingmanager.common.PageResponse;
+import com.buildingmanager.invite.InviteRepository;
+import com.buildingmanager.invite.InviteStatus;
 import com.buildingmanager.user.User;
 import com.buildingmanager.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,6 +27,7 @@ public class ApartmentService {
     private final ApartmentMapper apartmentMapper;
     private final ApartmentRepository apartmentRepository;
     private final UserRepository userRepository;
+    private final InviteRepository inviteRepository;
 
     public Object save(ApartmentRequest request, Authentication connectedUser) {
         Building building = buildingRepository.findById(request.buildingId())
@@ -166,5 +169,11 @@ public class ApartmentService {
                 .toList();
     }
 
+    public List<ApartmentResponse> getAvailableApartments(Integer buildingId, String role) {
+        return apartmentRepository.findAvailableApartmentsForRole(buildingId, role)
+                .stream()
+                .map(apartmentMapper::toApartmentResponse)
+                .toList();
+    }
 
 }

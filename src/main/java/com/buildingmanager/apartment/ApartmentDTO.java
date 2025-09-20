@@ -37,10 +37,12 @@ public class ApartmentDTO {
     private Long buildingId;
 
     private String resident;
+    private Integer residentId;
     private String residentEmail;
     private String residentPhone;
 
     private String owner;
+    private Integer ownerId;
     private String ownerEmail;
     private String ownerPhone;
     private String ownerCountry;

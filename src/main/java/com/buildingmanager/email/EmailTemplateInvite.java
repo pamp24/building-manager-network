@@ -2,7 +2,7 @@ package com.buildingmanager.email;
 
 
 public enum EmailTemplateInvite implements EmailTemplateName{
-    CONFIRM_EMAIL("confirm  -email"),
+    CONFIRM_EMAIL("confirm-email"),
     INVITE("invite-email");
 
     private final String name;

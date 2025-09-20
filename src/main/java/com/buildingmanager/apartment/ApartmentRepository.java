@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -30,5 +31,29 @@ public interface ApartmentRepository extends JpaRepository<Apartment, Integer> {
 
     List<Apartment> findByOwnerOrResident(User owner, User resident);
 
+    @Query("""
+    SELECT a FROM Apartment a
+    WHERE a.building.id = :buildingId AND
+    (
+        (:role = 'Owner' AND a.owner IS NULL
+            AND NOT EXISTS (
+                SELECT i FROM Invite i
+                WHERE i.apartment = a AND i.role = 'Owner' AND i.status = 'PENDING'
+            )
+        )
+        OR
+        (:role = 'Resident' AND a.resident IS NULL AND a.isRented = true
+            AND NOT EXISTS (
+                SELECT i FROM Invite i
+                WHERE i.apartment = a AND i.role = 'Resident' AND i.status = 'PENDING'
+            )
+        )
+    )
+""")
+    List<Apartment> findAvailableApartmentsForRole(
+            @Param("buildingId") Integer buildingId,
+            @Param("role") String role
+    );
 
 }
+
