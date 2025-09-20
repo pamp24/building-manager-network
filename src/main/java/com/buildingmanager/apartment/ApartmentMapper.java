@@ -45,6 +45,7 @@ public class ApartmentMapper {
         User owner   = apartment.getOwner();
         User resident = apartment.getResident();
         return ApartmentResponse.builder()
+                .id(apartment.getId())
                 .fullApartmentName(apartment.fullApartmentName())
                 .ownerFirstName(apartment.getOwnerFirstName())
                 .ownerLastName(apartment.getOwnerLastName())
@@ -79,12 +80,14 @@ public class ApartmentMapper {
 
                 // Resident (null-safe)
                 .resident(resident != null ? String.valueOf(resident.getId()) : null)
+                .residentId(resident != null ? resident.getId() : null)
                 .residentFullName(resident != null ? resident.fullName() : null)
                 .residentEmail(resident != null ? resident.getEmail() : null)
                 .residentPhone(resident != null ? resident.getPhoneNumber() : null)
 
                 // Owner (null-safe)
                 .owner(owner != null ? String.valueOf(owner.getId()) : null)
+                .ownerId(owner != null ? owner.getId(): null)
                 .ownerFullName(owner != null ? owner.fullName() : null)
                 .ownerEmail(owner != null ? owner.getEmail() : null)
                 .ownerPhone(owner != null ? owner.getPhoneNumber() : null)

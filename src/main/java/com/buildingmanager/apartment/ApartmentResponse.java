@@ -1,5 +1,6 @@
 package com.buildingmanager.apartment;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -11,10 +12,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ApartmentResponse {
 
+    private Integer id;
     private String ownerFirstName;
     private String ownerLastName;
     private String residentFirstName;
     private String residentLastName;
+    @JsonProperty("isRented")
     private boolean isRented;
     private String number;
     private String sqMetersApart;
@@ -46,11 +49,13 @@ public class ApartmentResponse {
     private String managerId;
 
     private String resident;
+    private Integer residentId;
     private String residentFullName;
     private String residentEmail;
     private String residentPhone;
 
     private String owner;
+    private Integer ownerId;
     private String ownerFullName;
     private String ownerEmail;
     private String ownerPhone;

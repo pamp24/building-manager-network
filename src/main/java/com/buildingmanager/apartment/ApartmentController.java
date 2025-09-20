@@ -1,6 +1,7 @@
 package com.buildingmanager.apartment;
 
 import com.buildingmanager.common.PageResponse;
+import com.buildingmanager.invite.InviteService;
 import com.buildingmanager.user.User;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
@@ -26,6 +27,7 @@ public class ApartmentController {
     private final ApartmentService apartmentService;
     private final ApartmentMapper apartmentMapper;
     private final ApartmentRepository apartmentRepository;
+    private final InviteService inviteService;
     private static final Logger log = LoggerFactory.getLogger(ApartmentController.class);
 
 
@@ -98,5 +100,12 @@ public class ApartmentController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{buildingId}/available")
+    public ResponseEntity<List<ApartmentResponse>> getAvailableApartments(
+            @PathVariable Integer buildingId,
+            @RequestParam String role
+    ) {
+        return ResponseEntity.ok(apartmentService.getAvailableApartments(buildingId, role));
+    }
 
 }
