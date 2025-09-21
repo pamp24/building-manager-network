@@ -31,8 +31,9 @@ public class Invite {
     @ManyToOne
     @JoinColumn(name = "inviter_id")
     private User inviter;
+
     @Enumerated(EnumType.STRING)
-    private InviteStatus status; // Invited | Joined | Expired
+    private InviteStatus status;
 
     private String token; // για activation link
 

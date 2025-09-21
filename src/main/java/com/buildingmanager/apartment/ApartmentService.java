@@ -5,7 +5,6 @@ import com.buildingmanager.building.Building;
 import com.buildingmanager.building.BuildingRepository;
 import com.buildingmanager.common.PageResponse;
 import com.buildingmanager.invite.InviteRepository;
-import com.buildingmanager.invite.InviteStatus;
 import com.buildingmanager.user.User;
 import com.buildingmanager.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -17,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.*;
 
@@ -74,7 +74,7 @@ public class ApartmentService {
         apartment.setParkingSlot(request.parkingSlot());
         apartment.setApStorageExist(request.apStorageExist());
         apartment.setStorageSlot(request.storageSlot());
-        apartment.setManagerHouse(request.isManagerHouse());
+        apartment.setIsManagerHouse(request.isManagerHouse());
         apartment.setCommonPercent(request.commonPercent());
         apartment.setElevatorPercent(request.elevatorPercent());
         apartment.setHeatingPercent(request.heatingPercent());
@@ -175,5 +175,63 @@ public class ApartmentService {
                 .map(apartmentMapper::toApartmentResponse)
                 .toList();
     }
+    @Transactional
+    public ApartmentResponse updateMyApartment(ApartmentDTO dto, Authentication connectedUser) {
+        User user = (User) connectedUser.getPrincipal();
+
+        Apartment apartment = apartmentRepository.findById(dto.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Apartment not found with id " + dto.getId()));
+
+        // Έλεγχος: μόνο ο ιδιοκτήτης ή ο ένοικος μπορεί να ενημερώσει
+        boolean isOwner = apartment.getOwner() != null && apartment.getOwner().getId().equals(user.getId());
+        boolean isResident = apartment.getResident() != null && apartment.getResident().getId().equals(user.getId());
+
+        if (!isOwner && !isResident) {
+            throw new AccessDeniedException("Δεν έχετε δικαίωμα να επεξεργαστείτε αυτό το διαμέρισμα");
+        }
+
+        // Ενημέρωση πεδίων
+        apartment.setNumber(dto.getNumber());
+        apartment.setSqMetersApart(dto.getSqMetersApart());
+        apartment.setFloor(dto.getFloor());
+        apartment.setParkingSpace(
+                dto.getParkingSpace() != null ? dto.getParkingSpace() : false
+        );
+        apartment.setIsRented(dto.getIsRented());
+        apartment.setParkingSlot(dto.getParkingSlot());
+        apartment.setApStorageExist(
+                dto.getApStorageExist() != null ? dto.getApStorageExist() : false
+        );
+        apartment.setStorageSlot(dto.getStorageSlot());
+        apartment.setIsManagerHouse(
+                dto.getIsManagerHouse() != null ? dto.getIsManagerHouse() : false
+        );
+        apartment.setCommonPercent(dto.getCommonPercent());
+        apartment.setElevatorPercent(dto.getElevatorPercent());
+        apartment.setHeatingPercent(dto.getHeatingPercent());
+        apartment.setApDescription(dto.getApDescription());
+
+        // Ενημέρωση στοιχείων resident (αν έχει)
+        if (dto.getResidentFirstName() != null && apartment.getResident() != null) {
+            apartment.getResident().setFirstName(dto.getResidentFirstName());
+        }
+        if (dto.getResidentLastName() != null && apartment.getResident() != null) {
+            apartment.getResident().setLastName(dto.getResidentLastName());
+        }
+
+        // Ενημέρωση στοιχείων owner (αν έχει)
+        if (dto.getOwnerFirstName() != null && apartment.getOwner() != null) {
+            apartment.getOwner().setFirstName(dto.getOwnerFirstName());
+        }
+        if (dto.getOwnerLastName() != null && apartment.getOwner() != null) {
+            apartment.getOwner().setLastName(dto.getOwnerLastName());
+        }
+
+        Apartment saved = apartmentRepository.save(apartment);
+
+        return apartmentMapper.toApartmentResponse(saved);
+    }
+
+
 
 }

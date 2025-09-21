@@ -14,15 +14,15 @@ public class BuildingMapper {
 
     public Building toBuilding(BuildingRequest request) {
         User manager = null;
-
         if (request.managerId() != null) {
             manager = userRepository.findById(Integer.valueOf(request.managerId()))
                     .orElseThrow(() -> new IllegalArgumentException("Δεν βρέθηκε χρήστης με ID: " + request.managerId()));
         }
+
         HeatingType heatingType = null;
         if (request.heatingType() != null) {
             try {
-                heatingType = HeatingType.valueOf(request.heatingType().toUpperCase()); // μετατροπή String -> Enum
+                heatingType = HeatingType.valueOf(request.heatingType().toUpperCase());
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("Μη έγκυρος τύπος θέρμανσης: " + request.heatingType());
             }
@@ -62,6 +62,39 @@ public class BuildingMapper {
                 .build();
     }
 
+    public BuildingDTO toDTO(Building building) {
+        return new BuildingDTO(
+                building.getName(),
+                building.getStreet1(),
+                building.getStNumber1(),
+                building.getStreet2(),
+                building.getStNumber2(),
+                building.getCity(),
+                building.getState(),
+                building.getRegion(),
+                building.getPostalCode(),
+                building.getCountry(),
+                building.getFloors(),
+                building.getApartmentsNum(),
+                building.getSqMetersTotal(),
+                building.getSqMetersCommonSpaces(),
+                building.isParkingExist(),
+                building.getParkingSpacesNum(),
+                building.getBuildingDescription(),
+                building.isHasCentralHeating(),
+                building.getHeatingType() != null ? building.getHeatingType().name() : null,
+                building.getHeatingCapacityLitres(),
+                building.getBuildingCode(),
+                building.getBuildingDescription(),
+                building.isUndergroundFloorExist(),
+                building.isHalfFloorExist(),
+                building.isOverTopFloorExist(),
+                building.isManagerHouseExist(),
+                building.isStorageExist(),
+                building.getStorageNum()
+        );
+    }
+
     public BuildingResponse toBuildingResponse(Building building) {
         return BuildingResponse.builder()
                 .id(building.getId())
@@ -94,22 +127,22 @@ public class BuildingMapper {
                 .managerHouseExist(building.isManagerHouseExist())
                 .storageExist(building.isStorageExist())
                 .storageNum(building.getStorageNum())
-
                 .managerFullName(
                         building.getManager() != null ? building.getManager().fullName() : null
                 )
                 .managerEmail(
-                        building.getManager() !=null ? building.getManager().getEmail() : null
+                        building.getManager() != null ? building.getManager().getEmail() : null
                 )
                 .managerPhone(
-                        building.getManager() !=null ? building.getManager().getPhoneNumber() : null
+                        building.getManager() != null ? building.getManager().getPhoneNumber() : null
                 )
                 .managerAddress1(
-                        building.getManager() !=null ? building.getManager().getAddress1() : null
+                        building.getManager() != null ? building.getManager().getAddress1() : null
                 )
                 .managerCity(
-                        building.getManager() !=null ? building.getManager().getCity() : null
+                        building.getManager() != null ? building.getManager().getCity() : null
                 )
                 .build();
     }
 }
+

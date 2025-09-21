@@ -24,8 +24,8 @@ public class BuildingResponse {
     private String state;
     private String floors;
     private int apartmentsNum;
-    private String sqMetersTotal;
-    private String sqMetersCommonSpaces;
+    private double sqMetersTotal;
+    private double sqMetersCommonSpaces;
     private boolean parkingExist;
     private int parkingSpacesNum;
     private String buildingDescription;

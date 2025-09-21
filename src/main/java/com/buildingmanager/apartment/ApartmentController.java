@@ -107,5 +107,12 @@ public class ApartmentController {
     ) {
         return ResponseEntity.ok(apartmentService.getAvailableApartments(buildingId, role));
     }
+    @PutMapping("update/myApartment")
+    public ResponseEntity<ApartmentResponse> updateMyApartment(
+            @RequestBody ApartmentDTO dto,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(apartmentService.updateMyApartment(dto, authentication));
+    }
 
 }

@@ -37,8 +37,8 @@ public class Building extends BaseEntity {
     private String country;
     private Integer floors;
     private Integer apartmentsNum;
-    private String sqMetersTotal;
-    private String sqMetersCommonSpaces;
+    private double sqMetersTotal;
+    private double sqMetersCommonSpaces;
     private boolean parkingExist;
     private Integer parkingSpacesNum;
     private String buildingDescription;
