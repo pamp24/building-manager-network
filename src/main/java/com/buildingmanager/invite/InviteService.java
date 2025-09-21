@@ -2,7 +2,10 @@ package com.buildingmanager.invite;
 
 import com.buildingmanager.apartment.Apartment;
 import com.buildingmanager.apartment.ApartmentRepository;
+import com.buildingmanager.role.Role;
+import com.buildingmanager.role.RoleRepository;
 import com.buildingmanager.user.User;
+import com.buildingmanager.user.UserRepository;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +21,8 @@ public class InviteService {
     private final InviteRepository inviteRepository;
     private final ApartmentRepository apartmentRepository;
     private final EmailService emailService;
+    private final RoleRepository roleRepository;
+    private final UserRepository userRepository;
 
     public Invite createInvite(String email, String role, Integer apartmentId, User inviter) {
         if (apartmentId == null) {
@@ -82,6 +87,12 @@ public class InviteService {
             throw new RuntimeException("Invite email does not match user");
         }
 
+        // 🔹 Ανάθεση ρόλου στον User
+        Role role = roleRepository.findByName(invite.getRole())
+                .orElseThrow(() -> new RuntimeException("Role not found: " + invite.getRole()));
+        user.setRole(role); // αν ο User έχει List<Role> → user.getRoles().add(role);
+
+        // 🔹 Σύνδεση με Apartment / Building
         switch (invite.getRole()) {
             case "Owner" -> invite.getApartment().setOwner(user);
             case "Resident" -> invite.getApartment().setResident(user);
@@ -90,8 +101,12 @@ public class InviteService {
         }
 
         invite.setStatus(InviteStatus.ACCEPTED);
+
+        userRepository.save(user);
+        apartmentRepository.save(invite.getApartment());
         return inviteRepository.save(invite);
     }
+
 
 
     public InviteResponseDTO toDTO(Invite invite) {

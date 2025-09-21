@@ -57,7 +57,7 @@ public class BuildingService {
         com.buildingmanager.building.BuildingMember membership = com.buildingmanager.building.BuildingMember.builder()
                 .building(savedBuilding)
                 .user(currentUser)
-                .role(managerRole)   // βάζουμε persisted entity
+                .role(managerRole)
                 .status("Joined")
                 .build();
 
@@ -172,5 +172,63 @@ public class BuildingService {
                 .map(buildingMapper::toBuildingResponse)
                 .toList();
     }
+    @Transactional
+    public BuildingDTO updateBuilding(Integer buildingId, BuildingDTO dto, Authentication connectedUser) {
+        User user = (User) connectedUser.getPrincipal();
+
+        Building building = buildingRepository.findById(buildingId)
+                .orElseThrow(() -> new EntityNotFoundException("Building not found"));
+
+        boolean userIsManager = buildingMemberRepository
+                .findByBuildingId(buildingId)
+                .stream()
+                .anyMatch(m -> m.getUser().getId().equals(user.getId())
+                        && m.getRole().getName().equals("BuildingManager"));
+
+        if (!userIsManager) {
+            throw new AccessDeniedException("Μόνο ο διαχειριστής μπορεί να επεξεργαστεί την πολυκατοικία");
+        }
+
+        // Update fields
+        building.setName(dto.getName());
+        building.setStreet1(dto.getStreet1());
+        building.setStNumber1(dto.getStNumber1());
+        building.setStreet2(dto.getStreet2());
+        building.setStNumber2(dto.getStNumber2());
+        building.setCity(dto.getCity());
+        building.setRegion(dto.getRegion());
+        building.setPostalCode(dto.getPostalCode());
+        building.setCountry(dto.getCountry());
+        building.setState(dto.getState());
+        building.setFloors(dto.getFloors());
+        building.setApartmentsNum(dto.getApartmentsNum());
+        building.setSqMetersTotal(dto.getSqMetersTotal());
+        building.setSqMetersCommonSpaces(dto.getSqMetersCommonSpaces());
+
+        building.setParkingExist(dto.isParkingExist());
+        building.setParkingSpacesNum(dto.getParkingSpacesNum());
+
+        building.setUndergroundFloorExist(dto.isUndergroundFloorExist());
+        building.setHalfFloorExist(dto.isHalfFloorExist());
+        building.setOverTopFloorExist(dto.isOverTopFloorExist());
+
+        building.setStorageExist(dto.isStorageExist());
+        building.setStorageNum(dto.getStorageNum());
+
+        building.setHasCentralHeating(dto.isHasCentralHeating());
+        if (dto.getHeatingType() != null) {
+            building.setHeatingType(HeatingType.valueOf(dto.getHeatingType().toUpperCase()));
+        }
+        building.setHeatingCapacityLitres(dto.getHeatingCapacityLitres());
+
+        building.setBuildingDescription(dto.getBuildingDescription());
+
+        Building updated = buildingRepository.save(building);
+        return buildingMapper.toDTO(updated);
+    }
+
+
+
+
 
 }

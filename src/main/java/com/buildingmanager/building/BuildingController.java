@@ -79,4 +79,13 @@ public class    BuildingController {
     public ResponseEntity<ManagerDTO> getManager(@PathVariable Integer buildingId) {
         return ResponseEntity.ok(buildingService.getManagerDTO(buildingId));
     }
+
+    @PutMapping("update/{id}")
+    public ResponseEntity<BuildingDTO> updateBuilding(
+            @PathVariable Integer id,
+            @RequestBody BuildingDTO dto,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(buildingService.updateBuilding(id, dto, authentication));
+    }
 }

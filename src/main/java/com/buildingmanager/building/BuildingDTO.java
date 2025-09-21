@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BuildingDTO {
-
     private String name;
     private String street1;
     private String stNumber1;
@@ -25,7 +24,7 @@ public class BuildingDTO {
     private double sqMetersTotal;
     private double sqMetersCommonSpaces;
     private boolean parkingExist;
-    private String parkingSpacesNum;
+    private Integer parkingSpacesNum;
     private String buildingDescription;
     private boolean hasCentralHeating;
     private String heatingType;
@@ -39,4 +38,5 @@ public class BuildingDTO {
     private boolean storageExist;
     private Integer storageNum;
 }
+
 

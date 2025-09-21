@@ -29,9 +29,9 @@ public record BuildingRequest(
         @NotNull(message = "109")
         Integer apartmentsNum,
         @NotBlank(message = "110")
-        String sqMetersTotal,
+        double sqMetersTotal,
         @NotBlank(message = "111")
-        String sqMetersCommonSpaces,
+        double sqMetersCommonSpaces,
         @NotNull(message = "112")
         Boolean parkingExist,
         @NotNull(message = "113")

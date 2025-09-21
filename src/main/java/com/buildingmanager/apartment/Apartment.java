@@ -27,7 +27,9 @@ public class Apartment extends BaseEntity {
     private String number;
     private String sqMetersApart;
     private String floor;
-    private boolean parkingSpace;
+
+    @Column(name = "parking_space", nullable = false)
+    private Boolean parkingSpace = false;
 
     private Boolean isRented;
 
@@ -36,10 +38,10 @@ public class Apartment extends BaseEntity {
 
     private String parkingSlot;
 
-    private boolean apStorageExist;
+    private Boolean apStorageExist = false;
     private String storageSlot;
 
-    private boolean isManagerHouse;
+    private Boolean isManagerHouse;
 
     private Double commonPercent;
     private Double elevatorPercent;
@@ -47,8 +49,8 @@ public class Apartment extends BaseEntity {
 
     private String apDescription;
 
-    private boolean active;
-    private boolean enable;
+    private Boolean active;
+    private Boolean enable;
 
     @ManyToOne
     @JoinColumn(name = "building_id", nullable = false)
