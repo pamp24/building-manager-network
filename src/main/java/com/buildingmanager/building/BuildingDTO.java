@@ -2,13 +2,16 @@ package com.buildingmanager.building;
 
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class BuildingDTO {
+    private Integer id;
     private String name;
     private String street1;
     private String stNumber1;
@@ -37,6 +40,9 @@ public class BuildingDTO {
     private boolean managerHouseExist;
     private boolean storageExist;
     private Integer storageNum;
+
+
+    private ManagerDTO manager;
 }
 
 

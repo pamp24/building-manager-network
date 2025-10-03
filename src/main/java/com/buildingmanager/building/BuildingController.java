@@ -2,6 +2,7 @@ package com.buildingmanager.building;
 
 
 import com.buildingmanager.common.PageResponse;
+import com.buildingmanager.user.User;
 import com.buildingmanager.user.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -57,7 +59,7 @@ public class    BuildingController {
         return ResponseEntity.ok(buildingService.findAllBuildingsByManager(page, size, connectedUser));
     }
 
-        @GetMapping("/myBuilding")
+    @GetMapping("/myBuilding")
     public ResponseEntity<BuildingResponse> getMyBuilding(Authentication auth) {
         return buildingService.findBuildingOfCurrentUser(auth)
                 .map(ResponseEntity::ok)
@@ -88,4 +90,9 @@ public class    BuildingController {
     ) {
         return ResponseEntity.ok(buildingService.updateBuilding(id, dto, authentication));
     }
+    @GetMapping("/my-managed-buildings")
+    public List<ManagedBuildingDTO> getManagedBuildings(@AuthenticationPrincipal User user) {
+        return buildingService.getManagedBuildings(user.getId());
+    }
+
 }

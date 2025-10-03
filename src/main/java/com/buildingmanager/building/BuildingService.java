@@ -6,7 +6,6 @@ import com.buildingmanager.apartment.ApartmentRepository;
 import com.buildingmanager.buildingMember.BuildingMemberRepository;
 import com.buildingmanager.common.PageResponse;
 import com.buildingmanager.role.Role;
-import com.buildingmanager.role.RoleName;
 import com.buildingmanager.role.RoleRepository;
 import com.buildingmanager.user.User;
 import com.buildingmanager.user.UserRepository;
@@ -20,8 +19,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.security.access.AccessDeniedException;
 
-
 import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -153,10 +152,21 @@ public class BuildingService {
         if (b.getManager() == null) {
             throw new EntityNotFoundException("Manager not set for building " + buildingId);
         }
-        var m = b.getManager();
 
+        var m = b.getManager();
         String fullName = (m.getFirstName() + " " + m.getLastName()).trim();
-        return new ManagerDTO(m.getId(), fullName);
+
+        // Φαντάζομαι ότι το User (manager) entity έχει email, phone, address
+        return new ManagerDTO(
+                m.getId(),
+                fullName,
+                m.getEmail(),
+                m.getPhoneNumber(),
+                m.getAddress1(),
+                m.getAddressNumber1(),
+                m.getAddress2(),
+                m.getAddressNumber2()
+        );
     }
 
     public List<BuildingResponse> getMyBuildings(Authentication authentication) {
@@ -227,8 +237,31 @@ public class BuildingService {
         return buildingMapper.toDTO(updated);
     }
 
-
-
+    public List<ManagedBuildingDTO> getManagedBuildings(Integer userId) {
+        return buildingRepository.findByManagerId(userId)
+                .stream()
+                .map(b -> new ManagedBuildingDTO(
+                        b.getId(),
+                        b.getName(),
+                        b.getStreet1(),
+                        b.getStNumber1(),
+                        b.getStreet2(),
+                        b.getStNumber2(),
+                        b.getCity(),
+                        b.getPostalCode(),
+                        new ManagerDTO(
+                                b.getManager().getId(),
+                                b.getManager().getFullName(),
+                                b.getManager().getEmail(),
+                                b.getManager().getPhoneNumber(),
+                                b.getManager().getAddress1(),
+                                b.getManager().getAddressNumber1(),
+                                b.getManager().getAddress2(),
+                                b.getManager().getAddressNumber2()
+                        )
+                ))
+                .toList();
+    }
 
 
 }
