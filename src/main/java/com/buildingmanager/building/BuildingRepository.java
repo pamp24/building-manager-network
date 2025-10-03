@@ -23,6 +23,6 @@ public interface BuildingRepository extends JpaRepository<Building, Integer>, Jp
     @Query("SELECT bm.building FROM BuildingMember bm WHERE bm.user.id = :userId")
     List<Building> findAllByUserId(@Param("userId") Integer userId);
 
-    @Query("select b.manager from Building b where b.id = :buildingId")
-    Optional<User> findManagerByBuildingId(@Param("buildingId") Integer buildingId);
+    List<Building> findByManagerId(Integer managerId);
+
 }

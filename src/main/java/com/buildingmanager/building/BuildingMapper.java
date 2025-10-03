@@ -63,37 +63,52 @@ public class BuildingMapper {
     }
 
     public BuildingDTO toDTO(Building building) {
-        return new BuildingDTO(
-                building.getName(),
-                building.getStreet1(),
-                building.getStNumber1(),
-                building.getStreet2(),
-                building.getStNumber2(),
-                building.getCity(),
-                building.getState(),
-                building.getRegion(),
-                building.getPostalCode(),
-                building.getCountry(),
-                building.getFloors(),
-                building.getApartmentsNum(),
-                building.getSqMetersTotal(),
-                building.getSqMetersCommonSpaces(),
-                building.isParkingExist(),
-                building.getParkingSpacesNum(),
-                building.getBuildingDescription(),
-                building.isHasCentralHeating(),
-                building.getHeatingType() != null ? building.getHeatingType().name() : null,
-                building.getHeatingCapacityLitres(),
-                building.getBuildingCode(),
-                building.getBuildingDescription(),
-                building.isUndergroundFloorExist(),
-                building.isHalfFloorExist(),
-                building.isOverTopFloorExist(),
-                building.isManagerHouseExist(),
-                building.isStorageExist(),
-                building.getStorageNum()
-        );
+        ManagerDTO managerDTO = null;
+        if (building.getManager() != null) {
+            managerDTO = new ManagerDTO(
+                    building.getManager().getId(),
+                    building.getManager().fullName(),
+                    building.getManager().getEmail(),
+                    building.getManager().getPhoneNumber(),
+                    building.getManager().getAddress1(),
+                    building.getManager().getAddressNumber1(),
+                    building.getManager().getAddress2(),
+                    building.getManager().getAddressNumber2()
+            );
+        }
+
+        return BuildingDTO.builder()
+                .id(building.getId())
+                .name(building.getName())
+                .street1(building.getStreet1())
+                .stNumber1(building.getStNumber1())
+                .street2(building.getStreet2())
+                .stNumber2(building.getStNumber2())
+                .city(building.getCity())
+                .region(building.getRegion())
+                .postalCode(building.getPostalCode())
+                .country(building.getCountry())
+                .floors(building.getFloors())
+                .apartmentsNum(building.getApartmentsNum())
+                .sqMetersTotal(building.getSqMetersTotal())
+                .sqMetersCommonSpaces(building.getSqMetersCommonSpaces())
+                .parkingExist(building.isParkingExist())
+                .parkingSpacesNum(building.getParkingSpacesNum())
+                .buildingDescription(building.getBuildingDescription())
+                .hasCentralHeating(building.isHasCentralHeating())
+                .heatingType(building.getHeatingType() != null ? building.getHeatingType().name() : null)
+                .heatingCapacityLitres(building.getHeatingCapacityLitres())
+                .buildingCode(building.getBuildingCode())
+                .undergroundFloorExist(building.isUndergroundFloorExist())
+                .halfFloorExist(building.isHalfFloorExist())
+                .overTopFloorExist(building.isOverTopFloorExist())
+                .managerHouseExist(building.isManagerHouseExist())
+                .storageExist(building.isStorageExist())
+                .storageNum(building.getStorageNum())
+                .manager(managerDTO)
+                .build();
     }
+
 
     public BuildingResponse toBuildingResponse(Building building) {
         return BuildingResponse.builder()
