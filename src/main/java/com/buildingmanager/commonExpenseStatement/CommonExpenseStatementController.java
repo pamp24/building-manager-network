@@ -80,7 +80,7 @@ public class CommonExpenseStatementController {
         return ResponseEntity.ok(nextCode);
     }
     @GetMapping("/building/{buildingId}/statement")
-    public ResponseEntity<List<CommonExpenseStatementDTO>> getStatementsByBuilding(@PathVariable Long buildingId) {
+    public ResponseEntity<List<CommonExpenseStatementDTO>> getStatementsByBuilding(@PathVariable Integer buildingId) {
         List<CommonExpenseStatementDTO> statements =
                 service.getStatementsByBuilding(buildingId)
                         .stream()

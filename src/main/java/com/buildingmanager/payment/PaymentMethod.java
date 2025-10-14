@@ -1,4 +1,4 @@
-package com.buildingmanager.commonExpenseAllocation;
+package com.buildingmanager.payment;
 
 public enum PaymentMethod {
     CASH,          // Μετρητά
