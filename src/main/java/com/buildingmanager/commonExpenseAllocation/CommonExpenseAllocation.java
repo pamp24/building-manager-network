@@ -4,6 +4,8 @@ import com.buildingmanager.apartment.Apartment;
 import com.buildingmanager.common.BaseEntity;
 import com.buildingmanager.commonExpenseItem.CommonExpenseItem;
 import com.buildingmanager.commonExpenseStatement.CommonExpenseStatement;
+import com.buildingmanager.payment.PaymentMethod;
+import com.buildingmanager.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -35,6 +37,7 @@ public class CommonExpenseAllocation extends BaseEntity {
 
     // ποσό που χρεώθηκε
     private Double amount;
+    private Double paidAmount;
 
     // κατάσταση πληρωμής
     @Column(nullable = false)
@@ -50,6 +53,10 @@ public class CommonExpenseAllocation extends BaseEntity {
 
 
     private boolean active = true;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
 }
 

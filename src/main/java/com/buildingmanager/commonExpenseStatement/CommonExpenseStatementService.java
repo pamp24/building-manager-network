@@ -4,7 +4,7 @@ import com.buildingmanager.apartment.Apartment;
 import com.buildingmanager.apartment.ApartmentRepository;
 import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocation;
 import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocationRepository;
-import com.buildingmanager.commonExpenseAllocation.PaymentMethod;
+import com.buildingmanager.payment.PaymentMethod;
 import com.buildingmanager.commonExpenseItem.CommonExpenseItem;
 import com.buildingmanager.commonExpenseItem.ExpenseCategory;
 import jakarta.transaction.Transactional;
@@ -13,8 +13,11 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -47,7 +50,7 @@ public class CommonExpenseStatementService {
         int nextSeq = (maxSeq == null) ? 1 : maxSeq + 1;
         statement.setSequenceNumber(nextSeq);
 
-        // 4. Σύνδεση των items με το statement (reverse relation)
+        // 4. Σύνδεση των items με το statement
         statement.getItems().forEach(i -> i.setStatement(statement));
 
         // 5. Αποθήκευση statement και items
@@ -56,24 +59,22 @@ public class CommonExpenseStatementService {
         // 6. Φέρνουμε όλα τα διαμερίσματα της πολυκατοικίας
         List<Apartment> apartments = apartmentRepository.findAllByBuilding_Id(buildingId);
 
-        //7. Προσθέτουμε status
+        // 7. Προσθέτουμε status
         if (statement.getStatus() == null) {
             statement.setStatus(StatementStatus.ISSUED);
         }
 
-        // 8. Για κάθε item → μοιράζουμε το ποσό στα διαμερίσματα με βάση τα χιλιοστά
+        // 8. Δημιουργία allocations ανά item & apartment
         for (CommonExpenseItem item : saved.getItems()) {
             double itemTotal = (item.getPrice() == null ? 0.0 : item.getPrice());
 
             for (Apartment apt : apartments) {
-                double share = 0;
-
-                switch (item.getCategory()) {
-                    case COMMON -> share = (apt.getCommonPercent() / 1000.0) * itemTotal;
-                    case ELEVATOR -> share = (apt.getElevatorPercent() / 1000.0) * itemTotal;
-                    case HEATING -> share = (apt.getHeatingPercent() / 1000.0) * itemTotal;
-                    case EQUAL, OTHER, SPECIAL, OWNERS, BOILER -> share = itemTotal / apartments.size();
-                }
+                double share = switch (item.getCategory()) {
+                    case COMMON -> (apt.getCommonPercent() / 1000.0) * itemTotal;
+                    case ELEVATOR -> (apt.getElevatorPercent() / 1000.0) * itemTotal;
+                    case HEATING -> (apt.getHeatingPercent() / 1000.0) * itemTotal;
+                    case EQUAL, OTHER, SPECIAL, OWNERS, BOILER -> itemTotal / apartments.size();
+                };
 
                 CommonExpenseAllocation allocation = CommonExpenseAllocation.builder()
                         .statement(saved)
@@ -84,16 +85,35 @@ public class CommonExpenseStatementService {
                         .heatingPercent(apt.getHeatingPercent())
                         .amount(share)
                         .isPaid(false)
+                        .status("UNPAID")
                         .build();
 
+                //Λογική “ποιος πληρώνει”
+                if (apt.getResident() != null) {
+                    if (item.getCategory() == ExpenseCategory.OWNERS) {
+                        allocation.setUser(apt.getOwner()); // μόνο οι ιδιοκτήτες για OWNERS
+                    } else {
+                        allocation.setUser(apt.getResident()); // τα υπόλοιπα στον ένοικο
+                    }
+                } else {
+                    allocation.setUser(apt.getOwner()); // αν δεν υπάρχει ένοικος → όλα στον ιδιοκτήτη
+                }
+
                 commonExpenseAllocationRepository.save(allocation);
+
+                System.out.printf(
+                        "🧾 Created allocation | Apartment=%s | Category=%s | User=%s | Amount=%.2f%n",
+                        apt.getNumber(),
+                        item.getCategory(),
+                        allocation.getUser() != null ? allocation.getUser().getFullName() : "Χωρίς χρήστη",
+                        share
+                );
             }
         }
 
-
-        // 8. Επιστροφή του saved statement
         return saved;
     }
+
 
     @Transactional
     public CommonExpenseStatement saveDraft(CommonExpenseStatement statement) {
@@ -203,7 +223,7 @@ public class CommonExpenseStatementService {
         }
     }
 
-    public List<CommonExpenseStatement> getStatementsByBuilding(Long buildingId) {
+    public List<CommonExpenseStatement> getStatementsByBuilding(Integer buildingId) {
         return commonExpenseStatementRepository.findByBuildingId(buildingId);
     }
 
@@ -249,5 +269,35 @@ public class CommonExpenseStatementService {
         return CommonExpenseStatementMapper.toDTO(saved);
     }
 
+    public Map<String, Long> getStatementCounters(Integer buildingId) {
+        YearMonth currentMonth = YearMonth.now();
+
+        List<CommonExpenseStatement> statements = commonExpenseStatementRepository
+                .findByBuildingId(buildingId);
+
+        long issuedCount = statements.stream()
+                .filter(s -> YearMonth.from(s.getStartDate()).equals(currentMonth))
+                .count();
+
+        long paidCount = statements.stream()
+                .filter(CommonExpenseStatement::getIsPaid)
+                .count();
+
+        long pendingCount = statements.stream()
+                .filter(s -> !s.getIsPaid() && (s.getDueDate() == null || !s.getDueDate().isBefore(LocalDate.now().atStartOfDay())))
+                .count();
+
+        long overdueCount = statements.stream()
+                .filter(s -> !s.getIsPaid() && s.getDueDate() != null && s.getDueDate().isBefore(LocalDate.now().atStartOfDay()))
+                .count();
+
+        Map<String, Long> counters = new HashMap<>();
+        counters.put("issuedCount", issuedCount);
+        counters.put("paidCount", paidCount);
+        counters.put("pendingCount", pendingCount);
+        counters.put("overdueCount", overdueCount);
+
+        return counters;
+    }
 
 }
