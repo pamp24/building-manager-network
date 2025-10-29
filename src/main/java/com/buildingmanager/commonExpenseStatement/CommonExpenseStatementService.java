@@ -165,23 +165,17 @@ public class CommonExpenseStatementService {
         boolean hasAllocations = statement.getItems().stream()
                 .anyMatch(item -> item.getAllocations() != null && !item.getAllocations().isEmpty());
 
-        //Hard delete μόνο αν είναι DRAFT & δεν έχει allocations
-        if ("DRAFT".equals(statement.getStatus()) && !hasAllocations) {
+        if (statement.getStatus() == StatementStatus.DRAFT && !hasAllocations) {
             commonExpenseStatementRepository.delete(statement);
-            return;
+            System.out.println("Hard delete statement id=" + id);
+        } else {
+            // Hibernate θα κάνει soft delete μόνο του
+            commonExpenseStatementRepository.delete(statement);
+            System.out.println("Soft delete (SQLDelete) statement id=" + id);
         }
-
-        //Soft delete σε όλα τα υπόλοιπα
-        statement.setActive(false);
-        statement.getItems().forEach(item -> {
-            item.setActive(false);
-            if (item.getAllocations() != null) {
-                item.getAllocations().forEach(alloc -> alloc.setActive(false));
-            }
-        });
-
-        commonExpenseStatementRepository.save(statement);
     }
+
+
 
     public String generateNextCode(Integer buildingId) {
         // Βρίσκουμε το max sequence του συγκεκριμένου building

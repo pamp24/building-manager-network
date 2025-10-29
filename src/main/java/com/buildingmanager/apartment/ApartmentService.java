@@ -53,36 +53,6 @@ public class ApartmentService {
         return apartmentRepository.save(apartment).getId();
     }
 
-    public ApartmentResponse updateMyApartment(ApartmentRequest request, Authentication auth) {
-        User user = (User) auth.getPrincipal();
-
-        Apartment apartment = apartmentRepository.findById(request.id())
-                .orElseThrow(() -> new EntityNotFoundException("Apartment not found"));
-
-        // Έλεγχος αν είναι owner ή resident
-        if (!Objects.equals(apartment.getOwner().getId(), user.getId()) &&
-                (apartment.getResident() == null || !Objects.equals(apartment.getResident().getId(), user.getId()))) {
-            throw new SecurityException("Δεν έχεις δικαίωμα να ενημερώσεις αυτό το διαμέρισμα");
-        }
-        // ενημέρωση πεδίων
-        apartment.setOwnerFirstName(request.ownerFirstName());
-        apartment.setOwnerLastName(request.ownerLastName());
-        apartment.setNumber(request.number());
-        apartment.setSqMetersApart(request.sqMetersApart());
-        apartment.setFloor(request.floor());
-        apartment.setParkingSpace(request.parkingSpace());
-        apartment.setParkingSlot(request.parkingSlot());
-        apartment.setApStorageExist(request.apStorageExist());
-        apartment.setStorageSlot(request.storageSlot());
-        apartment.setIsManagerHouse(request.isManagerHouse());
-        apartment.setCommonPercent(request.commonPercent());
-        apartment.setElevatorPercent(request.elevatorPercent());
-        apartment.setHeatingPercent(request.heatingPercent());
-        apartment.setApDescription(request.apDescription());
-
-        return apartmentMapper.toApartmentResponse(apartmentRepository.save(apartment), user.getId());
-    }
-
 
 
     @Transactional

@@ -7,6 +7,8 @@ import com.buildingmanager.commonExpenseItem.CommonExpenseItem;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,15 +20,16 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
+@SQLDelete(sql = "UPDATE common_expense_statement SET active = false, status = 'CLOSED' WHERE id = ?")
 public class CommonExpenseStatement extends BaseEntity {
 
-    private String code; // μοναδικός κωδικός
-    private String type; // Νέο, Συμπληρωματικό
-    private String month; // π.χ. 2025-09
+    private String code;
+    private String type;
+    private String month;
 
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private LocalDateTime dueDate;    // ημερομηνία λήξης πληρωμής
+    private LocalDateTime dueDate;
 
     private Double discountPercent;
     private Double taxPercent;
@@ -51,6 +54,4 @@ public class CommonExpenseStatement extends BaseEntity {
     private List<CommonExpenseAllocation> allocations = new ArrayList<>();
 
     private boolean active = true;
-
-
 }

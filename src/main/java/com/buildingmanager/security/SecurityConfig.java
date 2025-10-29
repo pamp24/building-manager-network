@@ -58,7 +58,7 @@ public class SecurityConfig {
                         // Public endpoints
                         .requestMatchers(
                                 "/auth/**",
-                                "/api/invite/**",       // ✅ πρόσθεσε το invite
+                                "/api/invite/**",
                                 "/v2/api-docs",
                                 "/v3/api-docs",
                                 "/v3/api-docs/**",

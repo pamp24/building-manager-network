@@ -1,6 +1,7 @@
 package com.buildingmanager.commonExpenseStatement;
 
 import com.buildingmanager.building.Building;
+import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocationMapper;
 import com.buildingmanager.commonExpenseItem.CommonExpenseItem;
 import com.buildingmanager.commonExpenseItem.CommonExpenseItemDTO;
 import com.buildingmanager.commonExpenseItem.ExpenseCategory;
@@ -27,6 +28,12 @@ public class CommonExpenseStatementMapper {
                 .isPaid(entity.getIsPaid())
                 .buildingId(entity.getBuilding().getId())
                 .items(entity.getItems().stream().map(CommonExpenseStatementMapper::toItemDTO).collect(Collectors.toList()))
+                .active(entity.isActive())
+                .allocations(entity.getAllocations()
+                        .stream()
+                        .map(CommonExpenseAllocationMapper::toDTO)
+                        .collect(Collectors.toList()))
+
                 .build();
     }
 

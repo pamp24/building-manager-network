@@ -12,7 +12,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocation;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -29,6 +31,7 @@ public class PaymentService {
         System.out.println("[DEBUG] Received PaymentRequest: " + req);
         System.out.println("=== DEBUG PaymentRequest ===");
         System.out.println("userId: " + req.getUserId());
+        System.out.println("apartmentId: " + req.getApartmentId());
         System.out.println("statementId: " + req.getStatementId());
         System.out.println("amount: " + req.getAmount());
         System.out.println("============================");
@@ -62,13 +65,15 @@ public class PaymentService {
         if (user != null) {
             existingAllocations = commonExpenseAllocationRepository
                     .findByStatementIdAndUserId(req.getStatementId(), req.getUserId());
-        } else {
+        } else if (req.getApartmentId() != null) {
             existingAllocations = commonExpenseAllocationRepository
-                    .findByStatementIdAndUserNull(req.getStatementId());
+                    .findByStatementIdAndApartmentId(req.getStatementId(), req.getApartmentId());
+        } else {
+            throw new IllegalArgumentException("Either userId or apartmentId is required");
         }
 
         if (existingAllocations.isEmpty()) {
-            throw new IllegalArgumentException("No allocations found for this user/statement");
+            throw new IllegalArgumentException("No allocations found for this user/apartment/statement");
         }
 
         // === Έλεγχος πληρότητας / υπερπληρωμής ===
@@ -110,16 +115,15 @@ public class PaymentService {
             double currentPaid = allocation.getPaidAmount() != null ? allocation.getPaidAmount() : 0.0;
             double totalAmount = allocation.getAmount() != null ? allocation.getAmount() : 0.0;
 
-            // Υπολογίζουμε πόσο μένει να πληρωθεί για αυτό το allocation
             double remainingForThis = totalAmount - currentPaid;
             double add = Math.min(remainingToAllocate, remainingForThis);
 
-            // Προσθέτουμε το νέο ποσό στο ήδη πληρωμένο
+            // Προσθήκη πληρωμής
             allocation.setPaidAmount(currentPaid + add);
             allocation.setPaidDate(LocalDateTime.now());
             allocation.setPaymentMethod(method);
 
-            // ✅ Κάνουμε σωστό update status
+            // Καθορισμός status
             if (allocation.getPaidAmount() >= totalAmount - 0.01) {
                 allocation.setStatus("PAID");
                 allocation.setIsPaid(true);
@@ -149,18 +153,21 @@ public class PaymentService {
                 commonExpenseAllocationRepository.findAllByStatement_Id(req.getStatementId());
 
         boolean allPaid = allAllocations.stream().allMatch(a -> Boolean.TRUE.equals(a.getIsPaid()));
-        boolean somePaid = allAllocations.stream().anyMatch(a -> {
-            Double paid = a.getPaidAmount();
-            return paid != null && paid > 0 && !Boolean.TRUE.equals(a.getIsPaid());
-        });
+        boolean somePaid = allAllocations.stream().anyMatch(a ->
+                a.getPaidAmount() != null && a.getPaidAmount() > 0 && !Boolean.TRUE.equals(a.getIsPaid())
+        );
 
         if (allPaid) {
             statement.setStatus(StatementStatus.PAID);
-            System.out.println("✅ All allocations paid. Statement marked as PAID.");
-        } else {
-            // Αν υπάρχει οποιαδήποτε πληρωμή αλλά όχι πλήρης εξόφληση → παραμένει ISSUED
+            System.out.println("All allocations paid. Statement marked as PAID.");
+            statement.setIsPaid(true);
+        } else if (somePaid) {
             statement.setStatus(StatementStatus.ISSUED);
-            System.out.println("⚠️ Statement still ISSUED (partial payments detected).");
+            System.out.println("Statement still ISSUED (partial payments detected).");
+            statement.setIsPaid(false);
+        } else {
+            statement.setStatus(StatementStatus.ISSUED);
+            statement.setIsPaid(false);
         }
 
         commonExpenseStatementRepository.save(statement);
@@ -179,6 +186,7 @@ public class PaymentService {
     }
 
 
+
     public List<PaymentDTO> getPaymentsForStatement(Integer statementId, int size) {
         return paymentRepository.findPaymentsByStatementId(statementId, PageRequest.of(0, size));
     }
@@ -192,6 +200,15 @@ public class PaymentService {
     }
     public CommonStatementSummaryDTO getBuildingSummary(Integer buildingId) {
         return paymentRepository.findBuildingSummary(buildingId);
+    }
+
+
+    public List<StatementUserPaymentDTO> getCurrentMonthPayments(Integer buildingId) {
+        LocalDate now = LocalDate.now();
+        LocalDateTime startOfMonth = now.withDayOfMonth(1).atStartOfDay();
+        LocalDateTime endOfMonth = now.withDayOfMonth(now.lengthOfMonth()).atTime(LocalTime.MAX);
+
+        return paymentRepository.findUserPaymentsByBuildingAndCurrentMonth(buildingId, startOfMonth, endOfMonth);
     }
 
 }

@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 
 @Service
@@ -172,12 +173,14 @@ public class BuildingService {
     public List<BuildingResponse> getMyBuildings(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
 
-        // Βρες όλα τα διαμερίσματα που ανήκουν στον χρήστη
-        List<Apartment> apartments = apartmentRepository.findByOwnerOrResident(user, user);
+        var fromManager = buildingRepository.findByManagerId(user.getId());
 
-        // Από τα διαμερίσματα μάζεψε τις πολυκατοικίες (unique)
-        return apartments.stream()
+        var fromApartments = apartmentRepository.findByOwnerOrResident(user, user)
+                .stream()
                 .map(Apartment::getBuilding)
+                .toList();
+
+        return Stream.concat(fromApartments.stream(), fromManager.stream())
                 .distinct()
                 .map(buildingMapper::toBuildingResponse)
                 .toList();

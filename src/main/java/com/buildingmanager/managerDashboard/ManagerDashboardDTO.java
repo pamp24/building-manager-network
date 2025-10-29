@@ -13,15 +13,17 @@ import java.util.List;
 @AllArgsConstructor
 public class ManagerDashboardDTO {
 
-    private long totalIssued;        // Πόσα statements εκδόθηκαν (τρέχον μήνα)
-    private long totalPaid;          // Πόσα έχουν εξοφληθεί (τρέχον μήνα)
-    private long totalPending;       // Πόσα είναι σε αναμονή (τρέχον μήνα)
-    private long totalOverdue;       // Πόσα είναι ληξιπρόθεσμα (γενικά)
-    private double totalIncome;      // Πόσα έχει εισπράξει συνολικά
-    private double totalDebt;        // Πόσα του χρωστάνε συνολικά
+    private long totalIssued;      // Εκδοθέντα
+    private long totalPaid;        // Πληρωμένα
+    private long totalPending;     // Εκκρεμή
+    private long totalExpired;     // Ληξιπρόθεσμα
+    private double totalIncome;    // Σύνολο Εισπράξεων
+    private double totalDebt;      // Οφειλές
+    private long totalCancelled;   // Ακυρωμένα
+    private long totalDraft;       // Πρόχειρα
 
-    private String buildingName;     // Προαιρετικά, για ποιο κτίριο είναι το dashboard
-    private Integer buildingId;      // Id του κτιρίου
+    private String buildingName;
+    private Integer buildingId;
 
     private List<MonthlyStatsDTO> monthlyStats;
 }

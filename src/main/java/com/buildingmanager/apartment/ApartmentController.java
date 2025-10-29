@@ -65,8 +65,9 @@ public class ApartmentController {
         List<Apartment> apartments = apartmentService.findByUser(user.getId());
 
         if (apartments.isEmpty()) {
-            log.error("Apartments not found for user id: " + user.getId());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
+            log.info("No apartments found for user id: {}", user.getId());
+            // Επιστρέφουμε απλά κενή λίστα (όχι σφάλμα)
+            return ResponseEntity.ok(Collections.emptyList());
         }
 
         List<ApartmentResponse> response = apartments.stream()
