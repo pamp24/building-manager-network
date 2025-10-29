@@ -46,4 +46,11 @@ public class PaymentController {
     public ResponseEntity<CommonStatementSummaryDTO> getBuildingSummary(@PathVariable Integer buildingId) {
         return ResponseEntity.ok(paymentService.getBuildingSummary(buildingId));
     }
+
+    @GetMapping("/building/{buildingId}/current-month")
+    public ResponseEntity<List<StatementUserPaymentDTO>> getBuildingCurrentMonthPayments(
+            @PathVariable Integer buildingId
+    ) {
+        return ResponseEntity.ok(paymentService.getCurrentMonthPayments(buildingId));
+    }
 }

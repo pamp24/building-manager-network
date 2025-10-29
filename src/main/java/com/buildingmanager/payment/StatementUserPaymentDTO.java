@@ -11,7 +11,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class StatementUserPaymentDTO {
     private Integer userId;
-    private String userFullName;
+    private String userFirstName;
+    private String userLastName;
     private Integer apartmentId;
     private String apartmentNumber;
     private String apartmentFloor;

@@ -18,7 +18,7 @@ import java.util.List;
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
 @EnableAsync
 @EnableJpaRepositories(basePackages = "com.buildingmanager")
-public class BuildingManagerNetworkApiApplication extends SpringBootServletInitializer {
+public class 	BuildingManagerNetworkApiApplication extends SpringBootServletInitializer {
 	public static void main(String[] args) {
 
 		SpringApplication.run(BuildingManagerNetworkApiApplication.class, args);

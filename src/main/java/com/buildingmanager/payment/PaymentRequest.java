@@ -11,6 +11,7 @@ public class PaymentRequest {
     @NotNull
     private Integer statementId;
     private Integer userId;
+    private Integer apartmentId;
     @NotNull
     private Double amount;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")

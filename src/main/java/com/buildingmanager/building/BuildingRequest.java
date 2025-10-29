@@ -28,9 +28,9 @@ public record BuildingRequest(
         String floors,
         @NotNull(message = "109")
         Integer apartmentsNum,
-        @NotBlank(message = "110")
+
         double sqMetersTotal,
-        @NotBlank(message = "111")
+
         double sqMetersCommonSpaces,
         @NotNull(message = "112")
         Boolean parkingExist,
@@ -41,7 +41,7 @@ public record BuildingRequest(
         @NotNull(message = "115")
         Boolean enable,
         String buildingDescription,
-        String managerId,
+        Integer managerId,
         @NotNull
         boolean hasCentralHeating,
         String heatingType,

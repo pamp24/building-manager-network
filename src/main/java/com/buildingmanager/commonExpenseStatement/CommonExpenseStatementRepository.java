@@ -1,29 +1,27 @@
 package com.buildingmanager.commonExpenseStatement;
 
-import com.buildingmanager.building.Building;
-import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 public interface CommonExpenseStatementRepository extends JpaRepository<CommonExpenseStatement, Integer> {
 
     @Query("SELECT MAX(s.sequenceNumber) FROM CommonExpenseStatement s WHERE s.building.id = :buildingId")
     Integer findMaxSequenceByBuilding(@Param("buildingId") Integer buildingId);
 
-    Optional<CommonExpenseStatement> findTopByBuildingOrderByIdDesc(Building building);
-
     List<CommonExpenseStatement> findByBuildingId(Integer buildingId);
 
     @Query("SELECT s FROM CommonExpenseStatement s WHERE s.active = true")
     List<CommonExpenseStatement> getAllActive();
 
+    @Query("SELECT s FROM CommonExpenseStatement s WHERE s.building.id = :buildingId")
+    List<CommonExpenseStatement> findAllByBuildingIdIncludingInactive(@Param("buildingId") Integer buildingId);
 
-    // --- DASHBOARD QUERIES ---
+
+    // ==================== DASHBOARD QUERIES ====================
 
     @Query("""
     SELECT COUNT(s)
@@ -32,7 +30,45 @@ public interface CommonExpenseStatementRepository extends JpaRepository<CommonEx
       AND EXTRACT(MONTH FROM s.startDate) = :month
       AND EXTRACT(YEAR FROM s.startDate) = :year
 """)
-    long countByBuildingAndMonthAndYear(
+    long countAllByBuildingMonthYear(@Param("buildingId") Integer buildingId,
+                                     @Param("month") int month,
+                                     @Param("year") int year);
+
+    @Query("""
+    SELECT COUNT(s)
+    FROM CommonExpenseStatement s
+    WHERE s.building.id = :buildingId
+      AND s.status = :status
+      AND EXTRACT(MONTH FROM s.startDate) = :month
+      AND EXTRACT(YEAR FROM s.startDate) = :year
+""")
+    long countByBuildingMonthYearAndStatus(@Param("buildingId") Integer buildingId,
+                                           @Param("month") int month,
+                                           @Param("year") int year,
+                                           @Param("status") StatementStatus status);
+
+    @Query("""
+    SELECT COUNT(s)
+    FROM CommonExpenseStatement s
+    WHERE s.building.id = :buildingId
+""")
+    long countAllByBuilding(@Param("buildingId") Integer buildingId);
+    @Query("""
+    SELECT COUNT(s)
+    FROM CommonExpenseStatement s
+    WHERE s.building.id = :buildingId
+      AND s.status = :status
+""")
+    long countByBuildingAndStatus(@Param("buildingId") Integer buildingId,
+                                  @Param("status") StatementStatus status);
+    @Query("""
+    SELECT COUNT(s)
+    FROM CommonExpenseStatement s
+    WHERE s.building.id = :buildingId
+      AND EXTRACT(MONTH FROM s.startDate) = :month
+      AND EXTRACT(YEAR FROM s.startDate) = :year
+""")
+    long countByBuildingAndCreatedMonthYear(
             @Param("buildingId") Integer buildingId,
             @Param("month") int month,
             @Param("year") int year
@@ -42,13 +78,24 @@ public interface CommonExpenseStatementRepository extends JpaRepository<CommonEx
     SELECT COUNT(s)
     FROM CommonExpenseStatement s
     WHERE s.building.id = :buildingId
-      AND s.isPaid = TRUE
+      AND s.status IN ('ISSUED', 'PAID', 'EXPIRED')
       AND EXTRACT(MONTH FROM s.startDate) = :month
       AND EXTRACT(YEAR FROM s.startDate) = :year
 """)
-    long countPaidByBuildingAndMonthAndYear(
+    long countIssuedExcludingDraftsAndCancelled(
             @Param("buildingId") Integer buildingId,
             @Param("month") int month,
+            @Param("year") int year
+    );
+    @Query("""
+    SELECT COUNT(s)
+    FROM CommonExpenseStatement s
+    WHERE s.building.id = :buildingId
+      AND s.status IN ('ISSUED', 'PAID', 'EXPIRED')
+      AND EXTRACT(YEAR FROM s.startDate) = :year
+""")
+    long countIssuedExcludingDraftsAndCancelledForYear(
+            @Param("buildingId") Integer buildingId,
             @Param("year") int year
     );
 
@@ -56,15 +103,16 @@ public interface CommonExpenseStatementRepository extends JpaRepository<CommonEx
     SELECT COUNT(s)
     FROM CommonExpenseStatement s
     WHERE s.building.id = :buildingId
-      AND s.isPaid = FALSE
       AND EXTRACT(MONTH FROM s.startDate) = :month
       AND EXTRACT(YEAR FROM s.startDate) = :year
 """)
-    long countUnpaidByBuildingAndMonthAndYear(
+    long countAllIssuedInMonth(
             @Param("buildingId") Integer buildingId,
             @Param("month") int month,
             @Param("year") int year
     );
+
+    // --- Ληξιπρόθεσμα (unpaid & endDate < now)
     @Query("""
            SELECT COUNT(s)
            FROM CommonExpenseStatement s
@@ -74,7 +122,7 @@ public interface CommonExpenseStatementRepository extends JpaRepository<CommonEx
            """)
     long countOverdueByBuilding(@Param("buildingId") Integer buildingId, @Param("now") LocalDateTime now);
 
-    // --- SUMS ---
+    // --- Άθροισμα ποσών (εισπραχθέντα)
     @Query("""
            SELECT SUM(a.paidAmount)
            FROM CommonExpenseAllocation a
@@ -83,6 +131,7 @@ public interface CommonExpenseStatementRepository extends JpaRepository<CommonEx
            """)
     Double sumPaidAmountByBuilding(@Param("buildingId") Integer buildingId);
 
+    // --- Άθροισμα ποσών (ανεξόφλητα)
     @Query("""
            SELECT SUM(a.amount - COALESCE(a.paidAmount,0))
            FROM CommonExpenseAllocation a

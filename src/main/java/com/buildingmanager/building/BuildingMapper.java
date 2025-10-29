@@ -15,7 +15,7 @@ public class BuildingMapper {
     public Building toBuilding(BuildingRequest request) {
         User manager = null;
         if (request.managerId() != null) {
-            manager = userRepository.findById(Integer.valueOf(request.managerId()))
+            manager = userRepository.findById(request.managerId())
                     .orElseThrow(() -> new IllegalArgumentException("Δεν βρέθηκε χρήστης με ID: " + request.managerId()));
         }
 

@@ -39,4 +39,6 @@ public class CommonExpenseStatementDTO {
     private List<CommonExpenseItemDTO> items;
     private List<CommonExpenseAllocationDTO> allocations;
 
+    private boolean active;
+
 }

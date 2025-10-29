@@ -1,12 +1,12 @@
 package com.buildingmanager.managerDashboard;
 
-import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocationRepository;
 import com.buildingmanager.commonExpenseStatement.CommonExpenseStatementRepository;
+import com.buildingmanager.commonExpenseStatement.StatementStatus;
+import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,62 +18,58 @@ public class ManagerDashboardService {
     private final CommonExpenseAllocationRepository commonExpenseAllocationRepository;
 
     public ManagerDashboardDTO getDashboardForBuilding(Integer buildingId) {
-        LocalDateTime now = LocalDateTime.now();
-        int currentMonth = now.getMonthValue();
-        int currentYear = now.getYear();
+        int currentYear = LocalDate.now().getYear();
 
+        // ✅ Μετράμε ΟΛΑ τα εκδοθέντα του έτους (όχι μόνο ενός μήνα)
         long totalIssued = commonExpenseStatementRepository
-                .countByBuildingAndMonthAndYear(buildingId, currentMonth, currentYear);
+                .countIssuedExcludingDraftsAndCancelledForYear(buildingId, currentYear);
 
-        long totalPaid = commonExpenseStatementRepository
-                .countByBuildingAndMonthAndYear(
-                        buildingId, currentMonth, currentYear);
+        long totalPaid = commonExpenseStatementRepository.countByBuildingAndStatus(buildingId, StatementStatus.PAID);
+        long totalExpired = commonExpenseStatementRepository.countByBuildingAndStatus(buildingId, StatementStatus.EXPIRED);
+        long totalDraft = commonExpenseStatementRepository.countByBuildingAndStatus(buildingId, StatementStatus.DRAFT);
+        long totalCancelled = commonExpenseStatementRepository.countByBuildingAndStatus(buildingId, StatementStatus.CLOSED);
 
-        long totalPending = commonExpenseStatementRepository
-                .countUnpaidByBuildingAndMonthAndYear(
-                        buildingId, currentMonth, currentYear);
-
-        long totalOverdue = commonExpenseStatementRepository
-                .countOverdueByBuilding(buildingId, now);
+        // ✅ Εκκρεμή = Εκδοθέντα - (Πληρωμένα + Ληγμένα)
+        long totalPending = totalIssued - (totalPaid + totalExpired);
+        if (totalPending < 0) totalPending = 0;
 
         Double totalIncome = commonExpenseStatementRepository.sumPaidAmountByBuilding(buildingId);
         Double totalDebt = commonExpenseStatementRepository.sumUnpaidAmountByBuilding(buildingId);
 
-        // ΝΕΟ — Chart data (Issued vs Paid per month)
         List<MonthlyStatsDTO> monthlyStats = getIssuedVsPaidPerMonth(buildingId);
-
-//        System.out.println("Checking buildingId=" + buildingId + ", month=" + currentMonth + ", year=" + currentYear);
-//        System.out.println("Total issued query result = " + totalIssued);
 
         return ManagerDashboardDTO.builder()
                 .buildingId(buildingId)
                 .totalIssued(totalIssued)
                 .totalPaid(totalPaid)
                 .totalPending(totalPending)
-                .totalOverdue(totalOverdue)
+                .totalExpired(totalExpired)
+                .totalCancelled(totalCancelled)
+                .totalDraft(totalDraft)
                 .totalIncome(totalIncome != null ? totalIncome : 0.0)
                 .totalDebt(totalDebt != null ? totalDebt : 0.0)
                 .monthlyStats(monthlyStats)
                 .build();
     }
 
-
     public List<MonthlyStatsDTO> getIssuedVsPaidPerMonth(Integer buildingId) {
-        int currentYear = LocalDate.now().getYear(); // Χρησιμοποίησε το σωστό έτος
+        int currentYear = LocalDate.now().getYear();
         List<MonthlyStatsDTO> stats = new ArrayList<>();
 
         for (int month = 1; month <= 12; month++) {
-            long issued = commonExpenseStatementRepository
-                    .countByBuildingAndMonthAndYear(buildingId, month, currentYear);
-            long paid = commonExpenseStatementRepository
-                    .countPaidByBuildingAndMonthAndYear(buildingId, month, currentYear);
+            long issued = commonExpenseStatementRepository.countIssuedExcludingDraftsAndCancelled(buildingId, month, currentYear);
+            long paid = commonExpenseStatementRepository.countByBuildingMonthYearAndStatus(buildingId, month, currentYear, StatementStatus.PAID);
+            long expired = commonExpenseStatementRepository.countByBuildingMonthYearAndStatus(buildingId, month, currentYear, StatementStatus.EXPIRED);
 
-            stats.add(new MonthlyStatsDTO(getMonthName(month), issued, paid));
+            // ✅ Εκκρεμή = Εκδοθέντα - (Πληρωμένα + Ληγμένα)
+            long pending = issued - (paid + expired);
+            if (pending < 0) pending = 0;
+
+            stats.add(new MonthlyStatsDTO(getMonthName(month), issued, pending, paid, expired));
         }
 
         return stats;
     }
-
 
     private String getMonthName(int month) {
         return switch (month) {
@@ -93,4 +89,3 @@ public class ManagerDashboardService {
         };
     }
 }
-

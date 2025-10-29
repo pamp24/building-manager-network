@@ -10,14 +10,40 @@ import java.util.List;
 
 public interface CommonExpenseAllocationRepository extends JpaRepository<CommonExpenseAllocation, Integer> {
 
+    List<CommonExpenseAllocation> findByStatementIdAndApartmentId(Integer statementId, Integer apartmentId);
+
+    // --- Για έναν μήνα ---
     @Query("""
-    SELECT alloc
-    FROM CommonExpenseAllocation alloc
-    WHERE alloc.statement.id = :statementId
-      AND (
-          alloc.apartment.owner.id = :userId
-          OR alloc.apartment.resident.id = :userId
-      )
+    SELECT COUNT(s)
+    FROM CommonExpenseStatement s
+    WHERE s.building.id = :buildingId
+      AND s.status IN ('ISSUED', 'PAID', 'EXPIRED')
+      AND EXTRACT(MONTH FROM s.startDate) = :month
+      AND EXTRACT(YEAR FROM s.startDate) = :year
+""")
+    long countIssuedExcludingDraftsAndCancelled(
+            @Param("buildingId") Integer buildingId,
+            @Param("month") int month,
+            @Param("year") int year
+    );
+
+    // --- Για ολόκληρο το έτος ---
+    @Query("""
+    SELECT COUNT(s)
+    FROM CommonExpenseStatement s
+    WHERE s.building.id = :buildingId
+      AND s.status IN ('ISSUED', 'PAID', 'EXPIRED')
+      AND EXTRACT(YEAR FROM s.startDate) = :year
+""")
+    long countIssuedExcludingDraftsAndCancelledForYear(
+            @Param("buildingId") Integer buildingId,
+            @Param("year") int year
+    );
+    @Query("""
+    SELECT a
+    FROM CommonExpenseAllocation a
+    WHERE a.statement.id = :statementId
+      AND a.user.id = :userId
 """)
     List<CommonExpenseAllocation> findByStatementIdAndUserId(
             @Param("statementId") Integer statementId,
