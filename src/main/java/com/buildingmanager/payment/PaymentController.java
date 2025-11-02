@@ -53,4 +53,11 @@ public class PaymentController {
     ) {
         return ResponseEntity.ok(paymentService.getCurrentMonthPayments(buildingId));
     }
+    @GetMapping("/building/{buildingId}/month/{month}")
+    public ResponseEntity<List<StatementUserPaymentDTO>> getPaymentsByMonth(
+            @PathVariable Integer buildingId,
+            @PathVariable String month) {
+        return ResponseEntity.ok(paymentService.getPaymentsByBuildingAndMonth(buildingId, month));
+    }
+
 }

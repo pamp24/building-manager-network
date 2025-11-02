@@ -157,6 +157,36 @@ public class CommonExpenseStatementService {
                 .orElseThrow(() -> new RuntimeException("Δεν βρέθηκε κατάσταση με id " + id));
     }
 
+    public List<CommonExpenseStatement> getStatementsByBuilding(Integer buildingId) {
+        List<CommonExpenseStatement> statements = commonExpenseStatementRepository.findByBuildingId(buildingId);
+        LocalDateTime now = LocalDateTime.now();
+
+        statements.forEach(s -> {
+            Boolean isPaid = s.getIsPaid() != null ? s.getIsPaid() : false;
+
+            // 👉 Αν δεν έχει πληρωθεί και έχει λήξει → γίνεται EXPIRED
+            if (!isPaid && s.getDueDate() != null
+                    && s.getDueDate().isBefore(now)
+                    && s.getStatus() == StatementStatus.ISSUED) {
+                s.setStatus(StatementStatus.EXPIRED);
+                commonExpenseStatementRepository.save(s);
+            }
+
+            // 👉 Αν έχει πληρωθεί → γίνεται PAID
+            else if (Boolean.TRUE.equals(isPaid)
+                    && s.getStatus() != StatementStatus.PAID) {
+                s.setStatus(StatementStatus.PAID);
+                commonExpenseStatementRepository.save(s);
+            }
+        });
+
+        return statements;
+    }
+
+
+
+
+
     @Transactional
     public void delete(Integer id) {
         CommonExpenseStatement statement = commonExpenseStatementRepository.findById(id)
@@ -215,10 +245,6 @@ public class CommonExpenseStatementService {
             statement.setIsPaid(true);
             commonExpenseStatementRepository.save(statement);
         }
-    }
-
-    public List<CommonExpenseStatement> getStatementsByBuilding(Integer buildingId) {
-        return commonExpenseStatementRepository.findByBuildingId(buildingId);
     }
 
     public CommonExpenseStatementDTO updateStatement(Integer id, CommonExpenseStatementDTO dto) {
