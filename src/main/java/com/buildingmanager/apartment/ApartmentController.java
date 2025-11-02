@@ -94,12 +94,13 @@ public class ApartmentController {
     public ResponseEntity<List<ApartmentResponse>> getApartmentsByBuilding(
             @PathVariable Integer buildingId
     ) {
-        List<Apartment> apartments = apartmentRepository.findAllByBuilding_Id(buildingId);
+        List<Apartment> apartments = apartmentRepository.findAllByBuilding_IdOrderByFloorAscNumberAsc(buildingId);
         List<ApartmentResponse> response = apartments.stream()
                 .map(apartment -> apartmentMapper.toApartmentResponse(apartment, null))
                 .toList();
         return ResponseEntity.ok(response);
     }
+
 
     @GetMapping("/{buildingId}/available")
     public ResponseEntity<List<ApartmentResponse>> getAvailableApartments(

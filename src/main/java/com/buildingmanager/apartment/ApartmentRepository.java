@@ -19,8 +19,12 @@ public interface ApartmentRepository extends JpaRepository<Apartment, Integer> {
     SELECT apartment
     FROM Apartment apartment
     WHERE apartment.building.id = :buildingId
+    ORDER BY apartment.floor ASC, apartment.number ASC
     """)
-    Page<Apartment> findAllByBuildingId(Integer buildingId, Pageable pageable);
+    Page<Apartment> findAllByBuildingId(@Param("buildingId") Integer buildingId, Pageable pageable);
+
+    List<Apartment> findAllByBuilding_IdOrderByFloorAscNumberAsc(Integer buildingId);
+
 
     // Βρίσκει διαμέρισμα με βάση τον ένοικο
     List<Apartment> findByResident_Id(Integer residentId);

@@ -26,4 +26,6 @@ public class ManagerDashboardDTO {
     private Integer buildingId;
 
     private List<MonthlyStatsDTO> monthlyStats;
+    private List<MonthlyAmountStatsDTO> monthlyAmountStats;
+
 }

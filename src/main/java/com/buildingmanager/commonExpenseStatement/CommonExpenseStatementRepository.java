@@ -117,7 +117,7 @@ public interface CommonExpenseStatementRepository extends JpaRepository<CommonEx
            SELECT COUNT(s)
            FROM CommonExpenseStatement s
            WHERE s.building.id = :buildingId
-             AND s.isPaid = FALSE
+             AND s.isPaid = FALSE   
              AND s.endDate < :now
            """)
     long countOverdueByBuilding(@Param("buildingId") Integer buildingId, @Param("now") LocalDateTime now);
@@ -139,4 +139,35 @@ public interface CommonExpenseStatementRepository extends JpaRepository<CommonEx
              AND a.isPaid = FALSE
            """)
     Double sumUnpaidAmountByBuilding(@Param("buildingId") Integer buildingId);
+
+    @Query("""
+SELECT SUM(s.total)
+FROM CommonExpenseStatement s
+WHERE s.building.id = :buildingId
+  AND EXTRACT(MONTH FROM s.startDate) = :month
+  AND EXTRACT(YEAR FROM s.startDate) = :year
+  AND s.status IN :statuses
+""")
+    Double sumByBuildingMonthYearAndStatuses(
+            @Param("buildingId") Integer buildingId,
+            @Param("month") int month,
+            @Param("year") int year,
+            @Param("statuses") List<StatementStatus> statuses);
+
+
+    @Query("""
+    SELECT SUM(s.total)
+    FROM CommonExpenseStatement s
+    WHERE s.building.id = :buildingId
+      AND EXTRACT(MONTH FROM s.startDate) = :month
+      AND EXTRACT(YEAR FROM s.startDate) = :year
+      AND s.status = :status
+""")
+    Double sumByBuildingMonthYearAndStatus(@Param("buildingId") Integer buildingId,
+                                           @Param("month") int month,
+                                           @Param("year") int year,
+                                           @Param("status") String status);
+
+
+
 }

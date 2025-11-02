@@ -1,5 +1,6 @@
 package com.buildingmanager.payment;
 
+import com.buildingmanager.apartment.Apartment;
 import com.buildingmanager.common.BaseEntity;
 import com.buildingmanager.commonExpenseStatement.CommonExpenseStatement;
 import com.buildingmanager.user.User;
@@ -35,4 +36,8 @@ public class Payment extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "apartment_id")
+    private Apartment apartment;
 }

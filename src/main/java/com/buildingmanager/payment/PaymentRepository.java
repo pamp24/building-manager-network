@@ -8,8 +8,26 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface PaymentRepository extends JpaRepository<Payment, Integer> {
+
+    Optional<Payment> findTopByApartment_IdAndStatement_IdOrderByPaymentDateDesc(Integer apartmentId, Integer statementId);
+
+
+    Payment findTopByUser_IdAndStatement_IdOrderByPaymentDateDesc(Integer userId, Integer statementId);
+    Payment findTopByStatement_IdAndStatement_Building_IdOrderByPaymentDateDesc(Integer statementId, Integer buildingId);
+
+    @Query("""
+    SELECT p
+    FROM Payment p
+    JOIN p.statement s
+    WHERE s.building.id = :buildingId
+      AND s.startDate BETWEEN :startOfMonth AND :endOfMonth
+""")
+    List<Payment> findByBuildingIdAndMonth(@Param("buildingId") Long buildingId,
+                                           @Param("startOfMonth") LocalDateTime startOfMonth,
+                                           @Param("endOfMonth") LocalDateTime endOfMonth);
 
     @Query("""
     SELECT new com.buildingmanager.payment.PaymentDTO(
@@ -52,21 +70,25 @@ SELECT new com.buildingmanager.payment.StatementUserPaymentDTO(
     COALESCE(u.lastName, a.ownerLastName, 'Χωρίς χρήστη'),
     a.id,
     a.number,
-    a.floor,
+    CAST(a.floor AS string),
     SUM(COALESCE(alloc.amount, 0)),
     SUM(COALESCE(alloc.paidAmount, 0)),
     MAX(alloc.paidDate),
-    COALESCE(alloc.paymentMethod, com.buildingmanager.payment.PaymentMethod.CASH),
-    COALESCE(alloc.status, 'PENDING')
+    MAX(alloc.paymentMethod),
+    CASE
+        WHEN SUM(COALESCE(alloc.paidAmount, 0)) >= SUM(COALESCE(alloc.amount, 0)) THEN 'PAID'
+        WHEN SUM(COALESCE(alloc.paidAmount, 0)) > 0 THEN 'PARTIALLY_PAID'
+        ELSE 'UNPAID'
+    END
 )
 FROM CommonExpenseAllocation alloc
 LEFT JOIN alloc.apartment a
 LEFT JOIN alloc.user u
 WHERE alloc.statement.id = :statementId
-GROUP BY u.id, u.firstName, u.lastName, a.ownerFirstName, a.ownerLastName, a.id, a.number, a.floor, alloc.paymentMethod, alloc.status
+GROUP BY u.id, u.firstName, u.lastName, a.ownerFirstName, a.ownerLastName, a.id, a.number, a.floor
 ORDER BY a.floor ASC, a.number ASC
 """)
-    List<StatementUserPaymentDTO> findUserPaymentsByStatement(@Param    ("statementId") Integer statementId);
+    List<StatementUserPaymentDTO> findUserPaymentsByStatement(@Param("statementId") Integer statementId);
 
 
 
