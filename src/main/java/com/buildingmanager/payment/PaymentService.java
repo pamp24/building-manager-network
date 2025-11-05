@@ -272,4 +272,8 @@ public class PaymentService {
                 "PAID"
         );
     }
+
+    public List<StatementUserPaymentDTO> getUserPaymentsForLastStatement(Integer buildingId) {
+        return paymentRepository.findUserPaymentsByLastStatement(buildingId);
+    }
 }

@@ -46,22 +46,45 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
     List<PaymentDTO> findPaymentsByStatementId(@Param("statementId") Integer statementId, Pageable pageable);
 
     @Query("""
-        SELECT new com.buildingmanager.payment.PaymentDTO(
-            p.id,
-            CONCAT(p.user.firstName, ' ', p.user.lastName),
-            p.amount,
-            p.paymentDate,
-            p.paymentMethod,
-            p.referenceNumber,
-            p.user.id,
-            p.statement.id
-        )
-        
-        FROM Payment p
-        WHERE p.statement.building.id = :buildingId
-        ORDER BY p.paymentDate DESC
-    """)
+SELECT new com.buildingmanager.payment.PaymentDTO(
+    p.id,
+    COALESCE(
+        CASE WHEN u.id IS NOT NULL THEN CONCAT(u.firstName, ' ', u.lastName) END,
+        CASE
+            WHEN a.id IS NOT NULL AND a.isRented = TRUE THEN CONCAT(a.residentFirstName, ' ', a.residentLastName)
+            WHEN a.id IS NOT NULL THEN CONCAT(a.ownerFirstName, ' ', a.ownerLastName)
+            ELSE CONCAT('Διαμέρισμα ', COALESCE(a.number, '—'))
+        END,
+        '—'
+    ),
+    p.amount,
+    p.paymentDate,
+    p.paymentMethod,
+    p.referenceNumber,
+    u.id,
+    s.id
+)
+FROM Payment p
+LEFT JOIN p.user u
+LEFT JOIN p.apartment a
+LEFT JOIN p.statement s
+LEFT JOIN a.building ab
+LEFT JOIN s.building sb
+WHERE (ab.id = :buildingId OR sb.id = :buildingId)
+ORDER BY p.paymentDate DESC
+""")
     List<PaymentDTO> findRecentByBuilding(@Param("buildingId") Integer buildingId, Pageable pageable);
+
+
+
+
+
+
+
+
+
+
+
 
     @Query("""
 SELECT new com.buildingmanager.payment.StatementUserPaymentDTO(
@@ -110,34 +133,39 @@ ORDER BY a.floor ASC, a.number ASC
     CommonStatementSummaryDTO findBuildingSummary(@Param("buildingId") Integer buildingId);
 
     @Query("""
-    SELECT new com.buildingmanager.payment.StatementUserPaymentDTO(
-        u.id,
-        CONCAT(u.firstName, ' ', u.lastName),
-        a.id,
-        a.number,
-        CAST(a.floor AS string),
-        SUM(COALESCE(cea.amount, 0)),
-        SUM(COALESCE(cea.paidAmount, 0)),
-        MAX(cea.paidDate),
-        MAX(cea.paymentMethod),
-        CASE
-            WHEN SUM(COALESCE(cea.paidAmount, 0)) >= SUM(COALESCE(cea.amount, 0)) THEN 'PAID'
-            WHEN SUM(COALESCE(cea.paidAmount, 0)) > 0 THEN 'PARTIALLY_PAID'
-            ELSE 'PENDING'
-        END
-    )
-    FROM CommonExpenseStatement s
-    JOIN CommonExpenseAllocation cea ON cea.statement.id = s.id
-    JOIN cea.apartment a
-    LEFT JOIN cea.user u
-    LEFT JOIN Payment p ON p.statement.id = s.id AND p.user.id = u.id
-    WHERE s.id = (
-        SELECT MAX(s2.id) FROM CommonExpenseStatement s2 WHERE s2.building.id = :buildingId
-    )
-    GROUP BY u.id, u.firstName, u.lastName, a.id, a.number, a.floor
-    ORDER BY a.floor, a.number
+SELECT new com.buildingmanager.payment.StatementUserPaymentDTO(
+    u.id,
+    COALESCE(u.firstName, a.ownerFirstName, '—'),
+    COALESCE(u.lastName, a.ownerLastName, 'Χωρίς χρήστη'),
+    a.id,
+    a.number,
+    CAST(a.floor AS string),
+    SUM(COALESCE(cea.amount, 0)),
+    SUM(COALESCE(cea.paidAmount, 0)),
+    MAX(cea.paidDate),
+    MAX(cea.paymentMethod),
+    CASE
+        WHEN SUM(COALESCE(cea.paidAmount, 0)) >= SUM(COALESCE(cea.amount, 0)) THEN 'PAID'
+        WHEN SUM(COALESCE(cea.paidAmount, 0)) > 0 THEN 'PARTIALLY_PAID'
+        ELSE 'PENDING'
+    END
+)
+FROM CommonExpenseStatement s
+JOIN CommonExpenseAllocation cea ON cea.statement.id = s.id
+JOIN cea.apartment a
+LEFT JOIN cea.user u
+WHERE s.id = (
+    SELECT MAX(s2.id)
+    FROM CommonExpenseStatement s2
+    WHERE s2.building.id = :buildingId
+)
+GROUP BY u.id, u.firstName, u.lastName, a.ownerFirstName, a.ownerLastName, a.id, a.number, a.floor
+ORDER BY a.floor, a.number
 """)
     List<StatementUserPaymentDTO> findUserPaymentsByLastStatement(@Param("buildingId") Integer buildingId);
+
+
+
 
     @Query("""
 SELECT new com.buildingmanager.payment.StatementUserPaymentDTO(

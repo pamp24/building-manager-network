@@ -13,9 +13,19 @@ public interface CommonExpenseStatementRepository extends JpaRepository<CommonEx
     Integer findMaxSequenceByBuilding(@Param("buildingId") Integer buildingId);
 
     List<CommonExpenseStatement> findByBuildingId(Integer buildingId);
+    @Query("""
+SELECT s
+FROM CommonExpenseStatement s
+WHERE s.building.id = :buildingId
+  AND s.status IN ('ISSUED', 'PAID', 'EXPIRED')
+ORDER BY s.startDate DESC
+""")
+    List<CommonExpenseStatement> findActiveByBuildingId(@Param("buildingId") Integer buildingId);
+
 
     @Query("SELECT s FROM CommonExpenseStatement s WHERE s.active = true")
     List<CommonExpenseStatement> getAllActive();
+
 
     @Query("SELECT s FROM CommonExpenseStatement s WHERE s.building.id = :buildingId")
     List<CommonExpenseStatement> findAllByBuildingIdIncludingInactive(@Param("buildingId") Integer buildingId);
