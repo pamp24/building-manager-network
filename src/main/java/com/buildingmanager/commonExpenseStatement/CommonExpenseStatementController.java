@@ -39,7 +39,7 @@ public class CommonExpenseStatementController {
         return ResponseEntity.ok(CommonExpenseStatementMapper.toDTO(saved));
     }
 
-    @GetMapping("/expenses/statements")
+    @GetMapping
     public ResponseEntity<List<CommonExpenseStatementDTO>> getAll() {
         List<CommonExpenseStatementDTO> list = service.getAll().stream()
                 .map(CommonExpenseStatementMapper::toDTO)
@@ -47,7 +47,7 @@ public class CommonExpenseStatementController {
         return ResponseEntity.ok(list);
     }
 
-    @GetMapping("/expenses/statements/active")
+    @GetMapping("/active")
     public List<CommonExpenseStatement> getAllActive() {
         return service.getAllActive();
     }
@@ -89,5 +89,14 @@ public class CommonExpenseStatementController {
         return ResponseEntity.ok(statements);
     }
 
+    @GetMapping("/building/{buildingId}/active")
+    public ResponseEntity<List<CommonExpenseStatementDTO>> getActiveStatementsByBuilding(
+            @PathVariable Integer buildingId) {
+        List<CommonExpenseStatementDTO> statements = service.getActiveStatementsByBuilding(buildingId)
+                .stream()
+                .map(CommonExpenseStatementMapper::toDTO)
+                .toList();
+        return ResponseEntity.ok(statements);
+    }
 
 }

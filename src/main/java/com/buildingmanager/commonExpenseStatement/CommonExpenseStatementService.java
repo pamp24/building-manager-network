@@ -183,9 +183,10 @@ public class CommonExpenseStatementService {
         return statements;
     }
 
-
-
-
+    public List<CommonExpenseStatement> getActiveStatementsByBuilding(Integer buildingId) {
+        // Παίρνουμε μόνο τα statements με status ISSUED, PAID ή EXPIRED
+        return commonExpenseStatementRepository.findActiveByBuildingId(buildingId);
+    }
 
     @Transactional
     public void delete(Integer id) {
