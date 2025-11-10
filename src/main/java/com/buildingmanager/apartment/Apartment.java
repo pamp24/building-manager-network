@@ -1,17 +1,12 @@
 package com.buildingmanager.apartment;
 
 
-import com.buildingmanager.bill.ApartmentBillShare;
 import com.buildingmanager.building.Building;
 import com.buildingmanager.common.BaseEntity;
-import com.buildingmanager.parking.Parking;
 import com.buildingmanager.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-
-import java.util.List;
-
 
 @Getter
 @Setter
@@ -64,12 +59,6 @@ public class Apartment extends BaseEntity {
     @JoinColumn(name = "owner_id")
     private User owner;
 
-    @OneToMany
-    @JoinColumn(name = "parking_id")
-    private List<Parking> parking;
-
-    @OneToMany(mappedBy = "apartment")
-    private List<ApartmentBillShare> sharedBills;
 
     public String fullApartmentName() {
         return number + " " + floor;

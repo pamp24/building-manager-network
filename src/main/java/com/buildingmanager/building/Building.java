@@ -1,10 +1,8 @@
 package com.buildingmanager.building;
 
 import com.buildingmanager.apartment.Apartment;
-import com.buildingmanager.bill.Bill;
 import com.buildingmanager.common.BaseEntity;
 import com.buildingmanager.company.Company;
-import com.buildingmanager.parking.Parking;
 import com.buildingmanager.user.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -70,11 +68,6 @@ public class Building extends BaseEntity {
     @OneToMany(mappedBy = "building")
     private List<Apartment> apartments;
 
-    @OneToMany(mappedBy = "building")
-    private List<Parking> parking;
-
-    @OneToMany(mappedBy = "building")
-    private List<Bill> bills;
 
     @ManyToOne
     @JoinColumn(name = "company_id")
