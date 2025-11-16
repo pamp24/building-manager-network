@@ -20,7 +20,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-@SQLDelete(sql = "UPDATE common_expense_statement SET active = false, status = 'CLOSED' WHERE id = ?")
 public class CommonExpenseStatement extends BaseEntity {
 
     private String code;

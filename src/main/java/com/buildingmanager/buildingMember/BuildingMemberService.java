@@ -7,17 +7,19 @@ import com.buildingmanager.building.BuildingRepository;
 import com.buildingmanager.invite.Invite;
 import com.buildingmanager.invite.InviteRepository;
 import com.buildingmanager.invite.InviteStatus;
-import com.buildingmanager.role.Role;
 import com.buildingmanager.role.RoleRepository;
 import com.buildingmanager.user.User;
 import com.buildingmanager.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -50,11 +52,10 @@ public class BuildingMemberService {
 
     public List<BuildingMemberDTO> getMembersByBuilding(Integer buildingId) {
         List<BuildingMemberDTO> result = new ArrayList<>();
-
-        // 1. Όλοι οι BuildingMembers (Joined)
         List<BuildingMember> memberships = buildingMemberRepository.findByBuildingId(buildingId);
         List<Apartment> apartments = apartmentRepository.findAllByBuilding_Id(buildingId);
 
+        // 🔹 1. Κανονικά μέλη από τον πίνακα building_member
         for (BuildingMember m : memberships) {
             apartments.stream()
                     .filter(a ->
@@ -66,7 +67,7 @@ public class BuildingMemberService {
                             m.getUser().getFullName(),
                             m.getUser().getEmail(),
                             m.getRole().getName(),
-                            m.getStatus(), // π.χ. "Joined"
+                            "ACCEPTED", // ✅ εμφανίζονται ως ενεργά μέλη
                             m.getBuilding().getId(),
                             m.getBuilding().getName(),
                             ap.getNumber(),
@@ -74,27 +75,33 @@ public class BuildingMemberService {
                     )));
         }
 
+        // Κρατάμε emails που έχουν ήδη προστεθεί
+        Set<String> addedEmails = result.stream()
+                .map(BuildingMemberDTO::getEmail)
+                .collect(Collectors.toSet());
 
-        // 2. Προσκλήσεις (Invited)
+        // 🔹 2. Προσκλήσεις
         List<Invite> invites = inviteRepository.findByApartment_Building_Id(buildingId);
 
-
         for (Invite invite : invites) {
-            String fullName = null;
+            // ✅ Αν ο χρήστης έχει κάνει ACCEPT και ήδη υπάρχει στα μέλη, μην τον ξαναπροσθέσεις
+            if (invite.getStatus() == InviteStatus.ACCEPTED && addedEmails.contains(invite.getEmail())) {
+                continue;
+            }
 
+            // 🔹 Προσθήκη προσκλήσεων (PENDING ή ACCEPTED χωρίς building_member)
+            String fullName = null;
             if (invite.getStatus() == InviteStatus.ACCEPTED) {
                 Optional<User> userOpt = userRepository.findByEmail(invite.getEmail());
-                if (userOpt.isPresent()) {
-                    fullName = userOpt.get().getFullName();
-                }
+                fullName = userOpt.map(User::getFullName).orElse(null);
             }
 
             result.add(new BuildingMemberDTO(
                     null,
-                    fullName, // ✅ γεμίζει αν υπάρχει
+                    fullName,
                     invite.getEmail(),
                     invite.getRole(),
-                    invite.getStatus().name(),
+                    invite.getStatus().name(), // ✅ “PENDING” ή “ACCEPTED”
                     invite.getApartment().getBuilding().getId(),
                     invite.getApartment().getBuilding().getName(),
                     invite.getApartment().getNumber(),
@@ -102,13 +109,8 @@ public class BuildingMemberService {
             ));
         }
 
-
         return result;
     }
-
-
-
-
 
 
     public List<BuildingMember> getMembersByUser(Integer userId) {

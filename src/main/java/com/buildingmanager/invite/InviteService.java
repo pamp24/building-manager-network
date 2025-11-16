@@ -2,6 +2,9 @@ package com.buildingmanager.invite;
 
 import com.buildingmanager.apartment.Apartment;
 import com.buildingmanager.apartment.ApartmentRepository;
+import com.buildingmanager.building.Building;
+import com.buildingmanager.building.BuildingMember;
+import com.buildingmanager.buildingMember.BuildingMemberRepository;
 import com.buildingmanager.role.Role;
 import com.buildingmanager.role.RoleRepository;
 import com.buildingmanager.user.User;
@@ -23,6 +26,7 @@ public class InviteService {
     private final EmailService emailService;
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
+    private final BuildingMemberRepository buildingMemberRepository;
 
     public Invite createInvite(String email, String role, Integer apartmentId, User inviter) {
         if (apartmentId == null) {
@@ -90,7 +94,7 @@ public class InviteService {
         // 🔹 Ανάθεση ρόλου στον User
         Role role = roleRepository.findByName(invite.getRole())
                 .orElseThrow(() -> new RuntimeException("Role not found: " + invite.getRole()));
-        user.setRole(role); // αν ο User έχει List<Role> → user.getRoles().add(role);
+        user.setRole(role);
 
         // 🔹 Σύνδεση με Apartment / Building
         switch (invite.getRole()) {
@@ -104,6 +108,19 @@ public class InviteService {
 
         userRepository.save(user);
         apartmentRepository.save(invite.getApartment());
+
+        // ✅ Προσθήκη στο building_member
+        Building building = invite.getApartment().getBuilding();
+
+        BuildingMember member = new BuildingMember();
+        member.setBuilding(building);
+        member.setUser(user);
+        member.setRole(role);
+        member.setApartment(invite.getApartment());
+        member.setStatus("JOINED");
+
+        buildingMemberRepository.save(member);
+
         return inviteRepository.save(invite);
     }
 

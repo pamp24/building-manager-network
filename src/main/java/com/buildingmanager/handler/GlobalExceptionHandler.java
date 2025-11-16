@@ -2,6 +2,8 @@ package com.buildingmanager.handler;
 
 
 import jakarta.mail.MessagingException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -9,6 +11,7 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -99,6 +102,18 @@ public class GlobalExceptionHandler {
                                 .build()
                 );
     }
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ExceptionResponse> handleResponseStatusException(ResponseStatusException ex) {
+        HttpStatus status = (HttpStatus) ex.getStatusCode();
+        ExceptionResponse body = ExceptionResponse.builder()
+                .businessErrorDescription(status.getReasonPhrase())
+                .error(ex.getReason())
+                .build();
 
+        return ResponseEntity
+                .status(status)
+                .contentType(MediaType.APPLICATION_JSON) // 👈 αυτό προσθέτεις
+                .body(body);
+    }
 
 }
