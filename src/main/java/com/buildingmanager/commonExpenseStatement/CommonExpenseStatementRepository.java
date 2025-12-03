@@ -178,6 +178,36 @@ WHERE s.building.id = :buildingId
                                            @Param("year") int year,
                                            @Param("status") String status);
 
+    @Query("""
+    SELECT COALESCE(SUM(i.price), 0)
+    FROM CommonExpenseItem i
+    JOIN i.statement s
+    WHERE s.building.id = :buildingId
+      AND MONTH(s.startDate) = :month
+""")
+    Double sumBuildingExpenses(@Param("buildingId") Integer buildingId,
+                               @Param("month") Integer month);
 
+    @Query("""
+    SELECT COALESCE(SUM(i.price), 0)
+    FROM CommonExpenseItem i
+    JOIN i.statement s
+    WHERE s.building.id = :buildingId
+      AND MONTH(s.startDate) = :month
+""")
+    Double sumBuildingExpensesByMonth(@Param("buildingId") Integer buildingId,
+                                      @Param("month") Integer month);
+
+    @Query("""
+    SELECT COALESCE(SUM(i.price), 0)
+    FROM CommonExpenseItem i
+    JOIN i.statement s
+    WHERE s.building.id = :buildingId
+      AND YEAR(s.startDate) = :year
+""")
+    Double sumBuildingExpensesByYear(@Param("buildingId") Integer buildingId,
+                                     @Param("year") Integer year);
+
+    List<CommonExpenseStatement> findByBuildingIdOrderByStartDateDesc(Integer buildingId);
 
 }

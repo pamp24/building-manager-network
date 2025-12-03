@@ -165,8 +165,8 @@ public class CommonExpenseStatementService {
             Boolean isPaid = s.getIsPaid() != null ? s.getIsPaid() : false;
 
             // 👉 Αν δεν έχει πληρωθεί και έχει λήξει → γίνεται EXPIRED
-            if (!isPaid && s.getDueDate() != null
-                    && s.getDueDate().isBefore(now)
+            if (!isPaid && s.getEndDate() != null
+                    && s.getEndDate().isBefore(now)
                     && s.getStatus() == StatementStatus.ISSUED) {
                 s.setStatus(StatementStatus.EXPIRED);
                 commonExpenseStatementRepository.save(s);
@@ -305,11 +305,11 @@ public class CommonExpenseStatementService {
                 .count();
 
         long pendingCount = statements.stream()
-                .filter(s -> !s.getIsPaid() && (s.getDueDate() == null || !s.getDueDate().isBefore(LocalDate.now().atStartOfDay())))
+                .filter(s -> !s.getIsPaid() && (s.getEndDate() == null || !s.getEndDate().isBefore(LocalDate.now().atStartOfDay())))
                 .count();
 
         long overdueCount = statements.stream()
-                .filter(s -> !s.getIsPaid() && s.getDueDate() != null && s.getDueDate().isBefore(LocalDate.now().atStartOfDay()))
+                .filter(s -> !s.getIsPaid() && s.getEndDate() != null && s.getEndDate().isBefore(LocalDate.now().atStartOfDay()))
                 .count();
 
         Map<String, Long> counters = new HashMap<>();

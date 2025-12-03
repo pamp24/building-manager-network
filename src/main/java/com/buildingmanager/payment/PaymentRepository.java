@@ -124,7 +124,7 @@ ORDER BY a.floor ASC, a.number ASC
             WHEN SUM(alloc.amount) > 0 THEN (SUM(alloc.paidAmount) / SUM(alloc.amount)) * 100 
             ELSE 0 
         END,
-        MAX(s.dueDate)
+        MAX(s.endDate)
     )
     FROM CommonExpenseAllocation alloc
     JOIN alloc.statement s
@@ -206,6 +206,22 @@ ORDER BY a.floor, a.number
 
 
 
+    @Query("""
+    SELECT DISTINCT s.month
+    FROM CommonExpenseAllocation a
+    JOIN a.statement s
+    WHERE s.building.id = :buildingId
+      AND a.isPaid = FALSE
+""")
+    List<String> findUnpaidMonthsForBuilding(Integer buildingId);
+
+    @Query("""
+    SELECT COALESCE(SUM(a.amount - COALESCE(a.paidAmount, 0)), 0)
+    FROM CommonExpenseAllocation a
+    WHERE a.statement.building.id = :buildingId
+    AND a.isPaid = FALSE
+""")
+    Double findTotalUnpaidForBuilding(Integer buildingId);
 
 
 

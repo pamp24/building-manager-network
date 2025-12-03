@@ -45,4 +45,5 @@ public class CommonExpenseItemService {
         return repository.findCategoryTotals(buildingId, start, end);
     }
 
+
 }
