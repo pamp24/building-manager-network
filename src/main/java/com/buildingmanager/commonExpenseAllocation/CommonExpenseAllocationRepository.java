@@ -12,33 +12,6 @@ public interface CommonExpenseAllocationRepository extends JpaRepository<CommonE
 
     List<CommonExpenseAllocation> findByStatementIdAndApartmentId(Integer statementId, Integer apartmentId);
 
-    // --- Για έναν μήνα ---
-    @Query("""
-    SELECT COUNT(s)
-    FROM CommonExpenseStatement s
-    WHERE s.building.id = :buildingId
-      AND s.status IN ('ISSUED', 'PAID', 'EXPIRED')
-      AND EXTRACT(MONTH FROM s.startDate) = :month
-      AND EXTRACT(YEAR FROM s.startDate) = :year
-""")
-    long countIssuedExcludingDraftsAndCancelled(
-            @Param("buildingId") Integer buildingId,
-            @Param("month") int month,
-            @Param("year") int year
-    );
-
-    // --- Για ολόκληρο το έτος ---
-    @Query("""
-    SELECT COUNT(s)
-    FROM CommonExpenseStatement s
-    WHERE s.building.id = :buildingId
-      AND s.status IN ('ISSUED', 'PAID', 'EXPIRED')
-      AND EXTRACT(YEAR FROM s.startDate) = :year
-""")
-    long countIssuedExcludingDraftsAndCancelledForYear(
-            @Param("buildingId") Integer buildingId,
-            @Param("year") int year
-    );
     @Query("""
     SELECT a
     FROM CommonExpenseAllocation a
@@ -50,12 +23,6 @@ public interface CommonExpenseAllocationRepository extends JpaRepository<CommonE
             @Param("userId") Integer userId
     );
 
-    @Query("""
-    SELECT a FROM CommonExpenseAllocation a
-    WHERE a.statement.id = :statementId
-    AND (a.apartment.owner IS NULL AND a.apartment.resident IS NULL)
-""")
-    List<CommonExpenseAllocation> findByStatementIdAndUserNull(@Param("statementId") Integer statementId);
 
 
     // Όλα τα allocations για συγκεκριμένο statement + apartment
@@ -63,5 +30,38 @@ public interface CommonExpenseAllocationRepository extends JpaRepository<CommonE
     List<CommonExpenseAllocation> findAllByStatement_Id(Integer statementId);
 
 
+
+
+    @Query("""
+    SELECT COALESCE(SUM(a.amount), 0)
+    FROM CommonExpenseAllocation a
+    JOIN a.item i
+    JOIN a.item.statement s
+    WHERE a.apartment.id = :apartmentId
+      AND MONTH(s.startDate) = :month
+""")
+    Double sumApartmentExpensesByMonth(@Param("apartmentId") Integer apartmentId,
+                                       @Param("month") Integer month);
+
+
+    @Query("""
+    SELECT COALESCE(SUM(a.amount), 0)
+    FROM CommonExpenseAllocation a
+    JOIN a.item i
+    JOIN a.item.statement s
+    WHERE a.apartment.id = :apartmentId
+      AND YEAR(s.startDate) = :year
+""")
+    Double sumApartmentExpensesByYear(@Param("apartmentId") Integer apartmentId,
+                                      @Param("year") Integer year);
+
+
+    @Query("""
+        SELECT COALESCE(SUM(a.amount - COALESCE(a.paidAmount, 0)), 0)
+        FROM CommonExpenseAllocation a
+        WHERE a.apartment.id = :apartmentId
+          AND a.isPaid = FALSE
+    """)
+    Double sumUnpaidByApartment(@Param("apartmentId") Integer apartmentId);
 }
 

@@ -18,6 +18,7 @@ public class CommonExpenseStatementMapper {
                 .month(entity.getMonth())
                 .startDate(entity.getStartDate())
                 .endDate(entity.getEndDate())
+
                 .discountPercent(entity.getDiscountPercent())
                 .taxPercent(entity.getTaxPercent())
                 .subTotal(entity.getSubTotal())

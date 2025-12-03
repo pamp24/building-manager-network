@@ -66,7 +66,7 @@ public class PaymentService {
             method = PaymentMethod.CASH;
         }
 
-        // 🔎 Εύρεση υπαρχουσών κατανομών
+        //Εύρεση υπαρχουσών κατανομών
         List<CommonExpenseAllocation> allocations = (user != null)
                 ? commonExpenseAllocationRepository.findByStatementIdAndUserId(req.getStatementId(), req.getUserId())
                 : commonExpenseAllocationRepository.findByStatementIdAndApartmentId(req.getStatementId(), req.getApartmentId());
@@ -85,7 +85,7 @@ public class PaymentService {
             throw new IllegalStateException("Το ποσό υπερβαίνει το οφειλόμενο υπόλοιπο.");
         }
 
-        // 🧭 Εύρεση υπάρχουσας πληρωμής
+        //Εύρεση υπάρχουσας πληρωμής
         Optional<Payment> existingPaymentOpt = Optional.empty();
 
         if (user != null) {
@@ -100,7 +100,7 @@ public class PaymentService {
 
         Payment payment;
         if (existingPaymentOpt.isPresent()) {
-            // 🔁 Ενημέρωση υπάρχουσας πληρωμής
+            //Ενημέρωση υπάρχουσας πληρωμής
             payment = existingPaymentOpt.get();
             System.out.println("🔁 Updating existing payment");
 
@@ -110,8 +110,8 @@ public class PaymentService {
             payment.setReferenceNumber(req.getReferenceNumber());
 
         } else {
-            // ➕ Δημιουργία νέας πληρωμής
-            System.out.println("➕ Creating new payment");
+            // Δημιουργία νέας πληρωμής
+            System.out.println("Creating new payment");
 
             payment = Payment.builder()
                     .user(user)
@@ -124,14 +124,14 @@ public class PaymentService {
                     .build();
         }
 
-        // ✅ Πάντα συνδέουμε το apartment για ασφάλεια
+        // Πάντα συνδέουμε το apartment για ασφάλεια
         if (apartment != null) {
             payment.setApartment(apartment);
         }
 
         payment = paymentRepository.save(payment);
 
-        // 🧮 Ενημέρωση κατανομών
+        //Ενημέρωση κατανομών
         double remainingToAllocate = req.getAmount();
         for (CommonExpenseAllocation alloc : allocations) {
             if (remainingToAllocate <= 0) break;
@@ -150,14 +150,14 @@ public class PaymentService {
             remainingToAllocate -= add;
         }
 
-        // 🧾 Ενημέρωση statement
+        //Ενημέρωση statement
         List<CommonExpenseAllocation> allAllocations = commonExpenseAllocationRepository.findAllByStatement_Id(req.getStatementId());
         boolean allPaid = allAllocations.stream().allMatch(a -> Boolean.TRUE.equals(a.getIsPaid()));
         statement.setStatus(allPaid ? StatementStatus.PAID : StatementStatus.ISSUED);
         statement.setIsPaid(allPaid);
         commonExpenseStatementRepository.save(statement);
 
-        // 🎁 Δημιουργία DTO
+        // Δημιουργία DTO
         String fullName;
         if (user != null) {
             fullName = user.getFullName();

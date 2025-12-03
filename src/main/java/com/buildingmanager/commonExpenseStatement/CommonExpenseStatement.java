@@ -28,7 +28,6 @@ public class CommonExpenseStatement extends BaseEntity {
 
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private LocalDateTime dueDate;
 
     private Double discountPercent;
     private Double taxPercent;
