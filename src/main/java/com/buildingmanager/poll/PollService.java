@@ -36,12 +36,6 @@ public class PollService {
         var user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        boolean isManager = user.getRole() != null &&
-                "BuildingManager".equalsIgnoreCase(user.getRole().getName());
-
-        if (!isManager) {
-            throw new RuntimeException("Μόνο ο διαχειριστής μπορεί να βλέπει όλες τις ψηφοφορίες.");
-        }
 
         List<Poll> polls = pollRepository.findByBuildingIdOrderByStartDateDesc(buildingId);
 

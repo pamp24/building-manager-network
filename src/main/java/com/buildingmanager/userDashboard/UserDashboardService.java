@@ -393,58 +393,58 @@ public class UserDashboardService {
         List<CommonExpenseStatement> statements =
                 statementRepository.findByBuildingIdOrderByStartDateDesc(buildingId);
 
-        boolean isOwner = apartment.getOwner() != null &&
-                apartment.getOwner().getId().equals(userId);
+        if (statements.isEmpty()) return List.of();
 
-        boolean isResident = apartment.getResident() != null &&
-                apartment.getResident().getId().equals(userId);
-
+        boolean isOwner    = apartment.getOwner()    != null && apartment.getOwner().getId().equals(userId);
+        boolean isResident = apartment.getResident() != null && apartment.getResident().getId().equals(userId);
         boolean hasResident = apartment.getResident() != null;
 
         List<UserStatementDTO> result = new ArrayList<>();
 
         for (CommonExpenseStatement s : statements) {
 
+            double totalForApt = 0.0;
+            double paidAmount  = 0.0;
+
             List<CommonExpenseAllocation> allocations =
                     allocationRepository.findByStatementAndApartment(s, apartment);
 
-            double totalForApartment = 0.0;
-            double paidAmount = 0.0;
-
             for (CommonExpenseAllocation alloc : allocations) {
-
-                double amount = alloc.getAmount();
-                double paid = alloc.getPaidAmount() == null ? 0 : alloc.getPaidAmount();
-                double remaining = amount - paid;
-
-                if (remaining <= 0) continue;
 
                 var category = alloc.getItem().getCategory();
 
-                // Filtering
-                if (hasResident) {
-                    if (isResident && category == ExpenseCategory.OWNERS) continue;
-                    if (isOwner && category != ExpenseCategory.OWNERS) continue;
-                }
+                boolean shouldPay =
+                        (hasResident && isResident && category != ExpenseCategory.OWNERS) ||
+                                (hasResident && isOwner    && category == ExpenseCategory.OWNERS) ||
+                                (!hasResident && isOwner);
 
-                totalForApartment += amount;
-                paidAmount += paid;
+                if (!shouldPay) continue;
+
+                totalForApt += alloc.getAmount();
+                paidAmount  += alloc.getPaidAmount() == null ? 0 : alloc.getPaidAmount();
             }
 
-            double remainingAmount = totalForApartment - paidAmount;
+            double remaining = totalForApt - paidAmount;
 
-            result.add(UserStatementDTO.builder()
-                    .statementId(s.getId())
-                    .month(s.getMonth())
-                    .totalForBuilding(s.getTotal())
-                    .totalForApartment(totalForApartment)
-                    .paidAmount(paidAmount)
-                    .remainingAmount(remainingAmount)
-                    .code(s.getCode())
-                    .issueDate(s.getStartDate().toLocalDate())
-                    .dueDate(s.getEndDate() != null ? s.getEndDate().toLocalDate() : null)
-                    .status(s.getStatus() != null ? s.getStatus().name() : null)
-                    .build()
+            boolean isPaid = remaining <= 0;
+
+
+            result.add(
+                    UserStatementDTO.builder()
+                            .statementId(s.getId())
+                            .code(s.getCode())
+                            .month(s.getMonth())
+                            .totalForBuilding(s.getTotal())
+
+                            .totalForApartment(totalForApt)
+                            .paidAmount(paidAmount)
+                            .remainingAmount(remaining)
+                            .isPaid(isPaid)
+                            .issueDate(s.getStartDate().toLocalDate())
+                            .dueDate(s.getEndDate() != null ? s.getEndDate().toLocalDate() : null)
+
+                            .status(s.getStatus().name())
+                            .build()
             );
         }
 

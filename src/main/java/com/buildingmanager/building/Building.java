@@ -1,6 +1,7 @@
 package com.buildingmanager.building;
 
 import com.buildingmanager.apartment.Apartment;
+import com.buildingmanager.buildingMember.BuildingMember;
 import com.buildingmanager.common.BaseEntity;
 import com.buildingmanager.company.Company;
 import com.buildingmanager.user.User;
@@ -57,7 +58,7 @@ public class Building extends BaseEntity {
     private boolean enable;
 
     @OneToMany(mappedBy = "building", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<com.buildingmanager.building.BuildingMember> members = new ArrayList<>();
+    private List<BuildingMember> members = new ArrayList<>();
 
 
 

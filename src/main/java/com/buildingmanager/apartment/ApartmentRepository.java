@@ -2,9 +2,11 @@ package com.buildingmanager.apartment;
 
 
 import com.buildingmanager.user.User;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -58,6 +60,11 @@ public interface ApartmentRepository extends JpaRepository<Apartment, Integer> {
             @Param("buildingId") Integer buildingId,
             @Param("role") String role
     );
+
+    @Transactional
+    @Modifying
+    @Query("delete from Apartment a where a.building.id = :buildingId")
+    void deleteByBuildingId(@Param("buildingId") Integer buildingId);
 
 }
 

@@ -1,9 +1,9 @@
 package com.buildingmanager.building;
 
 
+import com.buildingmanager.buildingMember.BuildingMemberService;
 import com.buildingmanager.common.PageResponse;
 import com.buildingmanager.user.User;
-import com.buildingmanager.user.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +23,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Building")
 public class    BuildingController {
-    private final UserService userService;
+
     private final BuildingService buildingService;
+    private final BuildingMemberService buildingMemberService;
 
     @PostMapping
     public ResponseEntity<Integer> saveBuilding(
@@ -77,6 +78,12 @@ public class    BuildingController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/{id}/draft")
+    public ResponseEntity<Void> deleteDraft(@PathVariable Integer id, Authentication auth) {
+        buildingService.deleteDraftBuilding(id, auth);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/{buildingId}/manager")
     public ResponseEntity<ManagerDTO> getManager(@PathVariable Integer buildingId) {
         return ResponseEntity.ok(buildingService.getManagerDTO(buildingId));
@@ -93,6 +100,12 @@ public class    BuildingController {
     @GetMapping("/my-managed-buildings")
     public List<ManagedBuildingDTO> getManagedBuildings(@AuthenticationPrincipal User user) {
         return buildingService.getManagedBuildings(user.getId());
+    }
+
+    @PostMapping("/join-by-code")
+    public ResponseEntity<JoinBuildingResponseDTO> joinByCode(@RequestParam String code, Authentication auth) {
+        Integer buildingId = buildingMemberService.joinByBuildingCode(code, auth);
+        return ResponseEntity.ok(new JoinBuildingResponseDTO(buildingId));
     }
 
 }

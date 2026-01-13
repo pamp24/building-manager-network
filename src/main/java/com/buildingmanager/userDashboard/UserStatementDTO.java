@@ -16,7 +16,7 @@ public class UserStatementDTO {
     private Double totalForApartment;  // πόσο οφείλει ο user (owner ή resident)
     private Double paidAmount;         // πόσο έχει πληρώσει
     private Double remainingAmount;    // totalForApartment - paidAmount
-
+    private Boolean isPaid;
     private LocalDate issueDate;
     private LocalDate dueDate;
 

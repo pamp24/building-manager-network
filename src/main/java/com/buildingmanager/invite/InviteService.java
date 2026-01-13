@@ -3,7 +3,7 @@ package com.buildingmanager.invite;
 import com.buildingmanager.apartment.Apartment;
 import com.buildingmanager.apartment.ApartmentRepository;
 import com.buildingmanager.building.Building;
-import com.buildingmanager.building.BuildingMember;
+import com.buildingmanager.buildingMember.BuildingMember;
 import com.buildingmanager.buildingMember.BuildingMemberRepository;
 import com.buildingmanager.role.Role;
 import com.buildingmanager.role.RoleRepository;
@@ -109,7 +109,7 @@ public class InviteService {
         userRepository.save(user);
         apartmentRepository.save(invite.getApartment());
 
-        // ✅ Προσθήκη στο building_member
+        //Προσθήκη στο building_member
         Building building = invite.getApartment().getBuilding();
 
         BuildingMember member = new BuildingMember();
@@ -117,7 +117,7 @@ public class InviteService {
         member.setUser(user);
         member.setRole(role);
         member.setApartment(invite.getApartment());
-        member.setStatus("JOINED");
+        member.setStatus("Joined");
 
         buildingMemberRepository.save(member);
 

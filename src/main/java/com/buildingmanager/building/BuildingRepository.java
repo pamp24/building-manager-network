@@ -25,4 +25,5 @@ public interface BuildingRepository extends JpaRepository<Building, Integer>, Jp
 
     List<Building> findByManagerId(Integer managerId);
 
+    Optional<Building> findByBuildingCode(String buildingCode);
 }

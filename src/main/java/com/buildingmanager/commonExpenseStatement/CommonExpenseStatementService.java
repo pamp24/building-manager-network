@@ -164,7 +164,7 @@ public class CommonExpenseStatementService {
         statements.forEach(s -> {
             Boolean isPaid = s.getIsPaid() != null ? s.getIsPaid() : false;
 
-            // 👉 Αν δεν έχει πληρωθεί και έχει λήξει → γίνεται EXPIRED
+            //Αν δεν έχει πληρωθεί και έχει λήξει → γίνεται EXPIRED
             if (!isPaid && s.getEndDate() != null
                     && s.getEndDate().isBefore(now)
                     && s.getStatus() == StatementStatus.ISSUED) {
@@ -172,7 +172,7 @@ public class CommonExpenseStatementService {
                 commonExpenseStatementRepository.save(s);
             }
 
-            // 👉 Αν έχει πληρωθεί → γίνεται PAID
+            //Αν έχει πληρωθεί → γίνεται PAID
             else if (Boolean.TRUE.equals(isPaid)
                     && s.getStatus() != StatementStatus.PAID) {
                 s.setStatus(StatementStatus.PAID);

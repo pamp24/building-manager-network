@@ -34,7 +34,7 @@
 
         private String apDescription;
 
-        private Long buildingId;
+        private Integer buildingId;
 
         private String resident;
         private Integer residentId;
