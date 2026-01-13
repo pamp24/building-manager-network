@@ -2,7 +2,7 @@ package com.buildingmanager.user;
 
 
 import com.buildingmanager.building.Building;
-import com.buildingmanager.building.BuildingMember;
+import com.buildingmanager.buildingMember.BuildingMember;
 import com.buildingmanager.common.BaseEntity;
 import com.buildingmanager.company.Company;
 import com.buildingmanager.role.Role;
@@ -29,9 +29,6 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 public class User extends BaseEntity implements UserDetails {
 
-    @Id
-    @GeneratedValue
-    private Integer id;
     private String firstName;
     private String lastName;
     private LocalDate dateOfBirth;

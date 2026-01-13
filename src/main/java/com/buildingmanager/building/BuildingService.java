@@ -31,7 +31,6 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class BuildingService {
 
-
     private final BuildingRepository buildingRepository;
     private final BuildingMapper buildingMapper;
     private final UserRepository userRepository;
@@ -54,7 +53,7 @@ public class BuildingService {
                 .orElseThrow(() -> new RuntimeException("Role 'BuildingManager' not found"));
 
         //Local membership
-        com.buildingmanager.building.BuildingMember membership = com.buildingmanager.building.BuildingMember.builder()
+        com.buildingmanager.buildingMember.BuildingMember membership = com.buildingmanager.buildingMember.BuildingMember.builder()
                 .building(savedBuilding)
                 .user(currentUser)
                 .role(managerRole)
@@ -146,6 +145,26 @@ public class BuildingService {
 
         buildingRepository.delete(building);
     }
+
+    @Transactional
+    public void deleteDraftBuilding(Integer buildingId, Authentication connectedUser) {
+        User user = (User) connectedUser.getPrincipal();
+
+        Building building = buildingRepository.findById(buildingId)
+                .orElseThrow(() -> new EntityNotFoundException("Building not found"));
+
+        //allow only creator (draft rollback)
+        if (building.getCreatedBy() == null || !building.getCreatedBy().equals(user.getId())) {
+            throw new AccessDeniedException("Not allowed to delete this draft building");
+        }
+
+        //if apartments/members exist, delete them first (αν δεν έχεις cascade)
+        apartmentRepository.deleteByBuildingId(buildingId);
+        buildingMemberRepository.deleteByBuildingId(buildingId);
+
+        buildingRepository.delete(building);
+    }
+
     public ManagerDTO getManagerDTO(Integer buildingId) {
         Building b = buildingRepository.findById(buildingId)
                 .orElseThrow(() -> new EntityNotFoundException("Building not found: " + buildingId));

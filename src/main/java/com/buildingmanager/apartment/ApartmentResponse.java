@@ -28,6 +28,7 @@ public class ApartmentResponse {
     private boolean enable;
     private LocalDateTime lastModifiedDate;
 
+    private Integer buildingId;
     private String buildingName;
     private String buildingStreet;
     private String buildingStreetNumber;

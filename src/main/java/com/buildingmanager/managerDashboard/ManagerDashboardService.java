@@ -15,7 +15,6 @@ import java.util.List;
 public class ManagerDashboardService {
 
     private final CommonExpenseStatementRepository commonExpenseStatementRepository;
-    private final CommonExpenseAllocationRepository commonExpenseAllocationRepository;
 
     public ManagerDashboardDTO getDashboardForBuilding(Integer buildingId) {
         int currentYear = LocalDate.now().getYear();

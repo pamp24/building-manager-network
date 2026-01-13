@@ -1,5 +1,6 @@
-package com.buildingmanager.building;
+package com.buildingmanager.buildingMember;
 
+import com.buildingmanager.building.Building;
 import com.buildingmanager.role.Role;
 import com.buildingmanager.user.User;
 import jakarta.persistence.*;

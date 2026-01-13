@@ -65,6 +65,7 @@
                     .isManagerHouse(apartment.getIsManagerHouse() != null ? apartment.getIsManagerHouse() : false)
                     .apDescription(apartment.getApDescription())
 
+                    .buildingId(apartment.getBuilding().getId())
                     .buildingName(apartment.getBuilding().getName())
                     .buildingStreet(apartment.getBuilding().getStreet1())
                     .buildingStreetNumber(apartment.getBuilding().getStNumber1()    )

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/companies")
+@RequestMapping("/companies")
 @CrossOrigin(origins = "*")
 public class CompanyController {
 

@@ -1,8 +1,8 @@
 package com.buildingmanager.buildingMember;
 
-import com.buildingmanager.building.BuildingMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,9 +34,23 @@ public class BuildingMemberController {
         return ResponseEntity.ok(buildingMemberService.getMembersByUser(userId));
     }
 
-    @DeleteMapping("/{memberId}")
-    public ResponseEntity<Void> removeMember(@PathVariable Integer memberId) {
-        buildingMemberService.removeMember(memberId);
+
+    @PostMapping("/{memberId}/assign-apartment")
+    public ResponseEntity<Void> assignApartment(
+            @PathVariable Integer memberId,
+            @RequestBody AssignApartmentRequest req,
+            Authentication auth
+    ) {
+        buildingMemberService.assignApartment(memberId, req, auth);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/deleteMember/{memberId}")
+    public ResponseEntity<Void> deleteMember(
+            @PathVariable Integer memberId,
+            Authentication auth
+    ) {
+        buildingMemberService.deleteMember(memberId, auth);
         return ResponseEntity.noContent().build();
     }
 }
