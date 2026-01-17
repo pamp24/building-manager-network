@@ -18,6 +18,7 @@ public class CalendarMapper {
                 .colorPrimary(entity.getColorPrimary())
                 .buildingId(entity.getBuilding() != null ? entity.getBuilding().getId() : null)
                 .active(entity.isActive())
+                .pinned(entity.isPinned())
                 .build();
     }
 
@@ -42,7 +43,9 @@ public class CalendarMapper {
                 .endDate(dto.getEndDate())
                 .colorPrimary(dto.getColorPrimary())
                 .building(building)
+                .createdByUser(user)
                 .active(dto.isActive())
+                .pinned(dto.isPinned())
                 .build();
     }
 }

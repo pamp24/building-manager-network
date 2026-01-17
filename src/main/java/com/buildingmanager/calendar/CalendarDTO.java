@@ -19,4 +19,6 @@ public class CalendarDTO {
     private Integer buildingId;
     private Integer createdById;
     private boolean active;
+
+    private boolean pinned;
 }

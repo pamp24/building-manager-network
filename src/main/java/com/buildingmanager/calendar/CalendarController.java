@@ -31,4 +31,9 @@ public class CalendarController {
     public CalendarDTO update(@PathVariable Integer id, @RequestBody CalendarDTO dto) {
         return calendarService.update(id, dto);
     }
+
+    @PutMapping("/{id}/pin")
+    public CalendarDTO pin(@PathVariable Integer id, @RequestParam boolean pinned) {
+        return calendarService.pin(id, pinned);
+    }
 }

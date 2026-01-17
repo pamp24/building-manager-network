@@ -81,22 +81,12 @@ public class CommonExpenseStatementController {
     }
     @GetMapping("/building/{buildingId}/statement")
     public ResponseEntity<List<CommonExpenseStatementDTO>> getStatementsByBuilding(@PathVariable Integer buildingId) {
-        List<CommonExpenseStatementDTO> statements =
-                service.getStatementsByBuilding(buildingId)
-                        .stream()
-                        .map(CommonExpenseStatementMapper::toDTO)
-                        .toList();
-        return ResponseEntity.ok(statements);
+        return ResponseEntity.ok(service.getStatementsByBuilding(buildingId));
     }
 
     @GetMapping("/building/{buildingId}/active")
-    public ResponseEntity<List<CommonExpenseStatementDTO>> getActiveStatementsByBuilding(
-            @PathVariable Integer buildingId) {
-        List<CommonExpenseStatementDTO> statements = service.getActiveStatementsByBuilding(buildingId)
-                .stream()
-                .map(CommonExpenseStatementMapper::toDTO)
-                .toList();
-        return ResponseEntity.ok(statements);
+    public ResponseEntity<List<CommonExpenseStatementDTO>> getActiveStatementsByBuilding(@PathVariable Integer buildingId) {
+        return ResponseEntity.ok(service.getActiveStatementsByBuildingDTO(buildingId));
     }
 
 }

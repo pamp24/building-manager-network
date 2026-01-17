@@ -35,6 +35,9 @@ public class CommonExpenseStatement extends BaseEntity {
     private Double total;
     private Boolean isPaid = false;
 
+    @Transient
+    private boolean hasPayments;
+
     private String description;
 
     @Enumerated(EnumType.STRING)

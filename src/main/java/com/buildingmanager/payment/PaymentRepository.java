@@ -16,7 +16,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
 
 
     Payment findTopByUser_IdAndStatement_IdOrderByPaymentDateDesc(Integer userId, Integer statementId);
-    Payment findTopByStatement_IdAndStatement_Building_IdOrderByPaymentDateDesc(Integer statementId, Integer buildingId);
 
     @Query("""
     SELECT p
@@ -74,16 +73,6 @@ WHERE (ab.id = :buildingId OR sb.id = :buildingId)
 ORDER BY p.paymentDate DESC
 """)
     List<PaymentDTO> findRecentByBuilding(@Param("buildingId") Integer buildingId, Pageable pageable);
-
-
-
-
-
-
-
-
-
-
 
 
     @Query("""
@@ -165,8 +154,6 @@ ORDER BY a.floor, a.number
     List<StatementUserPaymentDTO> findUserPaymentsByLastStatement(@Param("buildingId") Integer buildingId);
 
 
-
-
     @Query("""
 SELECT new com.buildingmanager.payment.StatementUserPaymentDTO(
     u.id,
@@ -222,7 +209,5 @@ ORDER BY a.floor, a.number
     AND a.isPaid = FALSE
 """)
     Double findTotalUnpaidForBuilding(Integer buildingId);
-
-
 
 }

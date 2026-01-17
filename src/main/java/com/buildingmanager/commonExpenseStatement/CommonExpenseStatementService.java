@@ -2,22 +2,24 @@ package com.buildingmanager.commonExpenseStatement;
 
 import com.buildingmanager.apartment.Apartment;
 import com.buildingmanager.apartment.ApartmentRepository;
+import com.buildingmanager.building.Building;
+import com.buildingmanager.building.BuildingRepository;
 import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocation;
 import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocationRepository;
-import com.buildingmanager.payment.PaymentMethod;
+import com.buildingmanager.notification.NotificationService;
 import com.buildingmanager.commonExpenseItem.CommonExpenseItem;
 import com.buildingmanager.commonExpenseItem.ExpenseCategory;
+
+import com.buildingmanager.user.User;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -26,14 +28,18 @@ public class CommonExpenseStatementService {
     private final CommonExpenseStatementRepository commonExpenseStatementRepository;
     private final ApartmentRepository apartmentRepository;
     private final CommonExpenseAllocationRepository commonExpenseAllocationRepository;
+    private final NotificationService notificationService;
+    private final BuildingRepository buildingRepository;
+    private final ObjectMapper objectMapper;
 
 
     @Transactional
     public CommonExpenseStatement createAndSend(CommonExpenseStatement statement) {
-        // 1. Παίρνουμε το buildingId από το statement
+
+        // 1) buildingId
         Integer buildingId = statement.getBuilding().getId();
 
-        // 2. Υπολογισμός συνολικών ποσών (subtotal, discount, tax, total)
+        // 2) totals
         double subTotal = statement.getItems().stream()
                 .mapToDouble(i -> (i.getPrice() == null ? 0.0 : i.getPrice()))
                 .sum();
@@ -45,26 +51,26 @@ public class CommonExpenseStatementService {
         statement.setSubTotal(subTotal);
         statement.setTotal(total);
 
-        // 3. Ορισμός sequenceNumber ανά κτίριο
+        // 3) sequenceNumber
         Integer maxSeq = commonExpenseStatementRepository.findMaxSequenceByBuilding(buildingId);
         int nextSeq = (maxSeq == null) ? 1 : maxSeq + 1;
         statement.setSequenceNumber(nextSeq);
 
-        // 4. Σύνδεση των items με το statement
+        // 4) link items
         statement.getItems().forEach(i -> i.setStatement(statement));
 
-        // 5. Αποθήκευση statement και items
-        CommonExpenseStatement saved = commonExpenseStatementRepository.save(statement);
-
-        // 6. Φέρνουμε όλα τα διαμερίσματα της πολυκατοικίας
-        List<Apartment> apartments = apartmentRepository.findAllByBuilding_Id(buildingId);
-
-        // 7. Προσθέτουμε status
+        // 5) status
         if (statement.getStatus() == null) {
             statement.setStatus(StatementStatus.ISSUED);
         }
 
-        // 8. Δημιουργία allocations ανά item & apartment
+        // 6) save statement
+        CommonExpenseStatement saved = commonExpenseStatementRepository.save(statement);
+
+        // 7) apartments
+        List<Apartment> apartments = apartmentRepository.findAllByBuilding_Id(buildingId);
+
+        // 8) allocations
         for (CommonExpenseItem item : saved.getItems()) {
             double itemTotal = (item.getPrice() == null ? 0.0 : item.getPrice());
 
@@ -88,31 +94,54 @@ public class CommonExpenseStatementService {
                         .status("UNPAID")
                         .build();
 
-                //Λογική “ποιος πληρώνει”
+                // ποιος πληρώνει
                 if (apt.getResident() != null) {
                     if (item.getCategory() == ExpenseCategory.OWNERS) {
-                        allocation.setUser(apt.getOwner()); // μόνο οι ιδιοκτήτες για OWNERS
+                        allocation.setUser(apt.getOwner());
                     } else {
-                        allocation.setUser(apt.getResident()); // τα υπόλοιπα στον ένοικο
+                        allocation.setUser(apt.getResident());
                     }
                 } else {
-                    allocation.setUser(apt.getOwner()); // αν δεν υπάρχει ένοικος → όλα στον ιδιοκτήτη
+                    allocation.setUser(apt.getOwner());
                 }
 
                 commonExpenseAllocationRepository.save(allocation);
-
-                System.out.printf(
-                        "🧾 Created allocation | Apartment=%s | Category=%s | User=%s | Amount=%.2f%n",
-                        apt.getNumber(),
-                        item.getCategory(),
-                        allocation.getUser() != null ? allocation.getUser().getFullName() : "Χωρίς χρήστη",
-                        share
-                );
             }
+        }
+
+        // 9) Notifications ΜΙΑ φορά σε όλους τους χρήστες
+        Building building = buildingRepository.findById(buildingId)
+                .orElseThrow(() -> new RuntimeException("Building not found"));
+
+        Set<User> receivers = new HashSet<>();
+        for (Apartment a : apartments) {
+            if (a.getOwner() != null) receivers.add(a.getOwner());
+            if (a.getResident() != null) receivers.add(a.getResident());
+        }
+        if (building.getManager() != null) receivers.add(building.getManager());
+
+        String payload;
+        try {
+            payload = objectMapper.writeValueAsString(Map.of(
+                    "buildingId", buildingId,
+                    "statementId", saved.getId(),
+                    "code", saved.getCode(),
+                    "month", saved.getMonth(),
+                    "tab", "invoice"
+            ));
+        } catch (Exception e) {
+            payload = null;
+        }
+
+        String message = "Εκδόθηκε νέο παραστατικό: " + saved.getCode() + " (" + saved.getMonth() + ")";
+
+        for (User user : receivers) {
+            notificationService.create(user, "NEW_STATEMENT", message, payload);
         }
 
         return saved;
     }
+
 
 
     @Transactional
@@ -157,39 +186,50 @@ public class CommonExpenseStatementService {
                 .orElseThrow(() -> new RuntimeException("Δεν βρέθηκε κατάσταση με id " + id));
     }
 
-    public List<CommonExpenseStatement> getStatementsByBuilding(Integer buildingId) {
+    public List<CommonExpenseStatementDTO> getStatementsByBuilding(Integer buildingId) {
         List<CommonExpenseStatement> statements = commonExpenseStatementRepository.findByBuildingId(buildingId);
         LocalDateTime now = LocalDateTime.now();
 
-        statements.forEach(s -> {
+        return statements.stream().map(s -> {
+
             Boolean isPaid = s.getIsPaid() != null ? s.getIsPaid() : false;
 
-            //Αν δεν έχει πληρωθεί και έχει λήξει → γίνεται EXPIRED
             if (!isPaid && s.getEndDate() != null
                     && s.getEndDate().isBefore(now)
                     && s.getStatus() == StatementStatus.ISSUED) {
                 s.setStatus(StatementStatus.EXPIRED);
                 commonExpenseStatementRepository.save(s);
-            }
-
-            //Αν έχει πληρωθεί → γίνεται PAID
-            else if (Boolean.TRUE.equals(isPaid)
-                    && s.getStatus() != StatementStatus.PAID) {
+            } else if (Boolean.TRUE.equals(isPaid) && s.getStatus() != StatementStatus.PAID) {
                 s.setStatus(StatementStatus.PAID);
                 commonExpenseStatementRepository.save(s);
             }
-        });
 
-        return statements;
+            boolean hasPayments = commonExpenseAllocationRepository.hasAnyPaymentForStatement(s.getId());
+
+            CommonExpenseStatementDTO dto = CommonExpenseStatementMapper.toDTO(s);
+            dto.setHasPayments(hasPayments);
+            return dto;
+
+        }).toList();
     }
 
-    public List<CommonExpenseStatement> getActiveStatementsByBuilding(Integer buildingId) {
-        // Παίρνουμε μόνο τα statements με status ISSUED, PAID ή EXPIRED
-        return commonExpenseStatementRepository.findActiveByBuildingId(buildingId);
+    public List<CommonExpenseStatementDTO> getActiveStatementsByBuildingDTO(Integer buildingId) {
+        return commonExpenseStatementRepository.findActiveByBuildingId(buildingId)
+                .stream()
+                .map(s -> {
+                    boolean hasPayments = commonExpenseAllocationRepository.hasAnyPaymentForStatement(s.getId());
+                    CommonExpenseStatementDTO dto = CommonExpenseStatementMapper.toDTO(s);
+                    dto.setHasPayments(hasPayments);
+                    return dto;
+                }).toList();
     }
 
     @Transactional
     public void delete(Integer id) {
+        if (commonExpenseAllocationRepository.hasAnyPaymentForStatement(id)) {
+            throw new IllegalStateException("Δεν επιτρέπεται επεξεργασία/διαγραφή μετά από πληρωμή.");
+        }
+
         CommonExpenseStatement statement = commonExpenseStatementRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Δεν βρέθηκε statement με ID: " + id));
 
@@ -225,30 +265,12 @@ public class CommonExpenseStatementService {
         // Τελικός κωδικός
         return String.format("%s-%s-%s", datePart, buildingPart, seqPart);
     }
-    @Transactional
-    public void markAsPaid(Integer allocationId, String paymentMethod) {
-        CommonExpenseAllocation allocation = commonExpenseAllocationRepository.findById(allocationId)
-                .orElseThrow(() -> new RuntimeException("Allocation not found"));
-
-        allocation.setIsPaid(true);
-        allocation.setPaymentMethod(PaymentMethod.valueOf(paymentMethod));
-        allocation.setPaidDate(LocalDateTime.now());
-        commonExpenseAllocationRepository.save(allocation);
-
-        // Έλεγχος αν όλα έχουν πληρωθεί
-        CommonExpenseStatement statement = allocation.getStatement();
-        boolean allPaid = commonExpenseAllocationRepository
-                .findAllByStatement_Id(statement.getId())
-                .stream()
-                .allMatch(CommonExpenseAllocation::getIsPaid);
-
-        if (allPaid && Boolean.FALSE.equals(statement.getIsPaid())) {
-            statement.setIsPaid(true);
-            commonExpenseStatementRepository.save(statement);
-        }
-    }
 
     public CommonExpenseStatementDTO updateStatement(Integer id, CommonExpenseStatementDTO dto) {
+        if (commonExpenseAllocationRepository.hasAnyPaymentForStatement(id)) {
+            throw new IllegalStateException("Δεν επιτρέπεται επεξεργασία/διαγραφή μετά από πληρωμή.");
+        }
+
         CommonExpenseStatement entity = commonExpenseStatementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Δεν βρέθηκε statement με id " + id));
 
@@ -290,35 +312,5 @@ public class CommonExpenseStatementService {
         return CommonExpenseStatementMapper.toDTO(saved);
     }
 
-    public Map<String, Long> getStatementCounters(Integer buildingId) {
-        YearMonth currentMonth = YearMonth.now();
-
-        List<CommonExpenseStatement> statements = commonExpenseStatementRepository
-                .findByBuildingId(buildingId);
-
-        long issuedCount = statements.stream()
-                .filter(s -> YearMonth.from(s.getStartDate()).equals(currentMonth))
-                .count();
-
-        long paidCount = statements.stream()
-                .filter(CommonExpenseStatement::getIsPaid)
-                .count();
-
-        long pendingCount = statements.stream()
-                .filter(s -> !s.getIsPaid() && (s.getEndDate() == null || !s.getEndDate().isBefore(LocalDate.now().atStartOfDay())))
-                .count();
-
-        long overdueCount = statements.stream()
-                .filter(s -> !s.getIsPaid() && s.getEndDate() != null && s.getEndDate().isBefore(LocalDate.now().atStartOfDay()))
-                .count();
-
-        Map<String, Long> counters = new HashMap<>();
-        counters.put("issuedCount", issuedCount);
-        counters.put("paidCount", paidCount);
-        counters.put("pendingCount", pendingCount);
-        counters.put("overdueCount", overdueCount);
-
-        return counters;
-    }
 
 }

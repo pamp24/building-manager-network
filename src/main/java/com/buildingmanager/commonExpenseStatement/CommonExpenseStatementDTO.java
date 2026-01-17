@@ -36,6 +36,8 @@ public class CommonExpenseStatementDTO {
     private StatementStatus status;
     private Boolean isPaid;
 
+    private boolean hasPayments;
+
     private List<CommonExpenseItemDTO> items;
     private List<CommonExpenseAllocationDTO> allocations;
 
