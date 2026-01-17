@@ -1,6 +1,8 @@
 package com.buildingmanager.calendar;
 
-import jakarta.transaction.Transactional;
+import com.buildingmanager.buildingMember.BuildingMemberRepository;
+import com.buildingmanager.user.User;
+import com.buildingmanager.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,8 +14,25 @@ public class CalendarService {
 
     private final CalendarRepository repository;
     private final CalendarMapper mapper;
+    private final UserRepository userRepository;
+    private final BuildingMemberRepository buildingMemberRepository;
 
-    public List<CalendarDTO> getByBuilding(Integer buildingId) {
+    public List<CalendarDTO> getByBuilding(Integer buildingId, Integer userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean isManager = user.getRole() != null
+                && "BuildingManager".equalsIgnoreCase(user.getRole().getName());
+
+        boolean isMember = buildingMemberRepository
+                .findByBuilding_IdAndUser_Id(buildingId, userId)
+                .isPresent();
+
+        if (!isMember && !isManager) {
+            return List.of();
+        }
+
         return repository.findByBuildingPinnedFirst(buildingId)
                 .stream()
                 .map(mapper::toDTO)
@@ -39,8 +58,7 @@ public class CalendarService {
 
         existing.setPinned(pinned);
 
-        // Αν θες μόνο ένα pinned τη φορά:
-        // αν pinned=true → ξεκαρφίτσωσε όλα τα άλλα της ίδιας πολυκατοικίας
+        // αν pinned=true
         if (pinned && existing.getBuilding() != null) {
             Integer buildingId = existing.getBuilding().getId();
             List<Calendar> events = repository.findByBuildingPinnedFirst(buildingId);

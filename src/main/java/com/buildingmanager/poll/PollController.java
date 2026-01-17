@@ -15,16 +15,17 @@ public class PollController {
 
     private final PollService pollService;
 
-    @GetMapping("/building/{buildingId}/all")
-    public List<PollDTO> getAll(@PathVariable Integer buildingId, Authentication authentication) {
-        var user = (User) authentication.getPrincipal();
-        return pollService.getAllByBuilding(buildingId, user.getId());
-    }
 
     @GetMapping("/building/{buildingId}")
     public List<PollDTO> getByBuilding(@PathVariable Integer buildingId, Authentication authentication) {
         var user = (User) authentication.getPrincipal();
         return pollService.getByBuildingForMember(buildingId, user.getId());
+    }
+
+    @GetMapping("/myPolls")
+    public List<PollDTO> getMyPolls(Authentication authentication) {
+        var user = (User) authentication.getPrincipal();
+        return pollService.getMyPolls(user.getId());
     }
 
     @PostMapping

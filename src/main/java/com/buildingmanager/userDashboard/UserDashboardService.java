@@ -160,7 +160,6 @@ public class UserDashboardService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Find correct apartment
         Apartment apartment = apartmentRepository.findByResident_Id(userId).stream().findFirst()
                 .orElse(apartmentRepository.findByOwner_Id(userId).stream().findFirst().orElse(null));
 
@@ -169,69 +168,72 @@ public class UserDashboardService {
             return List.of();
         }
 
-        // Fetch all statements for this building
         List<CommonExpenseStatement> statements =
                 statementRepository.findByBuildingId(apartment.getBuilding().getId());
 
-        // Sort latest → oldest using start_date
-        statements.sort((a, b) ->
-                b.getStartDate().compareTo(a.getStartDate())
-        );
-
-        // Keep last 12
+        statements.sort((a, b) -> b.getStartDate().compareTo(a.getStartDate()));
         statements = statements.stream().limit(12).toList();
 
-        // Map to DTO with user-specific total
         return statements.stream()
-                .map(s -> new UserStatementHistoryDTO(
-                        s.getId(),
-                        s.getMonth(),
-                        calculateUserTotalForStatement(s, apartment, user)
-                ))
+                .map(s -> {
+                    double billed = calculateUserBilledForStatement(s, apartment, user);
+                    double remaining = calculateUserRemainingForStatement(s, apartment, user);
+                    return new UserStatementHistoryDTO(s.getId(), s.getMonth(), billed, remaining);
+                })
                 .toList();
     }
 
-    private double calculateUserTotalForStatement(
-            CommonExpenseStatement statement,
-            Apartment apartment,
-            User user
-    ) {
+    private double calculateUserBilledForStatement(CommonExpenseStatement statement, Apartment apartment, User user) {
+
         List<CommonExpenseAllocation> allocations =
                 allocationRepository.findByStatementAndApartment(statement, apartment);
 
         double total = 0.0;
 
-        boolean isOwner = apartment.getOwner() != null &&
-                apartment.getOwner().getId().equals(user.getId());
-
-        boolean isResident = apartment.getResident() != null &&
-                apartment.getResident().getId().equals(user.getId());
-
+        boolean isOwner = apartment.getOwner() != null && apartment.getOwner().getId().equals(user.getId());
+        boolean isResident = apartment.getResident() != null && apartment.getResident().getId().equals(user.getId());
         boolean hasResident = apartment.getResident() != null;
 
         for (CommonExpenseAllocation alloc : allocations) {
 
-            double amount = alloc.getAmount() -
-                    (alloc.getPaidAmount() == null ? 0.0 : alloc.getPaidAmount());
-
+            double amount = alloc.getAmount();
             if (amount <= 0) continue;
 
             ExpenseCategory category = alloc.getItem().getCategory();
 
             if (hasResident) {
-
-                // Resident: όλα εκτός OWNERS
-                if (isResident && category != ExpenseCategory.OWNERS) {
-                    total += amount;
-                }
-
-                // Owner: μόνο OWNERS
-                if (isOwner && category == ExpenseCategory.OWNERS) {
-                    total += amount;
-                }
-
+                if (isResident && category != ExpenseCategory.OWNERS) total += amount;
+                if (isOwner && category == ExpenseCategory.OWNERS) total += amount;
             } else {
-                // No resident → Owner πληρώνει όλα
+                if (isOwner) total += amount;
+            }
+        }
+
+        return total;
+    }
+
+    private double calculateUserRemainingForStatement(CommonExpenseStatement statement, Apartment apartment, User user) {
+
+        List<CommonExpenseAllocation> allocations =
+                allocationRepository.findByStatementAndApartment(statement, apartment);
+
+        double total = 0.0;
+
+        boolean isOwner = apartment.getOwner() != null && apartment.getOwner().getId().equals(user.getId());
+        boolean isResident = apartment.getResident() != null && apartment.getResident().getId().equals(user.getId());
+        boolean hasResident = apartment.getResident() != null;
+
+        for (CommonExpenseAllocation alloc : allocations) {
+
+            double amount = alloc.getAmount() - (alloc.getPaidAmount() == null ? 0.0 : alloc.getPaidAmount());
+            if (amount <= 0) continue;
+
+            ExpenseCategory category = alloc.getItem().getCategory();
+
+            if (hasResident) {
+                if (isResident && category != ExpenseCategory.OWNERS) total += amount;
+                if (isOwner && category == ExpenseCategory.OWNERS) total += amount;
+            } else {
                 if (isOwner) total += amount;
             }
         }
