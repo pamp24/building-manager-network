@@ -22,6 +22,8 @@ public interface BuildingMemberRepository extends JpaRepository<BuildingMember, 
     Optional<BuildingMember> findByBuilding_IdAndUser_Id(Integer buildingId, Integer userId);
     Optional<BuildingMember> findByBuilding_IdAndRole_Name(Integer buildingId, String roleName);
 
+    Optional<BuildingMember> findFirstByUser_Id(Integer userId);
+
     @Transactional
     @Modifying
     @Query("delete from BuildingMember bm where bm.building.id = :buildingId")

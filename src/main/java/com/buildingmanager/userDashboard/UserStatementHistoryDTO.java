@@ -11,5 +11,6 @@ public class UserStatementHistoryDTO {
 
     private Integer statementId;
     private String month;
-    private Double total;
+    private Double billed;
+    private Double remaining;
 }

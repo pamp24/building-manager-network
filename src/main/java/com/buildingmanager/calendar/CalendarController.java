@@ -1,6 +1,8 @@
 package com.buildingmanager.calendar;
 
+import com.buildingmanager.user.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,8 +16,9 @@ public class CalendarController {
     private final CalendarService calendarService;
 
     @GetMapping("/building/{buildingId}")
-    public List<CalendarDTO> getByBuilding(@PathVariable Integer buildingId) {
-        return calendarService.getByBuilding(buildingId);
+    public List<CalendarDTO> getByBuilding(@PathVariable Integer buildingId, Authentication auth) {
+        User user = (User) auth.getPrincipal();
+        return calendarService.getByBuilding(buildingId, user.getId());
     }
 
     @PostMapping

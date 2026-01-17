@@ -232,4 +232,45 @@ public class PollService {
             return dto;
         }).toList();
     }
+
+    public List<PollDTO> getMyPolls(Integer userId) {
+
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        boolean isManager = user.getRole() != null && "BuildingManager".equalsIgnoreCase(user.getRole().getName());
+
+        Integer buildingId = buildingMemberRepository.findFirstByUser_Id(userId)
+                .map(m -> m.getBuilding().getId())
+                .orElse(null);
+
+        if (buildingId == null && !isManager) {
+            return List.of();
+        }
+
+        // Manager χωρίς membership: αν θες, γύρνα όλα ή κενό. Εγώ λέω κενό για ασφάλεια.
+        if (buildingId == null) return List.of();
+
+        // auto-expire logic
+        LocalDateTime now = LocalDateTime.now();
+
+        List<Poll> polls = isManager
+                ? pollRepository.findByBuildingIdOrderByStartDateDesc(buildingId)
+                : pollRepository.findByBuildingIdAndActiveTrueOrderByStartDateDesc(buildingId);
+
+        for (Poll poll : polls) {
+            if (poll.isActive() && poll.getEndDate() != null && poll.getEndDate().isBefore(now)) {
+                poll.setActive(false);
+                pollRepository.save(poll);
+            }
+        }
+
+        // ξαναφόρτωσε αν θες να μη γυρίσεις ληγμένα ως active
+        if (!isManager) {
+            polls = pollRepository.findByBuildingIdAndActiveTrueOrderByStartDateDesc(buildingId);
+        }
+
+        return polls.stream().map(pollMapper::toDTO).toList();
+    }
+
 }
