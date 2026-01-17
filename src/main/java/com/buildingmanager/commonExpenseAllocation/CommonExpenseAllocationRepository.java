@@ -30,20 +30,6 @@ public interface CommonExpenseAllocationRepository extends JpaRepository<CommonE
     List<CommonExpenseAllocation> findAllByStatement_Id(Integer statementId);
 
 
-
-
-    @Query("""
-    SELECT COALESCE(SUM(a.amount), 0)
-    FROM CommonExpenseAllocation a
-    JOIN a.item i
-    JOIN a.item.statement s
-    WHERE a.apartment.id = :apartmentId
-      AND MONTH(s.startDate) = :month
-""")
-    Double sumApartmentExpensesByMonth(@Param("apartmentId") Integer apartmentId,
-                                       @Param("month") Integer month);
-
-
     @Query("""
     SELECT COALESCE(SUM(a.amount), 0)
     FROM CommonExpenseAllocation a
@@ -63,5 +49,32 @@ public interface CommonExpenseAllocationRepository extends JpaRepository<CommonE
           AND a.isPaid = FALSE
     """)
     Double sumUnpaidByApartment(@Param("apartmentId") Integer apartmentId);
+
+    @Query("""
+select (count(a.id) > 0)
+from CommonExpenseAllocation a
+where a.statement.id = :statementId
+  and coalesce(a.paidAmount, 0) > 0
+""")
+    boolean hasAnyPaymentForStatement(@Param("statementId") Integer statementId);
+
+    @Query("""
+    SELECT COALESCE(SUM(a.amount), 0)
+    FROM CommonExpenseAllocation a
+    JOIN a.item i
+    JOIN i.statement s
+    WHERE a.apartment.id = :apartmentId
+      AND EXTRACT(MONTH FROM s.startDate) = :month
+      AND EXTRACT(YEAR FROM s.startDate) = :year
+""")
+    Double sumApartmentExpensesByMonthYear(
+            @Param("apartmentId") Integer apartmentId,
+            @Param("month") int month,
+            @Param("year") int year
+    );
+
+
+
+
 }
 

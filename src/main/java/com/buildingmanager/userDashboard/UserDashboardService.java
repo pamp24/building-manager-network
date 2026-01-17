@@ -18,6 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -293,40 +296,62 @@ public class UserDashboardService {
 
         Integer buildingId = apartment.getBuilding().getId();
 
-        List<String> labels;
+        List<String> labels = new ArrayList<>();
         List<Double> values = new ArrayList<>();
 
-        if (period.equals("month")) {
+        if ("month".equalsIgnoreCase(period)) {
 
-            labels = List.of("Ιαν", "Φεβ", "Μαρτ", "Απρ", "Μαϊ", "Ιουν", "Ιουλ", "Αυγ", "Σεπ", "Οκτ", "Νοε", "Δεκ");
+            //τελευταίο statement στη βάση
+            LocalDateTime maxStart = statementRepository.findMaxStatementStartDate(buildingId);
+            YearMonth anchor = (maxStart != null) ? YearMonth.from(maxStart) : YearMonth.now();
 
-            for (int month = 1; month <= 12; month++) {
-                double amount;
+            YearMonth start = anchor.minusMonths(11);
 
-                if (type.equals("building")) {
-                    amount = statementRepository.sumBuildingExpensesByMonth(buildingId, month);
+            for (int i = 0; i < 12; i++) {
+                YearMonth ym = start.plusMonths(i);
+                int year = ym.getYear();
+                int month = ym.getMonthValue();
+
+                // label "2026-02"
+                labels.add(ym.toString());
+
+                Double amount;
+                if ("building".equalsIgnoreCase(type)) {
+                    amount = statementRepository.sumBuildingExpensesByMonthYear(buildingId, month, year);
                 } else {
-                    amount = allocationRepository.sumApartmentExpensesByMonth(apartment.getId(), month);
+                    amount = allocationRepository.sumApartmentExpensesByMonthYear(apartment.getId(), month, year);
                 }
 
-                values.add(amount);
+                values.add(amount != null ? amount : 0.0);
             }
 
-        } else {
+        }
+        // All years
+        else {
 
-            labels = List.of("2021", "2022", "2023", "2024", "2025");
+            List<Integer> years = statementRepository.findAvailableYears(buildingId);
+            int yearsBack = 5; // <-- άλλαξέ το σε 10 αν θες
+            Integer maxYearObj = statementRepository.findMaxYearForBuilding(buildingId);
+            int endYear = (maxYearObj != null) ? maxYearObj : LocalDate.now().getYear();
+            int startYear = endYear - (yearsBack - 1);
 
-            for (String yearStr : labels) {
-                int year = Integer.parseInt(yearStr);
-                double amount;
+            // fallback
+            if (years == null || years.isEmpty()) {
+                int currentYear = java.time.LocalDate.now().getYear();
+                years = List.of(currentYear);
+            }
 
-                if (type.equals("building")) {
+            for (int year = startYear; year <= endYear; year++) {
+                labels.add(String.valueOf(year));
+
+                Double amount;
+                if ("building".equalsIgnoreCase(type)) {
                     amount = statementRepository.sumBuildingExpensesByYear(buildingId, year);
                 } else {
                     amount = allocationRepository.sumApartmentExpensesByYear(apartment.getId(), year);
                 }
 
-                values.add(amount);
+                values.add(amount != null ? amount : 0.0);
             }
         }
 
@@ -334,6 +359,7 @@ public class UserDashboardService {
 
         return new ChartResponseDTO(labels, values, total);
     }
+
 
     public StatementMiniChartDTO getStatementMiniChart(Integer userId) {
 

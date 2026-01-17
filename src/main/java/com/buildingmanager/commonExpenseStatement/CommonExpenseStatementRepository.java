@@ -3,7 +3,6 @@ package com.buildingmanager.commonExpenseStatement;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,24 +25,6 @@ ORDER BY s.startDate DESC
     @Query("SELECT s FROM CommonExpenseStatement s WHERE s.active = true")
     List<CommonExpenseStatement> getAllActive();
 
-
-    @Query("SELECT s FROM CommonExpenseStatement s WHERE s.building.id = :buildingId")
-    List<CommonExpenseStatement> findAllByBuildingIdIncludingInactive(@Param("buildingId") Integer buildingId);
-
-
-    // ==================== DASHBOARD QUERIES ====================
-
-    @Query("""
-    SELECT COUNT(s)
-    FROM CommonExpenseStatement s
-    WHERE s.building.id = :buildingId
-      AND EXTRACT(MONTH FROM s.startDate) = :month
-      AND EXTRACT(YEAR FROM s.startDate) = :year
-""")
-    long countAllByBuildingMonthYear(@Param("buildingId") Integer buildingId,
-                                     @Param("month") int month,
-                                     @Param("year") int year);
-
     @Query("""
     SELECT COUNT(s)
     FROM CommonExpenseStatement s
@@ -56,33 +37,6 @@ ORDER BY s.startDate DESC
                                            @Param("month") int month,
                                            @Param("year") int year,
                                            @Param("status") StatementStatus status);
-
-    @Query("""
-    SELECT COUNT(s)
-    FROM CommonExpenseStatement s
-    WHERE s.building.id = :buildingId
-""")
-    long countAllByBuilding(@Param("buildingId") Integer buildingId);
-    @Query("""
-    SELECT COUNT(s)
-    FROM CommonExpenseStatement s
-    WHERE s.building.id = :buildingId
-      AND s.status = :status
-""")
-    long countByBuildingAndStatus(@Param("buildingId") Integer buildingId,
-                                  @Param("status") StatementStatus status);
-    @Query("""
-    SELECT COUNT(s)
-    FROM CommonExpenseStatement s
-    WHERE s.building.id = :buildingId
-      AND EXTRACT(MONTH FROM s.startDate) = :month
-      AND EXTRACT(YEAR FROM s.startDate) = :year
-""")
-    long countByBuildingAndCreatedMonthYear(
-            @Param("buildingId") Integer buildingId,
-            @Param("month") int month,
-            @Param("year") int year
-    );
 
     @Query("""
     SELECT COUNT(s)
@@ -101,6 +55,15 @@ ORDER BY s.startDate DESC
     SELECT COUNT(s)
     FROM CommonExpenseStatement s
     WHERE s.building.id = :buildingId
+      AND s.status = :status
+""")
+    long countByBuildingAndStatus(@Param("buildingId") Integer buildingId,
+                                  @Param("status") StatementStatus status);
+
+    @Query("""
+    SELECT COUNT(s)
+    FROM CommonExpenseStatement s
+    WHERE s.building.id = :buildingId
       AND s.status IN ('ISSUED', 'PAID', 'EXPIRED')
       AND EXTRACT(YEAR FROM s.startDate) = :year
 """)
@@ -109,28 +72,6 @@ ORDER BY s.startDate DESC
             @Param("year") int year
     );
 
-    @Query("""
-    SELECT COUNT(s)
-    FROM CommonExpenseStatement s
-    WHERE s.building.id = :buildingId
-      AND EXTRACT(MONTH FROM s.startDate) = :month
-      AND EXTRACT(YEAR FROM s.startDate) = :year
-""")
-    long countAllIssuedInMonth(
-            @Param("buildingId") Integer buildingId,
-            @Param("month") int month,
-            @Param("year") int year
-    );
-
-    // --- Ληξιπρόθεσμα (unpaid & endDate < now)
-    @Query("""
-           SELECT COUNT(s)
-           FROM CommonExpenseStatement s
-           WHERE s.building.id = :buildingId
-             AND s.isPaid = FALSE   
-             AND s.endDate < :now
-           """)
-    long countOverdueByBuilding(@Param("buildingId") Integer buildingId, @Param("now") LocalDateTime now);
 
     // --- Άθροισμα ποσών (εισπραχθέντα)
     @Query("""
@@ -165,38 +106,6 @@ WHERE s.building.id = :buildingId
             @Param("statuses") List<StatementStatus> statuses);
 
 
-    @Query("""
-    SELECT SUM(s.total)
-    FROM CommonExpenseStatement s
-    WHERE s.building.id = :buildingId
-      AND EXTRACT(MONTH FROM s.startDate) = :month
-      AND EXTRACT(YEAR FROM s.startDate) = :year
-      AND s.status = :status
-""")
-    Double sumByBuildingMonthYearAndStatus(@Param("buildingId") Integer buildingId,
-                                           @Param("month") int month,
-                                           @Param("year") int year,
-                                           @Param("status") String status);
-
-    @Query("""
-    SELECT COALESCE(SUM(i.price), 0)
-    FROM CommonExpenseItem i
-    JOIN i.statement s
-    WHERE s.building.id = :buildingId
-      AND MONTH(s.startDate) = :month
-""")
-    Double sumBuildingExpenses(@Param("buildingId") Integer buildingId,
-                               @Param("month") Integer month);
-
-    @Query("""
-    SELECT COALESCE(SUM(i.price), 0)
-    FROM CommonExpenseItem i
-    JOIN i.statement s
-    WHERE s.building.id = :buildingId
-      AND MONTH(s.startDate) = :month
-""")
-    Double sumBuildingExpensesByMonth(@Param("buildingId") Integer buildingId,
-                                      @Param("month") Integer month);
 
     @Query("""
     SELECT COALESCE(SUM(i.price), 0)
@@ -209,5 +118,46 @@ WHERE s.building.id = :buildingId
                                      @Param("year") Integer year);
 
     List<CommonExpenseStatement> findByBuildingIdOrderByStartDateDesc(Integer buildingId);
+
+    @Query("""
+select max(s.startDate)
+from CommonExpenseStatement s
+where s.building.id = :buildingId
+""")
+    LocalDateTime findMaxStatementStartDate(@Param("buildingId") Integer buildingId);
+
+    @Query("""
+    SELECT COALESCE(SUM(i.price), 0)
+    FROM CommonExpenseItem i
+    JOIN i.statement s
+    WHERE s.building.id = :buildingId
+      AND EXTRACT(MONTH FROM s.startDate) = :month
+      AND EXTRACT(YEAR FROM s.startDate) = :year
+""")
+    Double sumBuildingExpensesByMonthYear(
+            @Param("buildingId") Integer buildingId,
+            @Param("month") int month,
+            @Param("year") int year
+    );
+
+
+
+    @Query("""
+select distinct extract(year from s.startDate)
+from CommonExpenseStatement s
+where s.building.id = :buildingId
+order by extract(year from s.startDate)
+""")
+    List<Integer> findAvailableYears(@Param("buildingId") Integer buildingId);
+
+
+    @Query("""
+select coalesce(max(extract(year from s.startDate)), extract(year from current_date))
+from CommonExpenseStatement s
+where s.building.id = :buildingId
+""")
+    Integer findMaxYearForBuilding(@Param("buildingId") Integer buildingId);
+
+
 
 }

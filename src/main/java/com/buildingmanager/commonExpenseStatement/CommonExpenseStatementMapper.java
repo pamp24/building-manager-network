@@ -27,6 +27,8 @@ public class CommonExpenseStatementMapper {
                 .sequenceNumber(entity.getSequenceNumber())
                 .status(entity.getStatus())
                 .isPaid(entity.getIsPaid())
+                .hasPayments(entity.isHasPayments())
+
                 .buildingId(entity.getBuilding().getId())
                 .items(entity.getItems().stream().map(CommonExpenseStatementMapper::toItemDTO).collect(Collectors.toList()))
                 .active(entity.isActive())

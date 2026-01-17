@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,8 +36,9 @@ public class ManagerDashboardService {
         Double totalIncome = commonExpenseStatementRepository.sumPaidAmountByBuilding(buildingId);
         Double totalDebt = commonExpenseStatementRepository.sumUnpaidAmountByBuilding(buildingId);
 
-        List<MonthlyStatsDTO> monthlyStats = getIssuedVsPaidPerMonth(buildingId);
-        List<MonthlyAmountStatsDTO> monthlyAmountStats = getMonthlyAmountStats(buildingId);
+        List<MonthlyStatsDTO> monthlyStats = getIssuedVsPaidPerMonthRolling(buildingId);
+        List<MonthlyAmountStatsDTO> monthlyAmountStats = getMonthlyAmountStatsRolling(buildingId);
+
 
         return ManagerDashboardDTO.builder()
                 .buildingId(buildingId)
@@ -53,69 +55,155 @@ public class ManagerDashboardService {
                 .build();
     }
 
-    public List<MonthlyStatsDTO> getIssuedVsPaidPerMonth(Integer buildingId) {
-        int currentYear = LocalDate.now().getYear();
+//    public List<MonthlyStatsDTO> getIssuedVsPaidPerMonth(Integer buildingId) {
+//        int currentYear = LocalDate.now().getYear();
+//        List<MonthlyStatsDTO> stats = new ArrayList<>();
+//
+//        for (int month = 1; month <= 12; month++) {
+//            long issued = commonExpenseStatementRepository.countIssuedExcludingDraftsAndCancelled(buildingId, month, currentYear);
+//            long paid = commonExpenseStatementRepository.countByBuildingMonthYearAndStatus(buildingId, month, currentYear, StatementStatus.PAID);
+//            long expired = commonExpenseStatementRepository.countByBuildingMonthYearAndStatus(buildingId, month, currentYear, StatementStatus.EXPIRED);
+//
+//            //Εκκρεμή = Εκδοθέντα - (Πληρωμένα + Ληγμένα)
+//            long pending = issued - (paid + expired);
+//            if (pending < 0) pending = 0;
+//
+//            stats.add(new MonthlyStatsDTO(getMonthName(month), issued, pending, paid, expired));
+//        }
+//
+//        return stats;
+//    }
+
+    public List<MonthlyStatsDTO> getIssuedVsPaidPerMonthRolling(Integer buildingId) {
         List<MonthlyStatsDTO> stats = new ArrayList<>();
 
-        for (int month = 1; month <= 12; month++) {
-            long issued = commonExpenseStatementRepository.countIssuedExcludingDraftsAndCancelled(buildingId, month, currentYear);
-            long paid = commonExpenseStatementRepository.countByBuildingMonthYearAndStatus(buildingId, month, currentYear, StatementStatus.PAID);
-            long expired = commonExpenseStatementRepository.countByBuildingMonthYearAndStatus(buildingId, month, currentYear, StatementStatus.EXPIRED);
+        YearMonth end = resolveAxisEndMonth(buildingId);
+        YearMonth start = end.minusMonths(11);
 
-            //Εκκρεμή = Εκδοθέντα - (Πληρωμένα + Ληγμένα)
+        for (int i = 0; i < 12; i++) {
+            YearMonth ym = start.plusMonths(i);
+            int year = ym.getYear();
+            int month = ym.getMonthValue();
+
+            long issued = commonExpenseStatementRepository.countIssuedExcludingDraftsAndCancelled(buildingId, month, year);
+            long paid = commonExpenseStatementRepository.countByBuildingMonthYearAndStatus(buildingId, month, year, StatementStatus.PAID);
+            long expired = commonExpenseStatementRepository.countByBuildingMonthYearAndStatus(buildingId, month, year, StatementStatus.EXPIRED);
+
             long pending = issued - (paid + expired);
             if (pending < 0) pending = 0;
 
-            stats.add(new MonthlyStatsDTO(getMonthName(month), issued, pending, paid, expired));
+            stats.add(new MonthlyStatsDTO(formatYearMonthLabel(ym), issued, pending, paid, expired));
         }
 
         return stats;
     }
-    public List<MonthlyAmountStatsDTO> getMonthlyAmountStats(Integer buildingId) {
-        int currentYear = LocalDate.now().getYear();
+
+//    public List<MonthlyAmountStatsDTO> getMonthlyAmountStats(Integer buildingId) {
+//        int currentYear = LocalDate.now().getYear();
+//        List<MonthlyAmountStatsDTO> stats = new ArrayList<>();
+//
+//        for (int month = 1; month <= 12; month++) {
+//            Double issued = commonExpenseStatementRepository.sumByBuildingMonthYearAndStatuses(
+//                    buildingId, month, currentYear,
+//                    List.of(StatementStatus.ISSUED, StatementStatus.PAID, StatementStatus.EXPIRED));
+//
+//            Double paid = commonExpenseStatementRepository.sumByBuildingMonthYearAndStatuses(
+//                    buildingId, month, currentYear, List.of(StatementStatus.PAID));
+//
+//            Double expired = commonExpenseStatementRepository.sumByBuildingMonthYearAndStatuses(
+//                    buildingId, month, currentYear, List.of(StatementStatus.EXPIRED));
+//
+//            Double pending = (issued != null ? issued : 0.0) - ((paid != null ? paid : 0.0) + (expired != null ? expired : 0.0));
+//            if (pending < 0) pending = 0.0;
+//            stats.add(new MonthlyAmountStatsDTO(
+//                    getMonthName(month),
+//                    issued != null ? issued : 0.0,
+//                    pending,
+//                    paid != null ? paid : 0.0,
+//                    expired != null ? expired : 0.0
+//            ));
+//        }
+//        return stats;
+//    }
+//
+//    private String getMonthName(int month) {
+//        return switch (month) {
+//            case 1 -> "Ιαν";
+//            case 2 -> "Φεβ";
+//            case 3 -> "Μαρ";
+//            case 4 -> "Απρ";
+//            case 5 -> "Μαι";
+//            case 6 -> "Ιουν";
+//            case 7 -> "Ιουλ";
+//            case 8 -> "Αυγ";
+//            case 9 -> "Σεπ";
+//            case 10 -> "Οκτ";
+//            case 11 -> "Νοε";
+//            case 12 -> "Δεκ";
+//            default -> "";
+//        };
+//    }
+
+    public List<MonthlyAmountStatsDTO> getMonthlyAmountStatsRolling(Integer buildingId) {
         List<MonthlyAmountStatsDTO> stats = new ArrayList<>();
 
-        for (int month = 1; month <= 12; month++) {
+        YearMonth end = resolveAxisEndMonth(buildingId);
+        YearMonth start = end.minusMonths(11);
+
+
+        for (int i = 0; i < 12; i++) {
+            YearMonth ym = start.plusMonths(i);
+            int year = ym.getYear();
+            int month = ym.getMonthValue();
+
             Double issued = commonExpenseStatementRepository.sumByBuildingMonthYearAndStatuses(
-                    buildingId, month, currentYear,
+                    buildingId, month, year,
                     List.of(StatementStatus.ISSUED, StatementStatus.PAID, StatementStatus.EXPIRED));
 
             Double paid = commonExpenseStatementRepository.sumByBuildingMonthYearAndStatuses(
-                    buildingId, month, currentYear, List.of(StatementStatus.PAID));
+                    buildingId, month, year, List.of(StatementStatus.PAID));
 
             Double expired = commonExpenseStatementRepository.sumByBuildingMonthYearAndStatuses(
-                    buildingId, month, currentYear, List.of(StatementStatus.EXPIRED));
+                    buildingId, month, year, List.of(StatementStatus.EXPIRED));
 
-            Double pending = (issued != null ? issued : 0.0) - ((paid != null ? paid : 0.0) + (expired != null ? expired : 0.0));
+            double issuedVal = issued != null ? issued : 0.0;
+            double paidVal = paid != null ? paid : 0.0;
+            double expiredVal = expired != null ? expired : 0.0;
+
+            double pending = issuedVal - (paidVal + expiredVal);
             if (pending < 0) pending = 0.0;
-            stats.add(new MonthlyAmountStatsDTO(
-                    getMonthName(month),
-                    issued != null ? issued : 0.0,
-                    pending,
-                    paid != null ? paid : 0.0,
-                    expired != null ? expired : 0.0
-            ));
+
+            stats.add(MonthlyAmountStatsDTO.builder()
+                    // ✅ label με έτος-μήνα
+                    .month(formatYearMonthLabel(ym))   // π.χ. "2026-Νοε"
+                    .issuedAmount(issuedVal)
+                    .pendingAmount(pending)
+                    .paidAmount(paidVal)
+                    .expiredAmount(expiredVal)
+                    .build());
         }
+
         return stats;
     }
 
-
-
-    private String getMonthName(int month) {
-        return switch (month) {
-            case 1 -> "Ιαν";
-            case 2 -> "Φεβ";
-            case 3 -> "Μαρ";
-            case 4 -> "Απρ";
-            case 5 -> "Μαι";
-            case 6 -> "Ιουν";
-            case 7 -> "Ιουλ";
-            case 8 -> "Αυγ";
-            case 9 -> "Σεπ";
-            case 10 -> "Οκτ";
-            case 11 -> "Νοε";
-            case 12 -> "Δεκ";
+    private String formatYearMonthLabel(YearMonth ym) {
+        // Ελληνικά short: Ιαν, Φεβ...
+        String m = switch (ym.getMonthValue()) {
+            case 1 -> "Ιαν"; case 2 -> "Φεβ"; case 3 -> "Μαρ"; case 4 -> "Απρ";
+            case 5 -> "Μαι"; case 6 -> "Ιουν"; case 7 -> "Ιουλ"; case 8 -> "Αυγ";
+            case 9 -> "Σεπ"; case 10 -> "Οκτ"; case 11 -> "Νοε"; case 12 -> "Δεκ";
             default -> "";
         };
+        return ym.getYear() + "-" + m;
+    }
+
+    private YearMonth resolveAxisEndMonth(Integer buildingId) {
+        YearMonth now = YearMonth.now();
+
+        var maxStart = commonExpenseStatementRepository.findMaxStatementStartDate(buildingId);
+        if (maxStart == null) return now;
+
+        YearMonth maxYm = YearMonth.from(maxStart);
+        return maxYm.isAfter(now) ? maxYm : now;
     }
 }
