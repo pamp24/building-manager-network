@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -63,9 +64,9 @@ public class UserDashboardController {
     }
 
     @GetMapping("/unpaid")
-    public ResponseEntity<Double> getUnpaid(Authentication auth) {
+    public ResponseEntity<BigDecimal> getUnpaid(Authentication auth) {
         User user = (User) auth.getPrincipal();
-        Double unpaid = userDashboardService.getUnpaidForUserApartment(user.getId());
+        BigDecimal unpaid = userDashboardService.getUnpaidForUserApartment(user.getId());
         return ResponseEntity.ok(unpaid);
     }
 

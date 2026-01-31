@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface CommonExpenseAllocationRepository extends JpaRepository<CommonExpenseAllocation, Integer> {
@@ -38,8 +39,8 @@ public interface CommonExpenseAllocationRepository extends JpaRepository<CommonE
     WHERE a.apartment.id = :apartmentId
       AND YEAR(s.startDate) = :year
 """)
-    Double sumApartmentExpensesByYear(@Param("apartmentId") Integer apartmentId,
-                                      @Param("year") Integer year);
+    BigDecimal sumApartmentExpensesByYear(@Param("apartmentId") Integer apartmentId,
+                                          @Param("year") Integer year);
 
 
     @Query("""
@@ -48,7 +49,7 @@ public interface CommonExpenseAllocationRepository extends JpaRepository<CommonE
         WHERE a.apartment.id = :apartmentId
           AND a.isPaid = FALSE
     """)
-    Double sumUnpaidByApartment(@Param("apartmentId") Integer apartmentId);
+    BigDecimal sumUnpaidByApartment(@Param("apartmentId") Integer apartmentId);
 
     @Query("""
 select (count(a.id) > 0)
@@ -67,7 +68,7 @@ where a.statement.id = :statementId
       AND EXTRACT(MONTH FROM s.startDate) = :month
       AND EXTRACT(YEAR FROM s.startDate) = :year
 """)
-    Double sumApartmentExpensesByMonthYear(
+    BigDecimal sumApartmentExpensesByMonthYear(
             @Param("apartmentId") Integer apartmentId,
             @Param("month") int month,
             @Param("year") int year

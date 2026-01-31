@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,10 +25,10 @@ public class CommonExpenseStatementDTO {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
 
-    private Double discountPercent;
-    private Double taxPercent;
-    private Double subTotal;
-    private Double total;
+    private BigDecimal discountPercent;
+    private BigDecimal taxPercent;
+    private BigDecimal subTotal;
+    private BigDecimal total;
 
     private String description;
 

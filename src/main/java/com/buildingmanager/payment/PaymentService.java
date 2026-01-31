@@ -14,14 +14,20 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+
 
 @Service
 @RequiredArgsConstructor
@@ -75,13 +81,22 @@ public class PaymentService {
             throw new IllegalArgumentException("No allocations found for this user/apartment/statement");
         }
 
-        double totalOwed = allocations.stream().mapToDouble(a -> a.getAmount() != null ? a.getAmount() : 0.0).sum();
-        double totalPaid = allocations.stream().mapToDouble(a -> a.getPaidAmount() != null ? a.getPaidAmount() : 0.0).sum();
+        BigDecimal totalOwed = allocations.stream()
+                .map(a -> a.getAmount() != null ? a.getAmount() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        if (totalPaid >= totalOwed - 0.01) {
+        BigDecimal totalPaid = allocations.stream()
+                .map(a -> a.getPaidAmount() != null ? a.getPaidAmount() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal EPS = new BigDecimal("0.01");
+        BigDecimal reqAmount = BigDecimal.valueOf(req.getAmount()); // αν req.getAmount() είναι Double
+
+        if (totalPaid.compareTo(totalOwed.subtract(EPS)) >= 0) {
             throw new IllegalStateException("Αυτό το διαμέρισμα έχει ήδη εξοφληθεί πλήρως.");
         }
-        if (totalPaid + req.getAmount() > totalOwed + 0.01) {
+
+        if (totalPaid.add(reqAmount).compareTo(totalOwed.add(EPS)) > 0) {
             throw new IllegalStateException("Το ποσό υπερβαίνει το οφειλόμενο υπόλοιπο.");
         }
 
@@ -102,9 +117,11 @@ public class PaymentService {
         if (existingPaymentOpt.isPresent()) {
             //Ενημέρωση υπάρχουσας πληρωμής
             payment = existingPaymentOpt.get();
-            System.out.println("🔁 Updating existing payment");
+            System.out.println("Updating existing payment");
 
-            payment.setAmount(payment.getAmount() + req.getAmount());
+            BigDecimal current = Optional.ofNullable(payment.getAmount()).orElse(BigDecimal.ZERO);
+            payment.setAmount(current.add(reqAmount).setScale(2, RoundingMode.HALF_UP));
+
             payment.setPaymentDate(LocalDateTime.now());
             payment.setPaymentMethod(method);
             payment.setReferenceNumber(req.getReferenceNumber());
@@ -117,7 +134,7 @@ public class PaymentService {
                     .user(user)
                     .apartment(apartment)
                     .statement(statement)
-                    .amount(req.getAmount())
+                    .amount(reqAmount.setScale(2, RoundingMode.HALF_UP))
                     .paymentDate(LocalDateTime.now())
                     .paymentMethod(method)
                     .referenceNumber(req.getReferenceNumber())
@@ -132,22 +149,37 @@ public class PaymentService {
         payment = paymentRepository.save(payment);
 
         //Ενημέρωση κατανομών
-        double remainingToAllocate = req.getAmount();
+        BigDecimal remainingToAllocate = reqAmount;
+
         for (CommonExpenseAllocation alloc : allocations) {
-            if (remainingToAllocate <= 0) break;
+            if (remainingToAllocate.compareTo(BigDecimal.ZERO) <= 0) break;
 
-            double currentPaid = Optional.ofNullable(alloc.getPaidAmount()).orElse(0.0);
-            double totalAmount = Optional.ofNullable(alloc.getAmount()).orElse(0.0);
-            double add = Math.min(remainingToAllocate, totalAmount - currentPaid);
+            BigDecimal currentPaid = Optional.ofNullable(alloc.getPaidAmount()).orElse(BigDecimal.ZERO);
+            BigDecimal totalAmount = Optional.ofNullable(alloc.getAmount()).orElse(BigDecimal.ZERO);
 
-            alloc.setPaidAmount(currentPaid + add);
+            BigDecimal available = totalAmount.subtract(currentPaid);
+            if (available.compareTo(BigDecimal.ZERO) <= 0) continue;
+
+            BigDecimal add = remainingToAllocate.min(available);
+
+            BigDecimal newPaid = currentPaid.add(add).setScale(2, RoundingMode.HALF_UP);
+            alloc.setPaidAmount(newPaid);
             alloc.setPaidDate(LocalDateTime.now());
             alloc.setPaymentMethod(method);
-            alloc.setIsPaid((alloc.getPaidAmount() + 0.01) >= totalAmount);
-            alloc.setStatus(alloc.getIsPaid() ? "PAID" : (alloc.getPaidAmount() > 0 ? "PARTIALLY_PAID" : "UNPAID"));
+
+            boolean isPaid = newPaid.compareTo(totalAmount.subtract(EPS)) >= 0;
+            alloc.setIsPaid(isPaid);
+
+            if (isPaid) {
+                alloc.setStatus("PAID");
+            } else if (newPaid.compareTo(BigDecimal.ZERO) > 0) {
+                alloc.setStatus("PARTIALLY_PAID");
+            } else {
+                alloc.setStatus("UNPAID");
+            }
 
             commonExpenseAllocationRepository.save(alloc);
-            remainingToAllocate -= add;
+            remainingToAllocate = remainingToAllocate.subtract(add);
         }
 
         //Ενημέρωση statement

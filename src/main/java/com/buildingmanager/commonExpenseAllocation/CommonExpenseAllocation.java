@@ -10,6 +10,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -36,8 +37,10 @@ public class CommonExpenseAllocation extends BaseEntity {
     private Double heatingPercent;
 
     // ποσό που χρεώθηκε
-    private Double amount;
-    private Double paidAmount;
+    @Column(precision = 12, scale = 2)
+    private BigDecimal amount;
+    @Column(precision = 12, scale = 2)
+    private BigDecimal paidAmount;
 
     // κατάσταση πληρωμής
     @Column(nullable = false)

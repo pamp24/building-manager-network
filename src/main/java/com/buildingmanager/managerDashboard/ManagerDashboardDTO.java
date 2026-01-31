@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -17,8 +18,8 @@ public class ManagerDashboardDTO {
     private long totalPaid;        // Πληρωμένα
     private long totalPending;     // Εκκρεμή
     private long totalExpired;     // Ληξιπρόθεσμα
-    private double totalIncome;    // Σύνολο Εισπράξεων
-    private double totalDebt;      // Οφειλές
+    private BigDecimal totalIncome;    // Σύνολο Εισπράξεων
+    private BigDecimal totalDebt;      // Οφειλές
     private long totalCancelled;   // Ακυρωμένα
     private long totalDraft;       // Πρόχειρα
 

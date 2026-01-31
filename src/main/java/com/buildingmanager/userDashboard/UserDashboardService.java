@@ -3,8 +3,6 @@ package com.buildingmanager.userDashboard;
 import com.buildingmanager.apartment.Apartment;
 import com.buildingmanager.apartment.ApartmentRepository;
 import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocation;
-import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocationDTO;
-import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocationMapper;
 import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocationRepository;
 import com.buildingmanager.commonExpenseItem.CommonExpenseItemDTO;
 import com.buildingmanager.commonExpenseItem.ExpenseCategory;
@@ -109,36 +107,32 @@ public class UserDashboardService {
 
         String userRole = isResident ? "Resident" : "Owner";
 
-        double totalDue = 0.0;
-
         // 4) ΥΠΟΛΟΓΙΣΜΟΣ ΠΟΣΟΥ ΠΟΥ ΧΡΩΣΤΑΕΙ
+        BigDecimal totalDue = BigDecimal.ZERO;
+
         for (CommonExpenseAllocation alloc : allocations) {
 
-            double amount = alloc.getAmount() - (alloc.getPaidAmount() == null ? 0.0 : alloc.getPaidAmount());
-            if (amount <= 0) continue;
+            BigDecimal amount = alloc.getAmount() == null ? BigDecimal.ZERO : alloc.getAmount();
+            BigDecimal paid   = alloc.getPaidAmount() == null ? BigDecimal.ZERO : alloc.getPaidAmount();
+
+            BigDecimal remaining = amount.subtract(paid);
+            if (remaining.compareTo(BigDecimal.ZERO) <= 0) continue;
 
             ExpenseCategory category = alloc.getItem().getCategory();
             boolean hasResident = apartment.getResident() != null;
 
-            // CASE 1: Υπάρχει resident
             if (hasResident) {
-
-                // Resident: όλα εκτός OWNERS
                 if (isResident && category != ExpenseCategory.OWNERS) {
-                    totalDue += amount;
+                    totalDue = totalDue.add(remaining);
                 }
-
-                // Owner: μόνο OWNERS
                 if (isOwner && category == ExpenseCategory.OWNERS) {
-                    totalDue += amount;
+                    totalDue = totalDue.add(remaining);
                 }
-
                 continue;
             }
 
-            // CASE 2: Δεν υπάρχει resident → owner πληρώνει ΟΛΑ
-            if (!hasResident && isOwner) {
-                totalDue += amount;
+            if (isOwner) {
+                totalDue = totalDue.add(remaining);
             }
         }
 
@@ -146,7 +140,7 @@ public class UserDashboardService {
         log.info("Final amount due: {}", totalDue);
 
         return UserDashboardSummaryDTO.builder()
-                .latestDebt(BigDecimal.valueOf(totalDue))
+                .latestDebt(totalDue)
                 .statementId(lastStatement.getId())
                 .statementMonth(lastStatement.getMonth())
                 .role(userRole)
@@ -176,19 +170,20 @@ public class UserDashboardService {
 
         return statements.stream()
                 .map(s -> {
-                    double billed = calculateUserBilledForStatement(s, apartment, user);
-                    double remaining = calculateUserRemainingForStatement(s, apartment, user);
+                    BigDecimal billed = calculateUserBilledForStatement(s, apartment, user);
+                    BigDecimal remaining = calculateUserRemainingForStatement(s, apartment, user);
                     return new UserStatementHistoryDTO(s.getId(), s.getMonth(), billed, remaining);
                 })
                 .toList();
+
     }
 
-    private double calculateUserBilledForStatement(CommonExpenseStatement statement, Apartment apartment, User user) {
+    private BigDecimal calculateUserBilledForStatement(CommonExpenseStatement statement, Apartment apartment, User user) {
 
         List<CommonExpenseAllocation> allocations =
                 allocationRepository.findByStatementAndApartment(statement, apartment);
 
-        double total = 0.0;
+        BigDecimal total = BigDecimal.ZERO;
 
         boolean isOwner = apartment.getOwner() != null && apartment.getOwner().getId().equals(user.getId());
         boolean isResident = apartment.getResident() != null && apartment.getResident().getId().equals(user.getId());
@@ -196,28 +191,29 @@ public class UserDashboardService {
 
         for (CommonExpenseAllocation alloc : allocations) {
 
-            double amount = alloc.getAmount();
-            if (amount <= 0) continue;
+            BigDecimal amount = alloc.getAmount() == null ? BigDecimal.ZERO : alloc.getAmount();
+            if (amount.compareTo(BigDecimal.ZERO) <= 0) continue;
 
             ExpenseCategory category = alloc.getItem().getCategory();
 
             if (hasResident) {
-                if (isResident && category != ExpenseCategory.OWNERS) total += amount;
-                if (isOwner && category == ExpenseCategory.OWNERS) total += amount;
+                if (isResident && category != ExpenseCategory.OWNERS) total = total.add(amount);
+                if (isOwner && category == ExpenseCategory.OWNERS) total = total.add(amount);
             } else {
-                if (isOwner) total += amount;
+                if (isOwner) total = total.add(amount);
             }
         }
 
         return total;
     }
 
-    private double calculateUserRemainingForStatement(CommonExpenseStatement statement, Apartment apartment, User user) {
+
+    private BigDecimal calculateUserRemainingForStatement(CommonExpenseStatement statement, Apartment apartment, User user) {
 
         List<CommonExpenseAllocation> allocations =
                 allocationRepository.findByStatementAndApartment(statement, apartment);
 
-        double total = 0.0;
+        BigDecimal total = BigDecimal.ZERO;
 
         boolean isOwner = apartment.getOwner() != null && apartment.getOwner().getId().equals(user.getId());
         boolean isResident = apartment.getResident() != null && apartment.getResident().getId().equals(user.getId());
@@ -225,21 +221,25 @@ public class UserDashboardService {
 
         for (CommonExpenseAllocation alloc : allocations) {
 
-            double amount = alloc.getAmount() - (alloc.getPaidAmount() == null ? 0.0 : alloc.getPaidAmount());
-            if (amount <= 0) continue;
+            BigDecimal amount = alloc.getAmount() == null ? BigDecimal.ZERO : alloc.getAmount();
+            BigDecimal paid   = alloc.getPaidAmount() == null ? BigDecimal.ZERO : alloc.getPaidAmount();
+
+            BigDecimal remaining = amount.subtract(paid);
+            if (remaining.compareTo(BigDecimal.ZERO) <= 0) continue;
 
             ExpenseCategory category = alloc.getItem().getCategory();
 
             if (hasResident) {
-                if (isResident && category != ExpenseCategory.OWNERS) total += amount;
-                if (isOwner && category == ExpenseCategory.OWNERS) total += amount;
+                if (isResident && category != ExpenseCategory.OWNERS) total = total.add(remaining);
+                if (isOwner && category == ExpenseCategory.OWNERS) total = total.add(remaining);
             } else {
-                if (isOwner) total += amount;
+                if (isOwner) total = total.add(remaining);
             }
         }
 
         return total;
     }
+
 
     public List<CommonExpenseItemDTO> getLastStatementItems(Integer userId) {
 
@@ -294,7 +294,8 @@ public class UserDashboardService {
     public ChartResponseDTO getChartData(Integer userId, String type, String period) {
 
         Apartment apartment = findApartmentForUser(userId);
-        if (apartment == null) return new ChartResponseDTO(List.of(), List.of(), 0.0);
+        if (apartment == null) return new ChartResponseDTO(List.of(), List.of(), BigDecimal.ZERO);
+
 
         Integer buildingId = apartment.getBuilding().getId();
 
@@ -317,14 +318,14 @@ public class UserDashboardService {
                 // label "2026-02"
                 labels.add(ym.toString());
 
-                Double amount;
+                BigDecimal amount;
                 if ("building".equalsIgnoreCase(type)) {
                     amount = statementRepository.sumBuildingExpensesByMonthYear(buildingId, month, year);
                 } else {
                     amount = allocationRepository.sumApartmentExpensesByMonthYear(apartment.getId(), month, year);
                 }
 
-                values.add(amount != null ? amount : 0.0);
+                values.add(amount != null ? amount.doubleValue() : 0.0);
             }
 
         }
@@ -346,18 +347,21 @@ public class UserDashboardService {
             for (int year = startYear; year <= endYear; year++) {
                 labels.add(String.valueOf(year));
 
-                Double amount;
+                BigDecimal amount;
                 if ("building".equalsIgnoreCase(type)) {
                     amount = statementRepository.sumBuildingExpensesByYear(buildingId, year);
                 } else {
                     amount = allocationRepository.sumApartmentExpensesByYear(apartment.getId(), year);
                 }
 
-                values.add(amount != null ? amount : 0.0);
+                values.add(amount != null ? amount.doubleValue() : 0.0);
+
             }
         }
 
-        double total = values.stream().mapToDouble(Double::doubleValue).sum();
+        BigDecimal total = values.stream()
+                .map(v -> BigDecimal.valueOf(v))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return new ChartResponseDTO(labels, values, total);
     }
@@ -366,43 +370,54 @@ public class UserDashboardService {
     public StatementMiniChartDTO getStatementMiniChart(Integer userId) {
 
         Apartment apartment = findApartmentForUser(userId);
-        if (apartment == null) return new StatementMiniChartDTO(0, 0, 0, List.of(), null);
+        if (apartment == null) return new StatementMiniChartDTO(0.0, 0.0, 0.0, List.of(), null);
 
         Integer buildingId = apartment.getBuilding().getId();
 
-        // Φέρε όλα τα statements ταξινομημένα με DESC
         List<CommonExpenseStatement> statements =
                 statementRepository.findByBuildingIdOrderByStartDateDesc(buildingId);
 
         if (statements.isEmpty())
-            return new StatementMiniChartDTO(0, 0, 0, List.of(), null);
+            return new StatementMiniChartDTO(0.0, 0.0, 0.0, List.of(), null);
 
-        double lastAmount = statements.get(0).getTotal();
-        double prevAmount = statements.size() > 1 ? statements.get(1).getTotal() : 0;
+        BigDecimal lastBD = statements.get(0).getTotal() == null ? BigDecimal.ZERO : statements.get(0).getTotal();
+        BigDecimal prevBD = statements.size() > 1
+                ? (statements.get(1).getTotal() == null ? BigDecimal.ZERO : statements.get(1).getTotal())
+                : BigDecimal.ZERO;
 
-        double percentage = 0;
-        if (prevAmount > 0) {
-            percentage = ((lastAmount - prevAmount) / prevAmount) * 100;
+        double lastAmount = lastBD.doubleValue();
+        double prevAmount = prevBD.doubleValue();
+
+        double percentage = 0.0;
+        if (prevBD.compareTo(BigDecimal.ZERO) > 0) {
+            percentage = lastBD.subtract(prevBD)
+                    .divide(prevBD, 6, java.math.RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100))
+                    .doubleValue();
         }
 
         String month = statements.get(0).getMonth();
 
-        // Πάρε τα τελευταία 12 amounts
         List<Double> last12 = statements.stream()
-                .map(CommonExpenseStatement::getTotal)
+                .map(st -> st.getTotal() == null ? 0.0 : st.getTotal().doubleValue())
                 .limit(12)
-                .collect(Collectors.toList());
+                .toList();
 
         return new StatementMiniChartDTO(lastAmount, prevAmount, percentage, last12, month);
     }
 
-    public Double getUnpaidForUserApartment(Integer userId) {
+
+
+
+    public BigDecimal getUnpaidForUserApartment(Integer userId) {
 
         Apartment apartment = findApartmentForUser(userId);
-        if (apartment == null) return 0.0;
+        if (apartment == null) return BigDecimal.ZERO;
 
-        return allocationRepository.sumUnpaidByApartment(apartment.getId());
+        BigDecimal sum = allocationRepository.sumUnpaidByApartment(apartment.getId());
+        return sum != null ? sum : BigDecimal.ZERO;
     }
+
 
     public BuildingPendingDTO getBuildingPending(Integer buildingId) {
         double total = paymentRepository.findTotalUnpaidForBuilding(buildingId);
@@ -431,8 +446,8 @@ public class UserDashboardService {
 
         for (CommonExpenseStatement s : statements) {
 
-            double totalForApt = 0.0;
-            double paidAmount  = 0.0;
+            BigDecimal totalForApt = BigDecimal.ZERO;
+            BigDecimal paidAmount  = BigDecimal.ZERO;
 
             List<CommonExpenseAllocation> allocations =
                     allocationRepository.findByStatementAndApartment(s, apartment);
@@ -448,13 +463,16 @@ public class UserDashboardService {
 
                 if (!shouldPay) continue;
 
-                totalForApt += alloc.getAmount();
-                paidAmount  += alloc.getPaidAmount() == null ? 0 : alloc.getPaidAmount();
+                BigDecimal a = alloc.getAmount() == null ? BigDecimal.ZERO : alloc.getAmount();
+                BigDecimal p = alloc.getPaidAmount() == null ? BigDecimal.ZERO : alloc.getPaidAmount();
+
+                totalForApt = totalForApt.add(a);
+                paidAmount  = paidAmount.add(p);
+
             }
 
-            double remaining = totalForApt - paidAmount;
-
-            boolean isPaid = remaining <= 0;
+            BigDecimal remaining = totalForApt.subtract(paidAmount);
+            boolean isPaid = remaining.compareTo(BigDecimal.ZERO) <= 0;
 
 
             result.add(
@@ -462,11 +480,10 @@ public class UserDashboardService {
                             .statementId(s.getId())
                             .code(s.getCode())
                             .month(s.getMonth())
-                            .totalForBuilding(s.getTotal())
-
-                            .totalForApartment(totalForApt)
-                            .paidAmount(paidAmount)
-                            .remainingAmount(remaining)
+                            .totalForBuilding(s.getTotal() != null ? s.getTotal().doubleValue() : 0.0)
+                            .totalForApartment(totalForApt.doubleValue())
+                            .paidAmount(paidAmount.doubleValue())
+                            .remainingAmount(remaining.doubleValue())
                             .isPaid(isPaid)
                             .issueDate(s.getStartDate().toLocalDate())
                             .dueDate(s.getEndDate() != null ? s.getEndDate().toLocalDate() : null)

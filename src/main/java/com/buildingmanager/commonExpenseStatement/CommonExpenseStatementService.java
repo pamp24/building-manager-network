@@ -6,20 +6,25 @@ import com.buildingmanager.building.Building;
 import com.buildingmanager.building.BuildingRepository;
 import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocation;
 import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocationRepository;
-import com.buildingmanager.notification.NotificationService;
 import com.buildingmanager.commonExpenseItem.CommonExpenseItem;
 import com.buildingmanager.commonExpenseItem.ExpenseCategory;
-
+import com.buildingmanager.notification.NotificationService;
 import com.buildingmanager.user.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +37,26 @@ public class CommonExpenseStatementService {
     private final BuildingRepository buildingRepository;
     private final ObjectMapper objectMapper;
 
+    private static BigDecimal bd(BigDecimal v) {
+        return v == null ? BigDecimal.ZERO : v;
+    }
+
+    private static BigDecimal pct100(BigDecimal percent) {
+        // 15 -> 0.15
+        return bd(percent).divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP);
+    }
+
+    private static BigDecimal milli(Double mills) {
+        // 125 -> 0.125 (χιλιοστά)
+        return mills == null
+                ? BigDecimal.ZERO
+                : BigDecimal.valueOf(mills).divide(BigDecimal.valueOf(1000), 10, RoundingMode.HALF_UP);
+    }
+
+    private static BigDecimal s2(BigDecimal v) {
+        return bd(v).setScale(2, RoundingMode.HALF_UP);
+    }
+
 
     @Transactional
     public CommonExpenseStatement createAndSend(CommonExpenseStatement statement) {
@@ -40,16 +65,17 @@ public class CommonExpenseStatementService {
         Integer buildingId = statement.getBuilding().getId();
 
         // 2) totals
-        double subTotal = statement.getItems().stream()
-                .mapToDouble(i -> (i.getPrice() == null ? 0.0 : i.getPrice()))
-                .sum();
+        BigDecimal subTotal = statement.getItems().stream()
+                .map(i -> bd(i.getPrice()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        double discount = (subTotal * (statement.getDiscountPercent() == null ? 0 : statement.getDiscountPercent())) / 100;
-        double taxed = ((subTotal - discount) * (statement.getTaxPercent() == null ? 0 : statement.getTaxPercent())) / 100;
-        double total = subTotal - discount + taxed;
+        BigDecimal discount = subTotal.multiply(pct100(statement.getDiscountPercent()));
+        BigDecimal taxed    = subTotal.subtract(discount).multiply(pct100(statement.getTaxPercent()));
+        BigDecimal total    = subTotal.subtract(discount).add(taxed);
 
-        statement.setSubTotal(subTotal);
-        statement.setTotal(total);
+        // Κλειδώνουμε 2 δεκαδικά πριν το save
+        statement.setSubTotal(s2(subTotal));
+        statement.setTotal(s2(total));
 
         // 3) sequenceNumber
         Integer maxSeq = commonExpenseStatementRepository.findMaxSequenceByBuilding(buildingId);
@@ -72,15 +98,32 @@ public class CommonExpenseStatementService {
 
         // 8) allocations
         for (CommonExpenseItem item : saved.getItems()) {
-            double itemTotal = (item.getPrice() == null ? 0.0 : item.getPrice());
+            BigDecimal itemTotal = bd(item.getPrice());
+            int n = apartments.size();
 
-            for (Apartment apt : apartments) {
-                double share = switch (item.getCategory()) {
-                    case COMMON -> (apt.getCommonPercent() / 1000.0) * itemTotal;
-                    case ELEVATOR -> (apt.getElevatorPercent() / 1000.0) * itemTotal;
-                    case HEATING -> (apt.getHeatingPercent() / 1000.0) * itemTotal;
-                    case EQUAL, OTHER, SPECIAL, OWNERS, BOILER -> itemTotal / apartments.size();
-                };
+            // Για EQUAL / OTHER / SPECIAL / OWNERS / BOILER: μοιράζουμε ακριβώς μέχρι cent
+            BigDecimal baseEqual = itemTotal.divide(BigDecimal.valueOf(n), 2, RoundingMode.DOWN);
+            BigDecimal remainder = itemTotal.subtract(baseEqual.multiply(BigDecimal.valueOf(n)));
+            int extraCents = remainder.movePointRight(2).intValue(); // πόσα +0.01
+
+            for (int idx = 0; idx < apartments.size(); idx++) {
+                Apartment apt = apartments.get(idx);
+
+                BigDecimal share;
+
+                switch (item.getCategory()) {
+                    case COMMON -> share = itemTotal.multiply(milli(apt.getCommonPercent()));
+                    case ELEVATOR -> share = itemTotal.multiply(milli(apt.getElevatorPercent()));
+                    case HEATING -> share = itemTotal.multiply(milli(apt.getHeatingPercent()));
+                    case EQUAL, OTHER, SPECIAL, OWNERS, BOILER -> {
+                        share = baseEqual;
+                        if (idx < extraCents) share = share.add(BigDecimal.valueOf(0.01));
+                    }
+                    default -> share = BigDecimal.ZERO;
+                }
+
+                // Κλειδώνουμε 2 δεκαδικά
+                share = s2(share);
 
                 CommonExpenseAllocation allocation = CommonExpenseAllocation.builder()
                         .statement(saved)
@@ -90,17 +133,14 @@ public class CommonExpenseStatementService {
                         .elevatorPercent(apt.getElevatorPercent())
                         .heatingPercent(apt.getHeatingPercent())
                         .amount(share)
+                        .paidAmount(BigDecimal.ZERO)
                         .isPaid(false)
                         .status("UNPAID")
                         .build();
 
                 // ποιος πληρώνει
                 if (apt.getResident() != null) {
-                    if (item.getCategory() == ExpenseCategory.OWNERS) {
-                        allocation.setUser(apt.getOwner());
-                    } else {
-                        allocation.setUser(apt.getResident());
-                    }
+                    allocation.setUser(item.getCategory() == ExpenseCategory.OWNERS ? apt.getOwner() : apt.getResident());
                 } else {
                     allocation.setUser(apt.getOwner());
                 }
@@ -108,6 +148,7 @@ public class CommonExpenseStatementService {
                 commonExpenseAllocationRepository.save(allocation);
             }
         }
+
 
         // 9) Notifications ΜΙΑ φορά σε όλους τους χρήστες
         Building building = buildingRepository.findById(buildingId)
@@ -154,16 +195,25 @@ public class CommonExpenseStatementService {
         statement.setSequenceNumber(nextSeq);
 
         // Υπολογισμός συνολικών ποσών
-        double subTotal = statement.getItems().stream()
-                .mapToDouble(i -> (i.getPrice() == null ? 0.0 : i.getPrice()))
-                .sum();
+        BigDecimal subTotal = statement.getItems().stream()
+                .map(i -> bd(i.getPrice()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        double discount = (subTotal * (statement.getDiscountPercent() == null ? 0 : statement.getDiscountPercent())) / 100;
-        double taxed = ((subTotal - discount) * (statement.getTaxPercent() == null ? 0 : statement.getTaxPercent())) / 100;
-        double total = subTotal - discount + taxed;
+        BigDecimal discountPercent = bd(statement.getDiscountPercent());
+        BigDecimal taxPercent = bd(statement.getTaxPercent());
 
-        statement.setSubTotal(subTotal);
-        statement.setTotal(total);
+        BigDecimal discount = subTotal
+                .multiply(discountPercent)
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+        BigDecimal taxed = subTotal.subtract(discount)
+                .multiply(taxPercent)
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+        BigDecimal total = subTotal.subtract(discount).add(taxed);
+
+        statement.setSubTotal(s2(subTotal));
+        statement.setTotal(s2(total));
 
         // Status = DRAFT
         statement.setStatus(StatementStatus.DRAFT);
@@ -295,15 +345,26 @@ public class CommonExpenseStatementService {
         });
 
         // Υπολογισμός συνόλων
-        double subTotal = entity.getItems().stream()
-                .mapToDouble(CommonExpenseItem::getPrice)
-                .sum();
-        double discount = (subTotal * entity.getDiscountPercent()) / 100;
-        double taxed = ((subTotal - discount) * entity.getTaxPercent()) / 100;
-        double total = subTotal - discount + taxed;
+        BigDecimal subTotal = entity.getItems().stream()
+                .map(i -> bd(i.getPrice()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        entity.setSubTotal(subTotal);
-        entity.setTotal(total);
+        BigDecimal discountPercent = bd(entity.getDiscountPercent());
+        BigDecimal taxPercent = bd(entity.getTaxPercent());
+
+        BigDecimal discount = subTotal
+                .multiply(discountPercent)
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+        BigDecimal taxed = subTotal.subtract(discount)
+                .multiply(taxPercent)
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+        BigDecimal total = subTotal.subtract(discount).add(taxed);
+
+        entity.setSubTotal(s2(subTotal));
+        entity.setTotal(s2(total));
+
 
         // αποθήκευση
         CommonExpenseStatement saved = commonExpenseStatementRepository.save(entity);
@@ -311,6 +372,7 @@ public class CommonExpenseStatementService {
         // Επιστρέφουμε DTO
         return CommonExpenseStatementMapper.toDTO(saved);
     }
+
 
 
 }

@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,8 @@ public class CommonExpenseItem extends BaseEntity {
 
     private String descriptionItem; // περιγραφή μικρή
 
-    private Double price;
+    @Column(precision = 12, scale = 2)
+    private BigDecimal price;
 
     @ManyToOne
     @JoinColumn(name = "statement_id")
