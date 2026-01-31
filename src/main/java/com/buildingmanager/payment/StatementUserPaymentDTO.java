@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -16,8 +17,8 @@ public class StatementUserPaymentDTO {
     private Integer apartmentId;
     private String apartmentNumber;
     private String apartmentFloor;
-    private Double amountToPay;
-    private Double paidAmount;
+    private BigDecimal amountToPay;
+    private BigDecimal paidAmount;
     private LocalDateTime paidDate;
     private PaymentMethod paymentMethod;
     private String status;

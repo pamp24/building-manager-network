@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -41,7 +42,7 @@ public class CommonExpenseAllocationController {
      * 🔹 Επιστρέφει το συνολικό ποσό που χρωστάει ένα apartment για ένα statement
      */
     @GetMapping("/statements/{statementId}/apartments/{apartmentId}/total")
-    public ResponseEntity<Double> getTotalForApartment(
+    public ResponseEntity<BigDecimal> getTotalForApartment(
             @PathVariable Integer statementId,
             @PathVariable Integer apartmentId
     ) {

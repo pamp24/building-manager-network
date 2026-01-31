@@ -3,6 +3,8 @@ package com.buildingmanager.commonExpenseStatement;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -75,12 +77,12 @@ ORDER BY s.startDate DESC
 
     // --- Άθροισμα ποσών (εισπραχθέντα)
     @Query("""
-           SELECT SUM(a.paidAmount)
-           FROM CommonExpenseAllocation a
-           WHERE a.statement.building.id = :buildingId
-             AND a.isPaid = TRUE
-           """)
-    Double sumPaidAmountByBuilding(@Param("buildingId") Integer buildingId);
+   SELECT COALESCE(SUM(a.paidAmount), 0)
+   FROM CommonExpenseAllocation a
+   WHERE a.statement.building.id = :buildingId
+     AND a.isPaid = TRUE
+""")
+    BigDecimal sumPaidAmountByBuilding(@Param("buildingId") Integer buildingId);
 
     // --- Άθροισμα ποσών (ανεξόφλητα)
     @Query("""
@@ -89,7 +91,7 @@ ORDER BY s.startDate DESC
            WHERE a.statement.building.id = :buildingId
              AND a.isPaid = FALSE
            """)
-    Double sumUnpaidAmountByBuilding(@Param("buildingId") Integer buildingId);
+    BigDecimal sumUnpaidAmountByBuilding(@Param("buildingId") Integer buildingId);
 
     @Query("""
 SELECT SUM(s.total)
@@ -99,7 +101,7 @@ WHERE s.building.id = :buildingId
   AND EXTRACT(YEAR FROM s.startDate) = :year
   AND s.status IN :statuses
 """)
-    Double sumByBuildingMonthYearAndStatuses(
+    BigDecimal sumByBuildingMonthYearAndStatuses(
             @Param("buildingId") Integer buildingId,
             @Param("month") int month,
             @Param("year") int year,
@@ -114,7 +116,7 @@ WHERE s.building.id = :buildingId
     WHERE s.building.id = :buildingId
       AND YEAR(s.startDate) = :year
 """)
-    Double sumBuildingExpensesByYear(@Param("buildingId") Integer buildingId,
+    BigDecimal sumBuildingExpensesByYear(@Param("buildingId") Integer buildingId,
                                      @Param("year") Integer year);
 
     List<CommonExpenseStatement> findByBuildingIdOrderByStartDateDesc(Integer buildingId);
@@ -134,7 +136,7 @@ where s.building.id = :buildingId
       AND EXTRACT(MONTH FROM s.startDate) = :month
       AND EXTRACT(YEAR FROM s.startDate) = :year
 """)
-    Double sumBuildingExpensesByMonthYear(
+    BigDecimal sumBuildingExpensesByMonthYear(
             @Param("buildingId") Integer buildingId,
             @Param("month") int month,
             @Param("year") int year

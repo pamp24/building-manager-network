@@ -5,14 +5,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class MonthlyAmountStatsDTO {
     private String month;
-    private Double issuedAmount;
-    private Double pendingAmount;
-    private Double paidAmount;
-    private Double expiredAmount;
+    private BigDecimal issuedAmount;
+    private BigDecimal pendingAmount;
+    private BigDecimal paidAmount;
+    private BigDecimal expiredAmount;
 }

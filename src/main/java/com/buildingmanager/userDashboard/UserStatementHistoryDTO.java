@@ -2,6 +2,8 @@ package com.buildingmanager.userDashboard;
 
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -11,6 +13,6 @@ public class UserStatementHistoryDTO {
 
     private Integer statementId;
     private String month;
-    private Double billed;
-    private Double remaining;
+    private BigDecimal billed;
+    private BigDecimal remaining;
 }

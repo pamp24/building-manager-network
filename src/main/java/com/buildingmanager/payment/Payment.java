@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 
@@ -20,7 +21,7 @@ import java.time.LocalDateTime;
 @Table(name = "payment")
 public class Payment extends BaseEntity {
 
-    private Double amount;
+    private BigDecimal amount;
 
     private LocalDateTime paymentDate;
 

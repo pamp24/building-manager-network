@@ -10,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,10 +30,14 @@ public class CommonExpenseStatement extends BaseEntity {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
 
-    private Double discountPercent;
-    private Double taxPercent;
-    private Double subTotal;
-    private Double total;
+    @Column(precision = 5, scale = 2)
+    private BigDecimal discountPercent;
+    @Column(precision = 5, scale = 2)
+    private BigDecimal taxPercent;
+    @Column(precision = 12, scale = 2)
+    private BigDecimal subTotal;
+    @Column(precision = 12, scale = 2)
+    private BigDecimal total;
     private Boolean isPaid = false;
 
     @Transient

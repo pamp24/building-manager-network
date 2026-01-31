@@ -6,6 +6,7 @@ import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocationReposi
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
@@ -33,8 +34,8 @@ public class ManagerDashboardService {
         long totalPending = totalIssued - (totalPaid + totalExpired);
         if (totalPending < 0) totalPending = 0;
 
-        Double totalIncome = commonExpenseStatementRepository.sumPaidAmountByBuilding(buildingId);
-        Double totalDebt = commonExpenseStatementRepository.sumUnpaidAmountByBuilding(buildingId);
+        BigDecimal totalIncome = commonExpenseStatementRepository.sumPaidAmountByBuilding(buildingId);
+        BigDecimal totalDebt = commonExpenseStatementRepository.sumUnpaidAmountByBuilding(buildingId);
 
         List<MonthlyStatsDTO> monthlyStats = getIssuedVsPaidPerMonthRolling(buildingId);
         List<MonthlyAmountStatsDTO> monthlyAmountStats = getMonthlyAmountStatsRolling(buildingId);
@@ -48,8 +49,8 @@ public class ManagerDashboardService {
                 .totalExpired(totalExpired)
                 .totalCancelled(totalCancelled)
                 .totalDraft(totalDraft)
-                .totalIncome(totalIncome != null ? totalIncome : 0.0)
-                .totalDebt(totalDebt != null ? totalDebt : 0.0)
+                .totalIncome(totalIncome != null ? totalIncome : BigDecimal.ZERO)
+                .totalDebt(totalDebt != null ? totalDebt : BigDecimal.ZERO)
                 .monthlyStats(monthlyStats)
                 .monthlyAmountStats(monthlyAmountStats)
                 .build();
@@ -156,25 +157,26 @@ public class ManagerDashboardService {
             int year = ym.getYear();
             int month = ym.getMonthValue();
 
-            Double issued = commonExpenseStatementRepository.sumByBuildingMonthYearAndStatuses(
+            BigDecimal issued = commonExpenseStatementRepository.sumByBuildingMonthYearAndStatuses(
                     buildingId, month, year,
                     List.of(StatementStatus.ISSUED, StatementStatus.PAID, StatementStatus.EXPIRED));
 
-            Double paid = commonExpenseStatementRepository.sumByBuildingMonthYearAndStatuses(
+            BigDecimal paid = commonExpenseStatementRepository.sumByBuildingMonthYearAndStatuses(
                     buildingId, month, year, List.of(StatementStatus.PAID));
 
-            Double expired = commonExpenseStatementRepository.sumByBuildingMonthYearAndStatuses(
+            BigDecimal expired = commonExpenseStatementRepository.sumByBuildingMonthYearAndStatuses(
                     buildingId, month, year, List.of(StatementStatus.EXPIRED));
 
-            double issuedVal = issued != null ? issued : 0.0;
-            double paidVal = paid != null ? paid : 0.0;
-            double expiredVal = expired != null ? expired : 0.0;
+            BigDecimal issuedVal  = issued  != null ? issued  : BigDecimal.ZERO;
+            BigDecimal paidVal    = paid    != null ? paid    : BigDecimal.ZERO;
+            BigDecimal expiredVal = expired != null ? expired : BigDecimal.ZERO;
 
-            double pending = issuedVal - (paidVal + expiredVal);
-            if (pending < 0) pending = 0.0;
+            BigDecimal pending = issuedVal.subtract(paidVal.add(expiredVal));
+            if (pending.compareTo(BigDecimal.ZERO) < 0) pending = BigDecimal.ZERO;
+
 
             stats.add(MonthlyAmountStatsDTO.builder()
-                    // ✅ label με έτος-μήνα
+                    // label με έτος-μήνα
                     .month(formatYearMonthLabel(ym))   // π.χ. "2026-Νοε"
                     .issuedAmount(issuedVal)
                     .pendingAmount(pending)

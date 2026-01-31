@@ -3,6 +3,7 @@ package com.buildingmanager.commonExpenseAllocation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -11,7 +12,7 @@ public class CommonExpenseAllocationDTO {
 
     private Integer id;
     private String itemDescription;
-    private Double amount;
+    private BigDecimal amount;
     private boolean isPaid;
     private LocalDateTime paidDate;
 
