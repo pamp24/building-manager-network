@@ -9,5 +9,7 @@ public record ManagerDTO(
         String street1,
         String stNumber1,
         String street2,
-        String stNumber2
+        String stNumber2,
+        String profileImgUrl
+
 ) {}

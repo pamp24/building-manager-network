@@ -185,7 +185,8 @@ public class BuildingService {
                 m.getAddress1(),
                 m.getAddressNumber1(),
                 m.getAddress2(),
-                m.getAddressNumber2()
+                m.getAddressNumber2(),
+                m.getProfileImageUrl()
         );
     }
 
@@ -279,7 +280,8 @@ public class BuildingService {
                                 b.getManager().getAddress1(),
                                 b.getManager().getAddressNumber1(),
                                 b.getManager().getAddress2(),
-                                b.getManager().getAddressNumber2()
+                                b.getManager().getAddressNumber2(),
+                                b.getManager().getProfileImageUrl()
                         )
                 ))
                 .toList();

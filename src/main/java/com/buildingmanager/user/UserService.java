@@ -6,14 +6,18 @@ import com.buildingmanager.email.EmailService;
 import com.buildingmanager.role.Role;
 import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -44,7 +48,6 @@ public class UserService {
     public List<UserTableDto> getUsersInSameBuilding(Integer userId) {
         List<Apartment> apartmentsAsResident = apartmentRepository.findByResident_Id(userId);
         List<Apartment> apartmentsAsOwner    = apartmentRepository.findByOwner_Id(userId);
-
         List<Apartment> all = new ArrayList<>();
         all.addAll(apartmentsAsResident);
         all.addAll(apartmentsAsOwner);
@@ -74,7 +77,7 @@ public class UserService {
     public void inviteUserToBuilding(String email, Integer buildingId, Authentication auth) {
         User inviter = (User) auth.getPrincipal();
 
-        // Βεβαιωνόμαστε ότι ο inviter έχει διαμέρισμα στο συγκεκριμένο building
+        //ο inviter έχει διαμέρισμα στο συγκεκριμένο building
         boolean belongsToBuilding = apartmentRepository
                 .findByOwnerOrResident(inviter, inviter)
                 .stream()
@@ -93,5 +96,45 @@ public class UserService {
             throw new RuntimeException("Αποτυχία αποστολής email", e);
         }
     }
+
+    @Transactional
+    public String uploadProfileImage(MultipartFile file, Integer userId) {
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("Empty file");
+        }
+
+        String originalFilename = Objects.requireNonNull(file.getOriginalFilename());
+        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String fileName = UUID.randomUUID() + extension;
+
+        Path uploadDir = Paths.get("uploads/profile-images");
+
+        try {
+            Files.createDirectories(uploadDir);
+            Path filePath = uploadDir.resolve(fileName);
+
+            System.out.println("Saving file to: " + filePath.toAbsolutePath());
+
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            String imageUrl = "/uploads/profile-images/" + fileName;
+
+            System.out.println("Returning imageUrl: " + imageUrl);
+
+            user.setProfileImageUrl(imageUrl);
+            userRepository.save(user);
+
+            return imageUrl;
+
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Failed to upload image", e);
+        }
+
+    }
+
 
 }
