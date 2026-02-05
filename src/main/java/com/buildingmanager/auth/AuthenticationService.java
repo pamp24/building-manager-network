@@ -10,24 +10,22 @@ import com.buildingmanager.security.JwtService;
 import com.buildingmanager.token.Token;
 import com.buildingmanager.token.TokenRepository;
 import com.buildingmanager.token.TokenService;
-import com.buildingmanager.user.*;
+import com.buildingmanager.user.User;
 import com.buildingmanager.user.UserDTO;
+import com.buildingmanager.user.UserRepository;
+import com.buildingmanager.user.UserResponse;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.buildingmanager.role.Role;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -126,6 +124,7 @@ public class AuthenticationService {
                 .email(user.getEmail())
                 .name(user.fullName())
                 .role(mainRole)
+                .profileImageUrl(user.getProfileImageUrl())
                 .build();
 
         return AuthenticationResponse.builder()

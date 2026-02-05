@@ -73,7 +73,8 @@ public class BuildingMapper {
                     building.getManager().getAddress1(),
                     building.getManager().getAddressNumber1(),
                     building.getManager().getAddress2(),
-                    building.getManager().getAddressNumber2()
+                    building.getManager().getAddressNumber2(),
+                    building.getManager().getProfileImageUrl()
             );
         }
 
@@ -156,6 +157,8 @@ public class BuildingMapper {
                 )
                 .managerCity(
                         building.getManager() != null ? building.getManager().getCity() : null
+                )
+                .managerProfileImgUrl(building.getManager() != null ? building.getManager().getProfileImageUrl() : null
                 )
                 .build();
     }

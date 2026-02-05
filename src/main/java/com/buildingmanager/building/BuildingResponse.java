@@ -49,5 +49,6 @@ public class BuildingResponse {
     private String managerPhone;
     private String managerAddress1;
     private String managerCity;
+    private String managerProfileImgUrl;
 
 }

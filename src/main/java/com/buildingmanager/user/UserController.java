@@ -3,16 +3,16 @@ package com.buildingmanager.user;
 import com.buildingmanager.role.Role;
 import com.buildingmanager.role.RoleDTO;
 import com.buildingmanager.role.RoleRepository;
+import com.buildingmanager.role.RoleService;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import com.buildingmanager.role.RoleService;
-
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -86,6 +86,15 @@ public class UserController {
                     return ResponseEntity.ok().build();
                 })
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/me/profile-image")
+    public ResponseEntity<Map<String,String>> upload(@RequestParam("file") MultipartFile file,
+                                                     Authentication auth) {
+        System.out.println(">>> HIT /me/profile-image, file=" + file.getOriginalFilename() + ", size=" + file.getSize());
+        User user = (User) auth.getPrincipal();
+        String url = userService.uploadProfileImage(file, user.getId());
+        return ResponseEntity.ok(Map.of("imageUrl", url));
     }
 
     @PostMapping("/{userId}/roles/assign")
