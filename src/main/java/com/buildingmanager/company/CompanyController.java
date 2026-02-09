@@ -5,6 +5,9 @@ import com.buildingmanager.user.User;
 import com.buildingmanager.user.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,8 +41,9 @@ public class CompanyController {
     }
 
     @PostMapping
-    public ResponseEntity<Company> createCompany(@RequestBody Company company) {
-        return ResponseEntity.ok(companyService.createCompany(company));
+    public ResponseEntity<CompanyDTO> createCompany(@RequestBody Company company) {
+        CompanyDTO dto = companyService.createCompanyAndPromoteCurrentUser(company);
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
     @PutMapping("/{id}")
@@ -76,6 +80,24 @@ public class CompanyController {
         return companyRepository.findById(companyId)
                 .map(company -> ResponseEntity.ok(company.getBuildings()))
                 .orElse(ResponseEntity.notFound().build());
+    }
+    @GetMapping("/my/company")
+    public ResponseEntity<CompanyDTO> getMyCompany() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String email = auth.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        Company company = user.getCompany();
+        if (company == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        return ResponseEntity.ok(companyService.toDto(company));
     }
 
 }
