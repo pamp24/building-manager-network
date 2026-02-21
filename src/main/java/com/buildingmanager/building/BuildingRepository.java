@@ -1,6 +1,5 @@
 package com.buildingmanager.building;
 
-import com.buildingmanager.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,4 +25,9 @@ public interface BuildingRepository extends JpaRepository<Building, Integer>, Jp
     List<Building> findByManagerId(Integer managerId);
 
     Optional<Building> findByBuildingCode(String buildingCode);
+    List<Building> findByPropertyManager_Id(Integer propertyManagerId);
+
+    List<Building> findByCompanyId(Integer companyId);
+
+    List<Building> findByPropertyManagerId(Integer propertyManagerId);
 }

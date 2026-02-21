@@ -3,6 +3,7 @@ package com.buildingmanager.building;
 
 import com.buildingmanager.apartment.Apartment;
 import com.buildingmanager.apartment.ApartmentRepository;
+import com.buildingmanager.buildingMember.BuildingMember;
 import com.buildingmanager.buildingMember.BuildingMemberRepository;
 import com.buildingmanager.common.PageResponse;
 import com.buildingmanager.role.Role;
@@ -14,12 +15,11 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.security.access.AccessDeniedException;
-
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,38 +38,128 @@ public class BuildingService {
     private final BuildingMemberRepository buildingMemberRepository;
     private final RoleRepository roleRepository;
 
+    private User freshUser(Authentication auth) {
+        User principal = (User) auth.getPrincipal();
+        return userRepository.findById(principal.getId())
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+    }
+
+    @Transactional
+    public Integer createSelfManaged(BuildingRequest request, Authentication connectedUser) {
+        User currentUser = (User) connectedUser.getPrincipal();
+
+        Building building = buildingMapper.toBuilding(request);
+        building.setBuildingCode(generateBuildingCode());
+
+        // self
+        building.setManager(currentUser);
+        building.setCompany(null);
+        building.setPropertyManager(null);
+
+        Building saved = buildingRepository.save(building);
+
+        Role bmRole = roleRepository.findByName("BuildingManager")
+                .orElseThrow(() -> new RuntimeException("Role 'BuildingManager' not found"));
+
+        buildingMemberRepository.save(
+                BuildingMember.builder()
+                        .building(saved)
+                        .user(currentUser)
+                        .role(bmRole)
+                        .status("Joined")
+                        .build()
+        );
+
+        // global role upgrade
+        currentUser.setRole(bmRole);
+        userRepository.save(currentUser);
+
+        return saved.getId();
+    }
+
+    @Transactional
+    public Integer createCompanyManaged(BuildingRequest request, Authentication auth) {
+        User currentUser = freshUser(auth);
+
+        if (currentUser.getRole() == null || !"PropertyManager".equals(currentUser.getRole().getName())) {
+            throw new AccessDeniedException("Μόνο PropertyManager μπορεί να δημιουργήσει πολυκατοικία (company).");
+        }
+        if (currentUser.getCompany() == null) {
+            throw new AccessDeniedException("Ο PropertyManager πρέπει πρώτα να έχει εταιρία.");
+        }
+
+        Building building = buildingMapper.toBuilding(request);
+        building.setBuildingCode(generateBuildingCode());
+
+        building.setCompany(currentUser.getCompany());
+        building.setPropertyManager(currentUser);
+
+        // ΣΗΜΑΝΤΙΚΟ: μην βάζεις manager από request εδώ
+        building.setManager(null);
+
+        Building saved = buildingRepository.save(building);
+
+        Role pmRole = roleRepository.findByName("PropertyManager")
+                .orElseThrow(() -> new RuntimeException("Role PropertyManager not found"));
+
+        buildingMemberRepository.save(
+                BuildingMember.builder()
+                        .building(saved)
+                        .user(currentUser)
+                        .role(pmRole)
+                        .status("Joined")
+                        .build()
+        );
+
+        return saved.getId();
+    }
+
+
     @Transactional
     public Integer save(BuildingRequest request, Authentication connectedUser) {
         User currentUser = (User) connectedUser.getPrincipal();
 
-        // Μετατροπή request -> Building
+        //Μόνο PropertyManager
+        if (currentUser.getRole() == null || currentUser.getRole().getId() != 5) {
+            throw new AccessDeniedException("Μόνο PropertyManager μπορεί να δημιουργήσει πολυκατοικία.");
+        }
+
+        //Πρέπει να έχει εταιρία
+        if (currentUser.getCompany() == null) {
+            throw new AccessDeniedException("Ο PropertyManager πρέπει πρώτα να έχει εταιρία.");
+        }
+
         Building building = buildingMapper.toBuilding(request);
         building.setBuildingCode(generateBuildingCode());
 
+        //1) company_id = εταιρία του PM
+        building.setCompany(currentUser.getCompany());
+
+        //2) property_manager_id = ο PM που την δημιούργησε
+        building.setPropertyManager(currentUser);
+
+        //3) local building manager (building.manager) ΔΕΝ μπαίνει εδώ (μένει null)
+        //building.setManager(null); // προαιρετικό, αν φοβάσαι ότι έρχεται από request
+
         Building savedBuilding = buildingRepository.save(building);
 
-        //Φόρτωσε το Role entity από το RoleRepository
-        Role managerRole = roleRepository.findByName("BuildingManager")
-                .orElseThrow(() -> new RuntimeException("Role 'BuildingManager' not found"));
+        // Local membership: ο PM μπαίνει στο building ως PropertyManager
+        Role pmRole = roleRepository.findByName("PropertyManager")
+                .orElseThrow(() -> new RuntimeException("Role 'PropertyManager' not found"));
 
-        //Local membership
-        com.buildingmanager.buildingMember.BuildingMember membership = com.buildingmanager.buildingMember.BuildingMember.builder()
+        BuildingMember membership = BuildingMember.builder()
                 .building(savedBuilding)
                 .user(currentUser)
-                .role(managerRole)
+                .role(pmRole)
                 .status("Joined")
                 .build();
 
         buildingMemberRepository.save(membership);
 
-        //Global role upgrade
-        if (!"BuildingManager".equalsIgnoreCase(currentUser.getRole().getName())) {
-            currentUser.setRole(managerRole);
-            userRepository.save(currentUser);
-        }
-
         return savedBuilding.getId();
     }
+
+
 
 
     private String generateBuildingCode() {
@@ -176,11 +266,11 @@ public class BuildingService {
         var m = b.getManager();
         String fullName = (m.getFirstName() + " " + m.getLastName()).trim();
 
-        // Φαντάζομαι ότι το User (manager) entity έχει email, phone, address
         return new ManagerDTO(
                 m.getId(),
                 fullName,
                 m.getEmail(),
+                m.getRole() != null ? m.getRole().getName() : null,
                 m.getPhoneNumber(),
                 m.getAddress1(),
                 m.getAddressNumber1(),
@@ -190,21 +280,6 @@ public class BuildingService {
         );
     }
 
-    public List<BuildingResponse> getMyBuildings(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-
-        var fromManager = buildingRepository.findByManagerId(user.getId());
-
-        var fromApartments = apartmentRepository.findByOwnerOrResident(user, user)
-                .stream()
-                .map(Apartment::getBuilding)
-                .toList();
-
-        return Stream.concat(fromApartments.stream(), fromManager.stream())
-                .distinct()
-                .map(buildingMapper::toBuildingResponse)
-                .toList();
-    }
     @Transactional
     public BuildingDTO updateBuilding(Integer buildingId, BuildingDTO dto, Authentication connectedUser) {
         User user = (User) connectedUser.getPrincipal();
@@ -276,6 +351,7 @@ public class BuildingService {
                                 b.getManager().getId(),
                                 b.getManager().getFullName(),
                                 b.getManager().getEmail(),
+                                b.getManager().getRole() != null ? b.getManager().getRole().getName() : null,
                                 b.getManager().getPhoneNumber(),
                                 b.getManager().getAddress1(),
                                 b.getManager().getAddressNumber1(),
@@ -286,6 +362,39 @@ public class BuildingService {
                 ))
                 .toList();
     }
+    public List<BuildingDTO> getMyBuildingsDTO(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
 
+        var fromManager = buildingRepository.findByManagerId(user.getId());
+
+        var fromPropertyManager = buildingRepository.findByPropertyManager_Id(user.getId());
+
+        var fromApartments = apartmentRepository.findByOwnerOrResident(user, user)
+                .stream()
+                .map(Apartment::getBuilding)
+                .toList();
+
+        return Stream.of(fromManager, fromPropertyManager, fromApartments)
+                .flatMap(List::stream)
+                .distinct()
+                .map(buildingMapper::toDTO)
+                .toList();
+    }
+
+    public List<BuildingResponse> getMyCompanyBuildings(Authentication auth) {
+        User user = freshUser(auth);
+
+        if (user.getRole() == null || !"PropertyManager".equals(user.getRole().getName())) {
+            throw new AccessDeniedException("Μόνο PropertyManager.");
+        }
+        if (user.getCompany() == null) {
+            return List.of(); // ή throw αν θες
+        }
+
+        return buildingRepository.findByCompanyId(user.getCompany().getId())
+                .stream()
+                .map(buildingMapper::toBuildingResponse) // έχει και company μέσα
+                .toList();
+    }
 
 }

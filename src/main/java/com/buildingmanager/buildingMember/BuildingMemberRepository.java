@@ -1,6 +1,5 @@
 package com.buildingmanager.buildingMember;
 
-import com.buildingmanager.role.Role;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -32,6 +31,8 @@ public interface BuildingMemberRepository extends JpaRepository<BuildingMember, 
     boolean existsByBuilding_IdAndUser_Id(Integer buildingId, Integer userId);
 
     boolean existsByBuilding_IdAndUser_IdAndApartment_Id(Integer buildingId, Integer userId, Integer apartmentId);
+
+
 
 
 }

@@ -1,6 +1,7 @@
 package com.buildingmanager.building;
 
 
+import com.buildingmanager.company.CompanyDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,11 +30,13 @@ public class BuildingDTO {
     private boolean parkingExist;
     private Integer parkingSpacesNum;
     private String buildingDescription;
+
     private boolean hasCentralHeating;
     private String heatingType;
     private Double heatingCapacityLitres;
+
     private String buildingCode;
-    private String description;
+
     private boolean undergroundFloorExist;
     private boolean halfFloorExist;
     private boolean overTopFloorExist;
@@ -41,8 +44,15 @@ public class BuildingDTO {
     private boolean storageExist;
     private Integer storageNum;
 
+    private String managerFullName;
+    private String managerEmail;
+    private String managerPhone;
+    private String managerAddress1;
+    private String managerCity;
+    private String managerProfileImgUrl;
+    private String managerRole;
 
-    private ManagerDTO manager;
+    private CompanyDTO company;
 }
 
 

@@ -27,12 +27,12 @@ public class CompanyService {
 
     public CompanyDTO toDto(Company c) {
         CompanyDTO dto = new CompanyDTO();
-        dto.setCompanyId(c.getId());          // από BaseEntity
+        dto.setCompanyId(c.getId());
         dto.setCompanyName(c.getCompanyName());
         dto.setTaxNumber(c.getTaxNumber());
         dto.setManagerName(c.getManagerName());
-        dto.setEmail(c.getEmail());
         dto.setPhone(c.getPhone());
+        dto.setEmail(c.getEmail());
         dto.setAddress(c.getAddress());
         dto.setAddressNumber(c.getAddressNumber());
         dto.setPostalCode(c.getPostalCode());
@@ -73,25 +73,36 @@ public class CompanyService {
         return toDto(saved);
     }
 
-    public Company updateCompany(Long id, Company updated) {
-        return companyRepository.findById(id).map(company -> {
-            company.setCompanyName(updated.getCompanyName());
-            company.setTaxNumber(updated.getTaxNumber());
-            company.setManagerName(updated.getManagerName());
-            company.setEmail(updated.getEmail());
-            company.setPhone(updated.getPhone());
-            company.setAddress(updated.getAddress());
-            company.setAddressNumber(updated.getAddressNumber());
-            company.setPostalCode(updated.getPostalCode());
-            company.setCity(updated.getCity());
-            company.setRegion(updated.getRegion());
-            company.setCountry(updated.getCountry());
-            return companyRepository.save(company);
-        }).orElseThrow(() -> new RuntimeException("Company not found"));
-    }
-
     public void deleteCompany(Long id) {
         companyRepository.deleteById(id);
+    }
+
+    public CompanyDTO updateMyCompany(CompanyDTO dto) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        Company company = user.getCompany();
+        if (company == null) {
+            throw new jakarta.persistence.EntityNotFoundException("No company linked to user");
+        }
+
+        // update fields (μόνο όσα επιτρέπεις να αλλάζουν)
+        company.setCompanyName(dto.getCompanyName());
+        company.setTaxNumber(dto.getTaxNumber());
+        company.setManagerName(dto.getManagerName());
+        company.setEmail(dto.getEmail());
+        company.setPhone(dto.getPhone());
+        company.setAddress(dto.getAddress());
+        company.setAddressNumber(dto.getAddressNumber());
+        company.setPostalCode(dto.getPostalCode());
+        company.setCity(dto.getCity());
+        company.setRegion(dto.getRegion());
+        company.setCountry(dto.getCountry()); // αν το έχεις στο backend DTO
+
+        Company saved = companyRepository.save(company);
+        return toDto(saved);
     }
 }
 
