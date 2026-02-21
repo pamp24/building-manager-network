@@ -61,6 +61,9 @@ public class Building extends BaseEntity {
     private List<BuildingMember> members = new ArrayList<>();
 
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "property_manager_id")
+    private User propertyManager;
 
     @ManyToOne
     @JoinColumn(name = "manager_id")

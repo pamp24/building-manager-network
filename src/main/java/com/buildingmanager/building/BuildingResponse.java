@@ -1,6 +1,7 @@
 package com.buildingmanager.building;
 
 
+import com.buildingmanager.company.CompanyDTO;
 import lombok.*;
 
 @Getter
@@ -22,7 +23,7 @@ public class BuildingResponse {
     private String postalCode;
     private String country;
     private String state;
-    private String floors;
+    private Integer floors;
     private int apartmentsNum;
     private double sqMetersTotal;
     private double sqMetersCommonSpaces;
@@ -46,9 +47,13 @@ public class BuildingResponse {
     private String managerId;
     private String managerFullName;
     private String managerEmail;
+    private String managerRole;
     private String managerPhone;
     private String managerAddress1;
     private String managerCity;
     private String managerProfileImgUrl;
+
+    private CompanyDTO company;
+
 
 }

@@ -5,6 +5,7 @@ public record ManagerDTO(
         Integer id,
         String fullName,
         String email,
+        String role,
         String phoneNumber,
         String street1,
         String stNumber1,

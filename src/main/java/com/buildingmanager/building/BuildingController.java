@@ -67,9 +67,8 @@ public class    BuildingController {
                 .orElse(ResponseEntity.noContent().build());
     }
     @GetMapping("/my-buildings")
-    public ResponseEntity<List<BuildingResponse>> getMyBuildings(Authentication authentication) {
-        List<BuildingResponse> result = buildingService.getMyBuildings(authentication);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<List<BuildingDTO>> getMyBuildings(Authentication authentication) {
+        return ResponseEntity.ok(buildingService.getMyBuildingsDTO(authentication));
     }
 
     @DeleteMapping("/{id}")
@@ -106,6 +105,21 @@ public class    BuildingController {
     public ResponseEntity<JoinBuildingResponseDTO> joinByCode(@RequestParam String code, Authentication auth) {
         Integer buildingId = buildingMemberService.joinByBuildingCode(code, auth);
         return ResponseEntity.ok(new JoinBuildingResponseDTO(buildingId));
+    }
+
+    @PostMapping("/self")
+    public ResponseEntity<Integer> createSelf(@Valid @RequestBody BuildingRequest request, Authentication auth) {
+        return ResponseEntity.ok(buildingService.createSelfManaged(request, auth));
+    }
+
+    @PostMapping("/company")
+    public ResponseEntity<Integer> createCompany(@Valid @RequestBody BuildingRequest request, Authentication auth) {
+        return ResponseEntity.ok(buildingService.createCompanyManaged(request, auth));
+    }
+
+    @GetMapping("/pm/my-company-buildings")
+    public ResponseEntity<List<BuildingResponse>> myCompanyBuildings(Authentication auth) {
+        return ResponseEntity.ok(buildingService.getMyCompanyBuildings(auth));
     }
 
 }

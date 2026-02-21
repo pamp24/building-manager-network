@@ -1,31 +1,33 @@
 package com.buildingmanager.building;
 
-import com.buildingmanager.user.User;
-import com.buildingmanager.user.UserRepository;
+import com.buildingmanager.company.CompanyDTO;
 import org.springframework.stereotype.Service;
 
 @Service
 public class BuildingMapper {
-    private final UserRepository userRepository;
 
-    public BuildingMapper(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    private CompanyDTO toCompanyDTO(com.buildingmanager.company.Company c) {
+        CompanyDTO dto = new CompanyDTO();
+        dto.setCompanyId(c.getId());
+        dto.setCompanyName(c.getCompanyName());
+        dto.setTaxNumber(c.getTaxNumber());
+        dto.setManagerName(c.getManagerName());
+        dto.setEmail(c.getEmail());
+        dto.setPhone(c.getPhone());
+        dto.setAddress(c.getAddress());
+        dto.setAddressNumber(c.getAddressNumber());
+        dto.setPostalCode(c.getPostalCode());
+        dto.setCity(c.getCity());
+        dto.setRegion(c.getRegion());
+        dto.setCountry(c.getCountry());
+        return dto;
     }
 
     public Building toBuilding(BuildingRequest request) {
-        User manager = null;
-        if (request.managerId() != null) {
-            manager = userRepository.findById(request.managerId())
-                    .orElseThrow(() -> new IllegalArgumentException("Δεν βρέθηκε χρήστης με ID: " + request.managerId()));
-        }
 
         HeatingType heatingType = null;
         if (request.heatingType() != null) {
-            try {
-                heatingType = HeatingType.valueOf(request.heatingType().toUpperCase());
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Μη έγκυρος τύπος θέρμανσης: " + request.heatingType());
-            }
+            heatingType = HeatingType.valueOf(request.heatingType().toUpperCase());
         }
 
         return Building.builder()
@@ -50,7 +52,6 @@ public class BuildingMapper {
                 .hasCentralHeating(request.hasCentralHeating())
                 .heatingType(heatingType)
                 .heatingCapacityLitres(request.heatingCapacityLitres())
-                .manager(manager)
                 .undergroundFloorExist(request.undergroundFloorExist())
                 .halfFloorExist(request.halfFloorExist())
                 .overTopFloorExist(request.overTopFloorExist())
@@ -63,20 +64,27 @@ public class BuildingMapper {
     }
 
     public BuildingDTO toDTO(Building building) {
-        ManagerDTO managerDTO = null;
-        if (building.getManager() != null) {
-            managerDTO = new ManagerDTO(
-                    building.getManager().getId(),
-                    building.getManager().fullName(),
-                    building.getManager().getEmail(),
-                    building.getManager().getPhoneNumber(),
-                    building.getManager().getAddress1(),
-                    building.getManager().getAddressNumber1(),
-                    building.getManager().getAddress2(),
-                    building.getManager().getAddressNumber2(),
-                    building.getManager().getProfileImageUrl()
+
+        CompanyDTO companyDTO = null;
+        if (building.getCompany() != null) {
+            var c = building.getCompany();
+            companyDTO = new CompanyDTO(
+                    c.getId(),
+                    c.getCompanyName(),
+                    c.getTaxNumber(),
+                    c.getManagerName(), // θα χαρτογραφηθεί στο responsiblePerson αν ακολουθήσεις το #1
+                    c.getPhone(),       // θα χαρτογραφηθεί στο phoneNumber αν ακολουθήσεις το #1
+                    c.getEmail(),
+                    c.getAddress(),
+                    c.getAddressNumber(),
+                    c.getPostalCode(),
+                    c.getCity(),
+                    c.getRegion(),
+                    c.getCountry()
             );
         }
+
+        var m = building.getManager();
 
         return BuildingDTO.builder()
                 .id(building.getId())
@@ -86,6 +94,7 @@ public class BuildingMapper {
                 .street2(building.getStreet2())
                 .stNumber2(building.getStNumber2())
                 .city(building.getCity())
+                .state(building.getState())
                 .region(building.getRegion())
                 .postalCode(building.getPostalCode())
                 .country(building.getCountry())
@@ -106,12 +115,24 @@ public class BuildingMapper {
                 .managerHouseExist(building.isManagerHouseExist())
                 .storageExist(building.isStorageExist())
                 .storageNum(building.getStorageNum())
-                .manager(managerDTO)
+
+                // manager flat
+                .managerFullName(m != null ? m.fullName() : null)
+                .managerEmail(m != null ? m.getEmail() : null)
+                .managerPhone(m != null ? m.getPhoneNumber() : null)
+                .managerAddress1(m != null ? m.getAddress1() : null)
+                .managerCity(m != null ? m.getCity() : null)
+                .managerProfileImgUrl(m != null ? m.getProfileImageUrl() : null)
+                .managerRole(m != null && m.getRole() != null ? m.getRole().getName() : null)
+
+                .company(companyDTO)
                 .build();
     }
 
 
     public BuildingResponse toBuildingResponse(Building building) {
+        CompanyDTO companyDTO = building.getCompany() != null ? toCompanyDTO(building.getCompany()) : null;
+
         return BuildingResponse.builder()
                 .id(building.getId())
                 .name(building.getName())
@@ -124,7 +145,7 @@ public class BuildingMapper {
                 .postalCode(building.getPostalCode())
                 .country(building.getCountry())
                 .state(building.getState())
-                .floors(String.valueOf(building.getFloors()))
+                .floors(building.getFloors())
                 .apartmentsNum(building.getApartmentsNum())
                 .sqMetersTotal(building.getSqMetersTotal())
                 .sqMetersCommonSpaces(building.getSqMetersCommonSpaces())
@@ -149,6 +170,11 @@ public class BuildingMapper {
                 .managerEmail(
                         building.getManager() != null ? building.getManager().getEmail() : null
                 )
+                .managerRole(
+                        building.getManager() != null && building.getManager().getRole() != null
+                                ? building.getManager().getRole().getName()
+                                : null
+                )
                 .managerPhone(
                         building.getManager() != null ? building.getManager().getPhoneNumber() : null
                 )
@@ -160,7 +186,9 @@ public class BuildingMapper {
                 )
                 .managerProfileImgUrl(building.getManager() != null ? building.getManager().getProfileImageUrl() : null
                 )
+                .company(companyDTO)
                 .build();
     }
+
 }
 
