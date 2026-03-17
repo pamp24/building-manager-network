@@ -39,7 +39,7 @@ public class BuildingMemberService {
 
 
 
-    public BuildingMember addMember(Integer buildingId, Integer userId, Integer roleId, String status) {
+    public BuildingMember addMember(Integer buildingId, Integer userId, Integer roleId, BuildingMemberStatus status) {
         var building = buildingRepository.findById(buildingId)
                 .orElseThrow(() -> new EntityNotFoundException("Building not found"));
         var user = userRepository.findById(userId)
@@ -51,7 +51,7 @@ public class BuildingMemberService {
                 .building(building)
                 .user(user)
                 .role(role)
-                .status(status != null ? status : "Joined")
+                .status(status != null ? status : BuildingMemberStatus.JOINED)
                 .build();
 
         return buildingMemberRepository.save(member);
@@ -72,7 +72,7 @@ public class BuildingMemberService {
                     m.getUser() != null ? m.getUser().getFullName() : null,
                     m.getUser() != null ? m.getUser().getEmail() : null,
                     m.getRole() != null ? m.getRole().getName() : null,
-                    m.getStatus(),
+                    m.getStatus() != null ? m.getStatus().name() : null,
                     m.getBuilding() != null ? m.getBuilding().getId() : null,
                     m.getBuilding() != null ? m.getBuilding().getName() : null,
                     ap != null ? ap.getNumber() : null,
@@ -144,7 +144,7 @@ public class BuildingMemberService {
                 .building(building)
                 .user(joiner)
                 .role(roleUser)
-                .status("PENDING_APARTMENT")
+                .status(BuildingMemberStatus.PENDING)
                 .apartment(null)
                 .build();
 
@@ -263,14 +263,14 @@ public class BuildingMemberService {
 
         // ΔΗΜΙΟΥΡΓΗΣΕ ΝΕΟ BuildingMember για αυτή την ανάθεση
         boolean isFirstAssignmentRow = joinMember.getApartment() == null
-                && "PENDING_APARTMENT".equals(joinMember.getStatus());
+                && joinMember.getStatus() == BuildingMemberStatus.PENDING;
 
         //1ο assign: update joinMember (δεν δημιουργώ νέο row)
         if (isFirstAssignmentRow) {
 
             joinMember.setRole(roleEntity);          // Owner ή Resident
             joinMember.setApartment(apartment);      // A1
-            joinMember.setStatus("ACCEPTED");        // ή "JOINED" όπως θες
+            joinMember.setStatus(BuildingMemberStatus.JOINED);        // ή "JOINED" όπως θες
 
             buildingMemberRepository.save(joinMember);
 
@@ -280,7 +280,7 @@ public class BuildingMemberService {
                     .building(joinMember.getBuilding())
                     .user(targetUser)
                     .role(roleEntity)
-                    .status("Joined")
+                    .status(BuildingMemberStatus.JOINED)
                     .apartment(apartment)
                     .build();
 

@@ -161,5 +161,6 @@ where s.building.id = :buildingId
     Integer findMaxYearForBuilding(@Param("buildingId") Integer buildingId);
 
 
-
+    List<CommonExpenseStatement> findByBuilding_IdIn(List<Integer> buildingIds);
+    List<CommonExpenseStatement> findByBuilding_Id(Integer buildingId);
 }
