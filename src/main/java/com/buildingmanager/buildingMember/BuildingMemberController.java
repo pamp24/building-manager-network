@@ -21,7 +21,20 @@ public class BuildingMemberController {
             @RequestParam Integer roleId,
             @RequestParam(required = false) String status
     ) {
-        return ResponseEntity.ok(buildingMemberService.addMember(buildingId, userId, roleId, status));
+
+        BuildingMemberStatus statusEnum = null;
+
+        if (status != null && !status.isBlank()) {
+            try {
+                statusEnum = BuildingMemberStatus.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid status: " + status);
+            }
+        }
+
+        return ResponseEntity.ok(
+                buildingMemberService.addMember(buildingId, userId, roleId, statusEnum)
+        );
     }
 
     @GetMapping("/by-building/{buildingId}")

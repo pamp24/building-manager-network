@@ -5,6 +5,8 @@ import com.buildingmanager.apartment.ApartmentRepository;
 import com.buildingmanager.building.Building;
 import com.buildingmanager.buildingMember.BuildingMember;
 import com.buildingmanager.buildingMember.BuildingMemberRepository;
+import com.buildingmanager.buildingMember.BuildingMemberStatus;
+import com.buildingmanager.email.EmailService;
 import com.buildingmanager.role.Role;
 import com.buildingmanager.role.RoleRepository;
 import com.buildingmanager.user.User;
@@ -12,10 +14,8 @@ import com.buildingmanager.user.UserRepository;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import com.buildingmanager.email.EmailService;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -91,12 +91,12 @@ public class InviteService {
             throw new RuntimeException("Invite email does not match user");
         }
 
-        // 🔹 Ανάθεση ρόλου στον User
+        //Ανάθεση ρόλου στον User
         Role role = roleRepository.findByName(invite.getRole())
                 .orElseThrow(() -> new RuntimeException("Role not found: " + invite.getRole()));
         user.setRole(role);
 
-        // 🔹 Σύνδεση με Apartment / Building
+        //Σύνδεση με Apartment / Building
         switch (invite.getRole()) {
             case "Owner" -> invite.getApartment().setOwner(user);
             case "Resident" -> invite.getApartment().setResident(user);
@@ -117,7 +117,7 @@ public class InviteService {
         member.setUser(user);
         member.setRole(role);
         member.setApartment(invite.getApartment());
-        member.setStatus("Joined");
+        member.setStatus(BuildingMemberStatus.JOINED);
 
         buildingMemberRepository.save(member);
 

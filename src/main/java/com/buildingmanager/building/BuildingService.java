@@ -5,6 +5,7 @@ import com.buildingmanager.apartment.Apartment;
 import com.buildingmanager.apartment.ApartmentRepository;
 import com.buildingmanager.buildingMember.BuildingMember;
 import com.buildingmanager.buildingMember.BuildingMemberRepository;
+import com.buildingmanager.buildingMember.BuildingMemberStatus;
 import com.buildingmanager.common.PageResponse;
 import com.buildingmanager.role.Role;
 import com.buildingmanager.role.RoleRepository;
@@ -66,7 +67,7 @@ public class BuildingService {
                         .building(saved)
                         .user(currentUser)
                         .role(bmRole)
-                        .status("Joined")
+                        .status(BuildingMemberStatus.JOINED)
                         .build()
         );
 
@@ -107,7 +108,7 @@ public class BuildingService {
                         .building(saved)
                         .user(currentUser)
                         .role(pmRole)
-                        .status("Joined")
+                        .status(BuildingMemberStatus.JOINED)
                         .build()
         );
 
@@ -151,7 +152,7 @@ public class BuildingService {
                 .building(savedBuilding)
                 .user(currentUser)
                 .role(pmRole)
-                .status("Joined")
+                .status(BuildingMemberStatus.JOINED)
                 .build();
 
         buildingMemberRepository.save(membership);
@@ -391,7 +392,7 @@ public class BuildingService {
             return List.of(); // ή throw αν θες
         }
 
-        return buildingRepository.findByCompanyId(user.getCompany().getId())
+        return buildingRepository.findByCompany_Id(user.getCompany().getId())
                 .stream()
                 .map(buildingMapper::toBuildingResponse) // έχει και company μέσα
                 .toList();

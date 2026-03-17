@@ -31,7 +31,8 @@ public class BuildingMember {
     @JoinColumn(name = "role_id")
     private Role role;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private BuildingMemberStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "apartment_id")
