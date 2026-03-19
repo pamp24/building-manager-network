@@ -50,4 +50,10 @@ public class PmDashboardController {
         User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok(pmDashboardService.getMembershipStats(user));
     }
+
+    @GetMapping("/building-managers")
+    public ResponseEntity<List<PmBuildingManagerRowDTO>> getBuildingManagers(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(pmDashboardService.getBuildingManagers(user));
+    }
 }

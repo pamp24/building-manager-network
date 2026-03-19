@@ -53,6 +53,9 @@ public class BuildingDTO {
     private String managerRole;
 
     private CompanyDTO company;
+
+    private String myRole;
+    private boolean hasPropertyManager;
 }
 
 

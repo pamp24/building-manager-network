@@ -594,7 +594,11 @@ public class PmDashboardService {
                 .countByBuilding_IdInAndStatus(buildingIds, BuildingMemberStatus.PENDING);
 
         long joinedMembers = buildingMemberRepository
-                .countByBuilding_IdInAndStatus(buildingIds, BuildingMemberStatus.JOINED);
+                .countByBuilding_IdInAndStatusAndRole_NameIn(
+                        buildingIds,
+                        BuildingMemberStatus.JOINED,
+                        List.of("Owner", "Resident", "BuildingManager")
+                );
 
         long unassignedApartments = apartmentRepository
                 .countUnassignedApartmentsByBuildingIds(buildingIds);
@@ -605,5 +609,31 @@ public class PmDashboardService {
                 .joinedMembers(joinedMembers)
                 .unassignedApartments(unassignedApartments)
                 .build();
+    }
+
+    public List<PmBuildingManagerRowDTO> getBuildingManagers(User user) {
+        if (user.getCompany() == null) {
+            throw new EntityNotFoundException("Property manager company not found");
+        }
+
+        List<Building> buildings = buildingRepository.findByCompany_Id(user.getCompany().getId());
+
+        return buildings.stream()
+                .map(building -> {
+                    User manager = building.getManager();
+
+                    return PmBuildingManagerRowDTO.builder()
+                            .buildingId(building.getId())
+                            .buildingName(building.getName())
+                            .buildingCode(building.getBuildingCode())
+                            .city(building.getCity())
+                            .managerId(manager != null ? manager.getId() : null)
+                            .managerFullName(manager != null ? manager.getFullName() : null)
+                            .managerEmail(manager != null ? manager.getEmail() : null)
+                            .managerPhone(manager != null ? manager.getPhoneNumber() : null)
+                            .managerAssigned(manager != null)
+                            .build();
+                })
+                .toList();
     }
 }
