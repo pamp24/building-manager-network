@@ -25,6 +25,26 @@ public interface BuildingMemberRepository extends JpaRepository<BuildingMember, 
 
     long countByBuilding_IdInAndStatus(List<Integer> buildingIds, BuildingMemberStatus status);
 
+    long countByBuilding_IdInAndStatusAndRole_NameIn(
+            List<Integer> buildingIds,
+            BuildingMemberStatus status,
+            List<String> roleNames
+    );
+
+    Optional<BuildingMember> findByUserIdAndBuildingIdAndStatus(
+            Integer userId,
+            Integer buildingId,
+            BuildingMemberStatus status
+    );
+
+    boolean existsByUserIdAndBuildingCompanyIdAndStatus(
+            Integer userId,
+            Integer companyId,
+            BuildingMemberStatus status
+    );
+
+    boolean existsByUserIdAndBuildingIdAndStatus(Long userId, Long buildingId, BuildingMemberStatus status);
+
     @Transactional
     @Modifying
     @Query("delete from BuildingMember bm where bm.building.id = :buildingId")
