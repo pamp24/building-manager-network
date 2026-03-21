@@ -299,7 +299,30 @@ public class SupportTicketService {
         SupportTicket ticket = supportTicketRepository.findById(ticketId)
                 .orElseThrow(() -> new EntityNotFoundException("Support ticket not found"));
 
-        validateTicketReadAccess(currentUser, ticket);
+        if (ticket.getCreatedBy() != null && ticket.getCreatedBy().getId().equals(currentUser.getId())) {
+            throw new IllegalStateException("The creator of the ticket is not allowed to change its status");
+        }
+
+        String normalizedRole = normalizeRole(
+                currentUser.getRole() != null ? currentUser.getRole().getName() : null
+        );
+
+        boolean allowed = false;
+
+        if ("BUILDINGMANAGER".equals(normalizedRole) || "BUILDING_MANAGER".equals(normalizedRole)) {
+            allowed = ticket.getTargetRole() == SupportTicketTargetRole.BUILDING_MANAGER;
+        } else if ("PROPERTYMANAGER".equals(normalizedRole) || "PROPERTY_MANAGER".equals(normalizedRole)) {
+            allowed = ticket.getTargetRole() == SupportTicketTargetRole.PROPERTY_MANAGER;
+        } else if ("ADMIN".equals(normalizedRole)) {
+            allowed = ticket.getTargetRole() == SupportTicketTargetRole.ADMIN;
+        } else if ("PROPERTYAGENT".equals(normalizedRole) || "PROPERTY_AGENT".equals(normalizedRole)) {
+            allowed = ticket.getAssignedAgent() != null
+                    && ticket.getAssignedAgent().getId().equals(currentUser.getId());
+        }
+
+        if (!allowed) {
+            throw new IllegalStateException("User is not allowed to change the ticket status");
+        }
 
         ticket.setStatus(status);
 
@@ -344,6 +367,7 @@ public class SupportTicketService {
 
         validateTicketReadAccess(currentUser, ticket);
 
+        ticketCommentRepository.deleteByTicketId(ticketId);
         supportTicketRepository.delete(ticket);
     }
 
@@ -457,4 +481,6 @@ public class SupportTicketService {
                 .map(this::mapToDto)
                 .toList();
     }
+
+
 }
