@@ -13,7 +13,7 @@ public interface CalendarRepository extends JpaRepository<Calendar, Integer> {
 
     List<Calendar> findByBuildingIdAndActiveTrue(Integer buildingId);
 
-
+    long count();
 
     @Query("""
         SELECT c

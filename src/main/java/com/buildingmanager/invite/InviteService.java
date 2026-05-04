@@ -6,6 +6,7 @@ import com.buildingmanager.building.Building;
 import com.buildingmanager.buildingMember.BuildingMember;
 import com.buildingmanager.buildingMember.BuildingMemberRepository;
 import com.buildingmanager.buildingMember.BuildingMemberStatus;
+import com.buildingmanager.company.Company;
 import com.buildingmanager.email.EmailService;
 import com.buildingmanager.role.Role;
 import com.buildingmanager.role.RoleRepository;
@@ -28,7 +29,19 @@ public class InviteService {
     private final UserRepository userRepository;
     private final BuildingMemberRepository buildingMemberRepository;
 
+    // CREATE INVITE
     public Invite createInvite(String email, String role, Integer apartmentId, User inviter) {
+
+        if ("PropertyAgent".equalsIgnoreCase(role)) {
+            return createPropertyAgentInvite(email, inviter);
+        }
+
+        return createApartmentInvite(email, role, apartmentId, inviter);
+    }
+
+    // APARTMENT INVITE
+    private Invite createApartmentInvite(String email, String role, Integer apartmentId, User inviter) {
+
         if (apartmentId == null) {
             throw new IllegalArgumentException("apartmentId is null!");
         }
@@ -36,7 +49,7 @@ public class InviteService {
         Apartment apartment = apartmentRepository.findById(apartmentId)
                 .orElseThrow(() -> new RuntimeException("Apartment not found"));
 
-        // Validation: μόνο ένας Owner ανά διαμέρισμα
+        // Owner validation
         if ("Owner".equals(role)) {
             if (apartment.getOwner() != null) {
                 throw new RuntimeException("Το διαμέρισμα έχει ήδη Ιδιοκτήτη");
@@ -46,7 +59,7 @@ public class InviteService {
             }
         }
 
-            // Validation: μόνο ένας Resident ανά διαμέρισμα
+        // Resident validation
         if ("Resident".equals(role)) {
             if (apartment.getResident() != null) {
                 throw new RuntimeException("Το διαμέρισμα έχει ήδη Ένοικο");
@@ -63,53 +76,115 @@ public class InviteService {
                 .email(email)
                 .role(role)
                 .apartment(apartment)
+                .company(null)
                 .inviter(inviter)
                 .build();
 
         inviteRepository.save(invite);
 
-        String inviteLink = "http://localhost:4200/invite/accept?code=" + invite.getToken();
-        try {
-            emailService.sendInviteEmail(invite.getEmail(), inviter.getFullName(), inviteLink);
-        } catch (MessagingException e) {
-            throw new RuntimeException("Αποτυχία αποστολής πρόσκλησης", e);
-        }
+        sendInviteEmail(invite, inviter);
 
         return invite;
-
     }
 
+    // PROPERTY AGENT INVITE
+    private Invite createPropertyAgentInvite(String email, User inviter) {
 
-    public Invite acceptInvite(String token, User user) {
+        Company company = inviter.getCompany();
+
+        if (company == null) {
+            throw new RuntimeException("Ο inviter δεν ανήκει σε εταιρία");
+        }
+
+        if (inviteRepository.existsByEmailAndRoleAndStatus(email, "PropertyAgent", InviteStatus.PENDING)) {
+            throw new RuntimeException("Υπάρχει ήδη ενεργή πρόσκληση για Property Agent");
+        }
+
+        Invite invite = Invite.builder()
+                .email(email)
+                .role("PropertyAgent")
+                .apartment(null)
+                .company(company)
+                .inviter(inviter)
+                .build();
+
+        inviteRepository.save(invite);
+
+        sendInviteEmail(invite, inviter);
+
+        return invite;
+    }
+
+    // ACCEPT INVITE
+    public Invite acceptInvite(String token, String authenticatedEmail) {
+
         Invite invite = inviteRepository.findByToken(token)
                 .orElseThrow(() -> new RuntimeException("Invite not found"));
 
         if (invite.getExpiresAt().isBefore(LocalDateTime.now())) {
+            invite.setStatus(InviteStatus.EXPIRED);
+            inviteRepository.save(invite);
             throw new RuntimeException("Invite expired");
         }
-        if (!invite.getEmail().equalsIgnoreCase(user.getEmail())) {
-            throw new RuntimeException("Invite email does not match user");
+
+        String inviteEmail = invite.getEmail() != null ? invite.getEmail().trim() : null;
+        String authEmail = authenticatedEmail != null ? authenticatedEmail.trim() : null;
+
+        System.out.println("INVITE EMAIL = [" + inviteEmail + "]");
+        System.out.println("AUTH EMAIL   = [" + authEmail + "]");
+
+        if (inviteEmail == null || authEmail == null || !inviteEmail.equalsIgnoreCase(authEmail)) {
+            throw new RuntimeException("Invite email does not match authenticated user");
         }
 
-        //Ανάθεση ρόλου στον User
+        User user = userRepository.findByEmail(inviteEmail)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + inviteEmail));
+
         Role role = roleRepository.findByName(invite.getRole())
                 .orElseThrow(() -> new RuntimeException("Role not found: " + invite.getRole()));
+
         user.setRole(role);
 
-        //Σύνδεση με Apartment / Building
         switch (invite.getRole()) {
-            case "Owner" -> invite.getApartment().setOwner(user);
-            case "Resident" -> invite.getApartment().setResident(user);
-            case "BuildingManager" -> invite.getApartment().getBuilding().setManager(user);
+            case "Owner" -> {
+                Apartment apartment = invite.getApartment();
+                apartment.setOwner(user);
+                userRepository.save(user);
+                apartmentRepository.save(apartment);
+                saveBuildingMember(invite, user, role);
+            }
+
+            case "Resident" -> {
+                Apartment apartment = invite.getApartment();
+                apartment.setResident(user);
+                userRepository.save(user);
+                apartmentRepository.save(apartment);
+                saveBuildingMember(invite, user, role);
+            }
+
+            case "BuildingManager" -> {
+                Apartment apartment = invite.getApartment();
+                apartment.getBuilding().setManager(user);
+                userRepository.save(user);
+                apartmentRepository.save(apartment);
+                saveBuildingMember(invite, user, role);
+            }
+
+            case "PropertyAgent" -> {
+                user.setCompany(invite.getCompany());
+                userRepository.save(user);
+            }
+
             default -> throw new RuntimeException("Unknown role");
         }
 
         invite.setStatus(InviteStatus.ACCEPTED);
+        return inviteRepository.save(invite);
+    }
 
-        userRepository.save(user);
-        apartmentRepository.save(invite.getApartment());
+    // BUILDING MEMBER
+    private void saveBuildingMember(Invite invite, User user, Role role) {
 
-        //Προσθήκη στο building_member
         Building building = invite.getApartment().getBuilding();
 
         BuildingMember member = new BuildingMember();
@@ -120,20 +195,61 @@ public class InviteService {
         member.setStatus(BuildingMemberStatus.JOINED);
 
         buildingMemberRepository.save(member);
-
-        return inviteRepository.save(invite);
     }
 
+    // EMAIL
+    private void sendInviteEmail(Invite invite, User inviter) {
 
+        String inviteLink = "http://localhost:4200/invite/accept?code=" + invite.getToken();
 
+        String subject = switch (invite.getRole()) {
+            case "PropertyAgent" -> "Πρόσκληση ως Support Agent";
+            case "Owner" -> "Πρόσκληση ως Ιδιοκτήτης";
+            case "Resident" -> "Πρόσκληση ως Ένοικος";
+            case "BuildingManager" -> "Πρόσκληση ως Διαχειριστής";
+            default -> "Πρόσκληση στην εφαρμογή";
+        };
+
+        String roleLabel = switch (invite.getRole()) {
+            case "PropertyAgent" -> "Support Agent";
+            case "Owner" -> "Ιδιοκτήτης";
+            case "Resident" -> "Ένοικος";
+            case "BuildingManager" -> "Διαχειριστής";
+            default -> invite.getRole();
+        };
+
+        String contextName = null;
+
+        if (invite.getApartment() != null && invite.getApartment().getBuilding() != null) {
+            contextName = "Πολυκατοικία: " + invite.getApartment().getBuilding().getName();
+        }
+
+        if (invite.getCompany() != null) {
+            contextName = "Εταιρία: " + invite.getCompany().getCompanyName();
+        }
+
+        try {
+            emailService.sendInviteEmail(
+                    invite.getEmail(),
+                    inviter.getFullName(),
+                    inviteLink,
+                    subject,
+                    roleLabel,
+                    contextName
+            );
+        } catch (MessagingException e) {
+            throw new RuntimeException("Αποτυχία αποστολής πρόσκλησης", e);
+        }
+    }
+
+    // DTO
     public InviteResponseDTO toDTO(Invite invite) {
         return new InviteResponseDTO(
                 invite.getEmail(),
                 invite.getRole(),
-                invite.getApartment().getId(),
+                invite.getApartment() != null ? invite.getApartment().getId() : null,
                 invite.getToken(),
                 invite.getStatus().name()
         );
     }
-
 }

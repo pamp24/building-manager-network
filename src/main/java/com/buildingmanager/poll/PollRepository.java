@@ -1,6 +1,5 @@
 package com.buildingmanager.poll;
 
-import com.buildingmanager.buildingMember.BuildingMember;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,7 +14,7 @@ public interface PollRepository extends JpaRepository<Poll, Integer> {
     //όλα
     List<Poll> findByBuildingIdOrderByStartDateDesc(Integer buildingId);
 
-
+    long count();
 
     // ενεργά
     List<Poll> findByBuildingIdAndActiveTrueOrderByStartDateDesc(Integer buildingId);

@@ -74,5 +74,23 @@ public interface ApartmentRepository extends JpaRepository<Apartment, Integer> {
 """)
     long countUnassignedApartmentsByBuildingIds(@Param("buildingIds") List<Integer> buildingIds);
 
+    long count();
+
+    long countByOwnerIsNotNullOrResidentIsNotNull();
+
+    long countByOwnerIsNull();
+
+    @Query("""
+    select count(a) from Apartment a
+    where a.owner is not null or a.resident is not null
+""")
+    long countAssignedApartments();
+
+    @Query("""
+    select count(a) from Apartment a
+    where a.owner is null and a.resident is null
+""")
+    long countVacantApartments();
+
 }
 

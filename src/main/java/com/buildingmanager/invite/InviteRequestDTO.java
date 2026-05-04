@@ -9,8 +9,9 @@ public class InviteRequestDTO {
     @Email
     @NotBlank
     private String email;
+
     @NotBlank
     private String role;
-    @NotBlank
+
     private Integer apartmentId;
 }

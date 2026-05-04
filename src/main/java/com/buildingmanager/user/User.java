@@ -7,7 +7,10 @@ import com.buildingmanager.common.BaseEntity;
 import com.buildingmanager.company.Company;
 import com.buildingmanager.role.Role;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,7 +20,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -60,6 +65,14 @@ public class User extends BaseEntity implements UserDetails {
 
     @OneToMany(mappedBy = "manager")
     private List<Building> managedBuildings;
+
+    @ManyToMany
+    @JoinTable(
+            name = "property_agent_buildings",
+            joinColumns = @JoinColumn(name = "agent_id"),
+            inverseJoinColumns = @JoinColumn(name = "building_id")
+    )
+    private Set<Building> assignedBuildings = new HashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -109,7 +122,7 @@ public class User extends BaseEntity implements UserDetails {
         return firstName + " " + lastName;
     }
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "company_id")
     private Company company;
 }

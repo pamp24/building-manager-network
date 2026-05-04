@@ -54,19 +54,54 @@ public class EmailService {
         helper.setSubject(subject);
 
         String template = templateEngine.process(templateName, context);
-
         helper.setText(template, true);
 
         mailSender.send(mimeMessage);
     }
+
+    public void sendInviteEmail(
+            String email,
+            String username,
+            String inviteLink,
+            String subject,
+            String roleLabel,
+            String contextName
+    ) throws MessagingException {
+
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(
+                mimeMessage,
+                MULTIPART_MODE_MIXED,
+                UTF_8.name()
+        );
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("username", username);
+        properties.put("confirmationUrl", inviteLink);
+        properties.put("roleLabel", roleLabel);
+        properties.put("contextName", contextName);
+
+        Context context = new Context();
+        context.setVariables(properties);
+
+        helper.setFrom("fwtispa123@gmail.com");
+        helper.setTo(email);
+        helper.setSubject(subject);
+
+        String template = templateEngine.process(EmailTemplateInvite.INVITE.getName(), context);
+        helper.setText(template, true);
+
+        mailSender.send(mimeMessage);
+    }
+
     public void sendInviteEmail(String email, String username, String inviteLink) throws MessagingException {
-        sendEmail(
+        sendInviteEmail(
                 email,
                 username,
-                EmailTemplateInvite.INVITE,
                 inviteLink,
-                "",
-                "Πρόσκληση σε Πολυκατοικία"
+                "Πρόσκληση σε Πολυκατοικία",
+                null,
+                null
         );
     }
 }

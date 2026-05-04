@@ -1,44 +1,84 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="el" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8" />
-    <title>Πρόσκληση σε Πολυκατοικία</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            color: #333;
-        }
-        .container {
-            padding: 20px;
-        }
-        .button {
-            background-color: #1976d2;
-            color: white;
-            padding: 10px 15px;
-            text-decoration: none;
-            border-radius: 4px;
-        }
-        .footer {
-            margin-top: 30px;
-            font-size: 12px;
-            color: #777;
-        }
-    </style>
+    <meta charset="UTF-8"/>
+    <title>Πρόσκληση</title>
 </head>
-<body>
-<div class="container">
-    <h2>Γεια σου,</h2>
 
-    <p>ο διαχειριστής <span th:text="${username}",>User</span></p>
-    <p>Σας έχει στείλει πρόσκληση για να συμμετάσχετε στην πολυκατοικία.</p>
-    <p>Κάνε κλικ στον παρακάτω σύνδεσμο για να αποδεχτείς την πρόσκληση:</p>
-    <p>
-        <a class="button" th:href="${confirmationUrl}">Αποδοχή Πρόσκλησης</a>
-    </p>
-    <p>Αν δεν περιμένεις αυτή την πρόσκληση, μπορείς να αγνοήσεις αυτό το μήνυμα.</p>
-    <div class="footer">
-        <p>Building Manager Network</p>
-    </div>
-</div>
+<body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:30px 0;">
+    <tr>
+        <td align="center">
+
+            <table width="600" cellpadding="0" cellspacing="0"
+                   style="background:#ffffff; border-radius:8px; padding:30px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+
+                <!-- HEADER -->
+                <tr>
+                    <td align="center">
+                        <h2 style="margin-bottom:10px;">📨 Πρόσκληση στην πλατφόρμα</h2>
+                    </td>
+                </tr>
+
+                <!-- BODY -->
+                <tr>
+                    <td style="padding-top:20px;">
+
+                        <p style="font-size:16px;">
+                            Γεια σου,
+                        </p>
+
+                        <p style="font-size:16px;">
+                            Ο χρήστης <strong th:text="${username}">User</strong>
+                            σε προσκάλεσε να συμμετάσχεις ως:
+                        </p>
+
+                        <!-- ROLE BADGE -->
+                        <div style="text-align:center; margin:20px 0;">
+                            <span style="background:#1976d2; color:white; padding:8px 16px; border-radius:20px; font-weight:bold;"
+                                  th:text="${roleLabel}">
+                                Role
+                            </span>
+                        </div>
+
+                        <!-- OPTIONAL CONTEXT -->
+                        <p style="font-size:15px;" th:if="${contextName != null}">
+                            <strong th:text="${contextName}">Context</strong>
+                        </p>
+
+                        <p style="font-size:16px;">
+                            Πάτησε το κουμπί για να αποδεχτείς την πρόσκληση:
+                        </p>
+
+                        <!-- BUTTON -->
+                        <div style="text-align:center; margin:30px 0;">
+                            <a th:href="${confirmationUrl}"
+                               style="background:#1976d2; color:white; padding:14px 28px;
+                                      border-radius:6px; text-decoration:none; font-weight:bold;">
+                                Αποδοχή Πρόσκλησης
+                            </a>
+                        </div>
+
+                        <p style="font-size:14px; color:#777;">
+                            Αν δεν περιμένεις αυτή την πρόσκληση, μπορείς να αγνοήσεις αυτό το email.
+                        </p>
+
+                    </td>
+                </tr>
+
+                <!-- FOOTER -->
+                <tr>
+                    <td style="padding-top:30px; text-align:center; font-size:12px; color:#aaa;">
+                        Building Manager Platform
+                    </td>
+                </tr>
+
+            </table>
+
+        </td>
+    </tr>
+</table>
+
 </body>
 </html>
