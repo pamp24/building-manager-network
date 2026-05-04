@@ -1,7 +1,6 @@
 package com.buildingmanager.invite;
 
 import com.buildingmanager.user.User;
-import com.buildingmanager.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -26,6 +25,7 @@ public class InviteController {
                 request.getApartmentId(),
                 currentUser
         );
+
         return ResponseEntity.ok(inviteService.toDTO(invite));
     }
 
@@ -34,8 +34,8 @@ public class InviteController {
             @RequestParam String code,
             Authentication authentication
     ) {
-        User user = (User) authentication.getPrincipal();
-        Invite invite = inviteService.acceptInvite(code, user);
+        String email = authentication.getName();
+        Invite invite = inviteService.acceptInvite(code, email);
         return ResponseEntity.ok(inviteService.toDTO(invite));
     }
 }

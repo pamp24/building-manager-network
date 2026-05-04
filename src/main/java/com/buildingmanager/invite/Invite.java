@@ -1,6 +1,7 @@
 package com.buildingmanager.invite;
 
 import com.buildingmanager.apartment.Apartment;
+import com.buildingmanager.company.Company;
 import com.buildingmanager.user.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -35,10 +36,14 @@ public class Invite {
     @Enumerated(EnumType.STRING)
     private InviteStatus status;
 
-    private String token; // για activation link
+    private String token;
 
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
+
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
 
     @PrePersist
     public void prePersist() {
