@@ -72,8 +72,8 @@ public class BuildingMapper {
                     c.getId(),
                     c.getCompanyName(),
                     c.getTaxNumber(),
-                    c.getManagerName(), // θα χαρτογραφηθεί στο responsiblePerson αν ακολουθήσεις το #1
-                    c.getPhone(),       // θα χαρτογραφηθεί στο phoneNumber αν ακολουθήσεις το #1
+                    c.getManagerName(),
+                    c.getPhone(),
                     c.getEmail(),
                     c.getAddress(),
                     c.getAddressNumber(),

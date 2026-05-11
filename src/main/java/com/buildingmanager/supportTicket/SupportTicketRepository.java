@@ -35,4 +35,16 @@ public interface SupportTicketRepository extends JpaRepository<SupportTicket, In
     ORDER BY t.createdAt DESC
 """)
     List<SupportTicket> findVisibleTicketsForAgent(Integer userId);
+
+    @Query("""
+SELECT t FROM SupportTicket t
+WHERE 
+    t.createdBy.id = :userId
+    OR t.assignedAgent.id = :userId
+    OR t.building.id IN :buildingIds
+ORDER BY t.createdAt DESC
+""")
+    List<SupportTicket> findTicketsForUser(Integer userId, List<Integer> buildingIds);
+
+
 }

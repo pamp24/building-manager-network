@@ -51,8 +51,12 @@ public class PollController {
         pollService.deactivate(id, user.getId());
     }
 
-    @GetMapping("/{id}/votes")
-    public ResponseEntity<List<VoteDTO>> getVotes(@PathVariable Long id) {
-        return ResponseEntity.ok(pollService.getVotesByPoll(id));
+    @GetMapping("/{pollId}/votes")
+    public List<VoteDTO> getVotes(
+            @PathVariable Long pollId,
+            Authentication authentication
+    ) {
+        var user = (User) authentication.getPrincipal();
+        return pollService.getVotesByPoll(pollId, user.getId());
     }
 }

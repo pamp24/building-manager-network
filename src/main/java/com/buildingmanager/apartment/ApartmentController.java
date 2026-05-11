@@ -1,10 +1,8 @@
 package com.buildingmanager.apartment;
 
 import com.buildingmanager.common.PageResponse;
-import com.buildingmanager.invite.InviteService;
 import com.buildingmanager.user.User;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -12,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -26,8 +23,6 @@ public class ApartmentController {
 
     private final ApartmentService apartmentService;
     private final ApartmentMapper apartmentMapper;
-    private final ApartmentRepository apartmentRepository;
-    private final InviteService inviteService;
     private static final Logger log = LoggerFactory.getLogger(ApartmentController.class);
 
 
@@ -92,23 +87,21 @@ public class ApartmentController {
 
     @GetMapping("/building/{buildingId}/list")
     public ResponseEntity<List<ApartmentResponse>> getApartmentsByBuilding(
-            @PathVariable Integer buildingId
+            @PathVariable Integer buildingId,
+            Authentication authentication
     ) {
-        List<Apartment> apartments = apartmentRepository.findAllByBuilding_IdOrderByFloorAscNumberAsc(buildingId);
-        List<ApartmentResponse> response = apartments.stream()
-                .map(apartment -> apartmentMapper.toApartmentResponse(apartment, null))
-                .toList();
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(apartmentService.getApartmentsByBuildingList(buildingId, authentication));
     }
-
 
     @GetMapping("/{buildingId}/available")
     public ResponseEntity<List<ApartmentResponse>> getAvailableApartments(
             @PathVariable Integer buildingId,
-            @RequestParam String role
+            @RequestParam String role,
+            Authentication authentication
     ) {
-        return ResponseEntity.ok(apartmentService.getAvailableApartments(buildingId, role));
+        return ResponseEntity.ok(apartmentService.getAvailableApartments(buildingId, role, authentication));
     }
+
     @PutMapping("update/myApartment")
     public ResponseEntity<ApartmentResponse> updateMyApartment(
             @RequestBody ApartmentDTO dto,

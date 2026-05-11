@@ -23,6 +23,7 @@ public interface BuildingMemberRepository extends JpaRepository<BuildingMember, 
 
     Optional<BuildingMember> findFirstByUser_Id(Integer userId);
 
+    List<BuildingMember> findByBuilding_Id(Integer buildingId);
     long countByBuilding_IdInAndStatus(List<Integer> buildingIds, BuildingMemberStatus status);
 
     long countByBuilding_IdInAndStatusAndRole_NameIn(
@@ -43,7 +44,7 @@ public interface BuildingMemberRepository extends JpaRepository<BuildingMember, 
             BuildingMemberStatus status
     );
 
-    boolean existsByUserIdAndBuildingIdAndStatus(Long userId, Long buildingId, BuildingMemberStatus status);
+    boolean existsByUserIdAndBuildingIdAndStatus(Integer userId, Integer buildingId, BuildingMemberStatus status);
 
     @Transactional
     @Modifying

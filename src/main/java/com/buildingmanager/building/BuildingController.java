@@ -37,9 +37,10 @@ public class    BuildingController {
 
     @GetMapping("{building-id}")
     public ResponseEntity<BuildingResponse> findBuildingById(
-            @PathVariable("building-id") Integer buildingId
-    ){
-        return ResponseEntity.ok(buildingService.findById(buildingId));
+            @PathVariable("building-id") Integer buildingId,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(buildingService.findById(buildingId, authentication));
     }
 
     @GetMapping
@@ -120,6 +121,12 @@ public class    BuildingController {
     @GetMapping("/pm/my-company-buildings")
     public ResponseEntity<List<BuildingResponse>> myCompanyBuildings(Authentication auth) {
         return ResponseEntity.ok(buildingService.getMyCompanyBuildings(auth));
+    }
+
+    @GetMapping("/admin/all")
+    public ResponseEntity<List<BuildingDTO>> getAllBuildingsForAdmin(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(buildingService.getAllBuildingsForAdmin(user));
     }
 
 }

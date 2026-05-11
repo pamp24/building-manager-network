@@ -4,18 +4,21 @@ package com.buildingmanager.poll;
 import com.buildingmanager.building.Building;
 import com.buildingmanager.building.BuildingRepository;
 import com.buildingmanager.buildingMember.BuildingMemberRepository;
+import com.buildingmanager.notification.NotificationService;
+import com.buildingmanager.permission.BuildingPermissionService;
+import com.buildingmanager.permission.UserBuildingPermission;
+import com.buildingmanager.permission.UserBuildingPermissionRepository;
+import com.buildingmanager.user.User;
 import com.buildingmanager.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -27,9 +30,11 @@ public class PollService {
     private final PollMapper pollMapper;
     private final UserRepository userRepository;
     private final VoteRepository voteRepository;
-    private final BuildingMemberRepository buildingMemberRepository;
     private final BuildingRepository buildingRepository;
-
+    private final BuildingPermissionService buildingPermissionService;
+    private final UserBuildingPermissionRepository userBuildingPermissionRepository;
+    private final NotificationService notificationService;
+    private final BuildingMemberRepository buildingMemberRepository;
 
     public List<PollDTO> getAllByBuilding(Integer buildingId, Integer userId) {
 
@@ -39,29 +44,21 @@ public class PollService {
 
         List<Poll> polls = pollRepository.findByBuildingIdOrderByStartDateDesc(buildingId);
 
+        if (!buildingPermissionService.canViewBuilding(user, buildingId)) {
+            return List.of();
+        }
+
         return polls.stream()
-                .map(pollMapper::toDTO)
+                .map(poll -> toDTOWithPermissions(poll, user))
                 .toList();
     }
 
-
-    /**
-     * Επιστρέφει όλες τις ενεργές ψηφοφορίες ενός κτιρίου.
-     * Αν κάποια έχει λήξει (endDate < τώρα), την κάνει αυτόματα inactive.
-     */
     public List<PollDTO> getByBuildingForMember(Integer buildingId, Integer userId) {
         var user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        //Αν είναι διαχειριστής, του επιτρέπουμε πάντα πρόσβαση
-        boolean isManager = user.getRole() != null && "BuildingManager".equalsIgnoreCase(user.getRole().getName());
-
-        boolean isMember = buildingMemberRepository
-                .findByBuilding_IdAndUser_Id(buildingId, userId)
-                .isPresent();
-
-        if (!isMember && !isManager) {
-            return List.of(); // ούτε μέλος ούτε διαχειριστής
+        if (!buildingPermissionService.canViewBuilding(user, buildingId)) {
+            return List.of();
         }
 
         // Αν η ψηφοφορία έχει λήξει, ενημέρωσε την αυτόματα
@@ -69,28 +66,31 @@ public class PollService {
         LocalDateTime now = LocalDateTime.now();
 
         for (Poll poll : polls) {
-            if (poll.getEndDate() != null && poll.getEndDate().isBefore(now)) {
+            if (poll.isActive()
+                    && poll.getEndDate() != null
+                    && poll.getEndDate().isBefore(now)) {
+
                 poll.setActive(false);
                 pollRepository.save(poll);
+
+                if (!poll.isExpirationNotified()) {
+                    notifyPollExpired(poll);
+                }
             }
         }
 
         return polls.stream()
-                .map(pollMapper::toDTO)
+                .map(poll -> toDTOWithPermissions(poll, user))
                 .toList();
     }
 
-
-    /**
-     * Δημιουργία νέας ψηφοφορίας — μόνο ο διαχειριστής μπορεί.
-     */
     public PollDTO create(PollDTO dto, Integer userId) {
 
         var user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!"BuildingManager".equalsIgnoreCase(user.getRole().getName())) {
-            throw new RuntimeException("Μόνο ο διαχειριστής μπορεί να δημιουργήσει ψηφοφορία.");
+        if (!buildingPermissionService.canManageBuilding(user, dto.getBuildingId())) {
+            throw new AccessDeniedException("Δεν έχεις δικαίωμα δημιουργίας ψηφοφορίας σε αυτή την πολυκατοικία.");
         }
 
         Poll poll = pollMapper.toEntity(dto);
@@ -121,15 +121,53 @@ public class PollService {
         poll.setOptions(options);
 
         Poll saved = pollRepository.save(poll);
+
+        notifyBuildingUsersForNewPoll(saved, user.getId());
+
         return pollMapper.toDTO(saved);
     }
 
+    private void notifyBuildingUsersForNewPoll(Poll poll, Integer creatorUserId) {
+        Integer buildingId = poll.getBuilding().getId();
+
+        Set<User> receivers = new HashSet<>();
+
+        userBuildingPermissionRepository.findByBuilding_Id(buildingId)
+                .forEach(p -> {
+                    if (p.getUser() != null) {
+                        receivers.add(p.getUser());
+                    }
+                });
+
+        buildingMemberRepository.findByBuilding_Id(buildingId)
+                .forEach(m -> {
+                    if (m.getUser() != null) {
+                        receivers.add(m.getUser());
+                    }
+                });
+
+        String message = "Δημιουργήθηκε νέα ψηφοφορία: " + poll.getTitle();
+
+        String payload = """
+            {
+              "pollId": %d,
+              "buildingId": %d
+            }
+            """.formatted(poll.getId(), buildingId);
+
+        receivers.stream()
+                .filter(receiver -> !receiver.getId().equals(creatorUserId))
+                .forEach(receiver ->
+                        notificationService.create(
+                                receiver,
+                                "POLL_CREATED",
+                                message,
+                                payload
+                        )
+                );
+    }
 
 
-    /**
-     * Ψήφος σε επιλογή ψηφοφορίας.
-     * Ελέγχει αν ο χρήστης έχει ήδη ψηφίσει (αν όχι multiple choice).
-     */
     public void vote(Integer userId, Integer pollId, Integer optionId) {
         Poll poll = pollRepository.findById(pollId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Η ψηφοφορία δεν βρέθηκε."));
@@ -143,6 +181,10 @@ public class PollService {
 
         var user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ο χρήστης δεν βρέθηκε."));
+
+        if (!buildingPermissionService.canViewBuilding(user, poll.getBuilding().getId())) {
+            throw new AccessDeniedException("Δεν έχεις δικαίωμα ψήφου σε αυτή την πολυκατοικία.");
+        }
 
         // Όλες οι ψήφοι του χρήστη για αυτή την ψηφοφορία
         List<Vote> userVotes = voteRepository.findByPollAndUser(poll, user);
@@ -208,18 +250,29 @@ public class PollService {
         var user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (user.getRole() == null || !"BuildingManager".equalsIgnoreCase(user.getRole().getName())) {
-            throw new RuntimeException("Μόνο ο διαχειριστής μπορεί να απενεργοποιήσει ψηφοφορίες.");
-        }
-
         Poll poll = pollRepository.findById(pollId)
                 .orElseThrow(() -> new RuntimeException("Poll not found"));
+
+        if (!buildingPermissionService.canManageBuilding(user, poll.getBuilding().getId())) {
+            throw new AccessDeniedException("Δεν έχεις δικαίωμα απενεργοποίησης ψηφοφορίας.");
+        }
 
         poll.setActive(false);
         pollRepository.save(poll);
     }
 
-    public List<VoteDTO> getVotesByPoll(Long pollId) {
+    public List<VoteDTO> getVotesByPoll(Long pollId, Integer userId) {
+
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        Poll poll = pollRepository.findById(pollId.intValue())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Poll not found"));
+
+        if (!buildingPermissionService.canManageBuilding(user, poll.getBuilding().getId())) {
+            throw new AccessDeniedException("Δεν έχεις δικαίωμα προβολής ψήφων.");
+        }
+
         List<Vote> votes = voteRepository.findByPollId(pollId);
 
         return votes.stream().map(v -> {
@@ -238,39 +291,85 @@ public class PollService {
         var user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        boolean isManager = user.getRole() != null && "BuildingManager".equalsIgnoreCase(user.getRole().getName());
+        List<Integer> buildingIds = buildingPermissionService.getUserBuildingIds(user);
 
-        Integer buildingId = buildingMemberRepository.findFirstByUser_Id(userId)
-                .map(m -> m.getBuilding().getId())
-                .orElse(null);
-
-        if (buildingId == null && !isManager) {
+        if (buildingIds.isEmpty()) {
             return List.of();
         }
 
-        // Manager χωρίς membership: αν θες, γύρνα όλα ή κενό. Εγώ λέω κενό για ασφάλεια.
-        if (buildingId == null) return List.of();
-
-        // auto-expire logic
         LocalDateTime now = LocalDateTime.now();
 
-        List<Poll> polls = isManager
-                ? pollRepository.findByBuildingIdOrderByStartDateDesc(buildingId)
-                : pollRepository.findByBuildingIdAndActiveTrueOrderByStartDateDesc(buildingId);
+        List<Poll> allPolls = new ArrayList<>();
 
-        for (Poll poll : polls) {
-            if (poll.isActive() && poll.getEndDate() != null && poll.getEndDate().isBefore(now)) {
-                poll.setActive(false);
-                pollRepository.save(poll);
+        for (Integer buildingId : buildingIds) {
+
+            boolean canManage = buildingPermissionService.canManageBuilding(user, buildingId);
+
+            List<Poll> polls = canManage
+                    ? pollRepository.findByBuildingIdOrderByStartDateDesc(buildingId)
+                    : pollRepository.findByBuildingIdAndActiveTrueOrderByStartDateDesc(buildingId);
+
+            for (Poll poll : polls) {
+                if (poll.isActive() && poll.getEndDate() != null && poll.getEndDate().isBefore(now)) {
+                    poll.setActive(false);
+                    pollRepository.save(poll);
+                }
             }
+
+            if (!canManage) {
+                polls = pollRepository.findByBuildingIdAndActiveTrueOrderByStartDateDesc(buildingId);
+            }
+
+            allPolls.addAll(polls);
         }
 
-        // ξαναφόρτωσε αν θες να μη γυρίσεις ληγμένα ως active
-        if (!isManager) {
-            polls = pollRepository.findByBuildingIdAndActiveTrueOrderByStartDateDesc(buildingId);
-        }
+        return allPolls.stream()
+                .map(poll -> toDTOWithPermissions(poll, user))
+                .toList();
+    }
 
-        return polls.stream().map(pollMapper::toDTO).toList();
+    private PollDTO toDTOWithPermissions(Poll poll, com.buildingmanager.user.User user) {
+        PollDTO dto = pollMapper.toDTO(poll);
+
+        Integer buildingId = poll.getBuilding().getId();
+
+        dto.setCanView(buildingPermissionService.canViewBuilding(user, buildingId));
+        dto.setCanManage(buildingPermissionService.canManageBuilding(user, buildingId));
+
+        return dto;
+    }
+
+    private void notifyPollExpired(Poll poll) {
+
+        Integer buildingId = poll.getBuilding().getId();
+
+        List<UserBuildingPermission> permissions =
+                userBuildingPermissionRepository.findByBuilding_Id(buildingId);
+
+        String message = "Η ψηφοφορία έληξε: " + poll.getTitle();
+
+        String payload = """
+        {
+          "pollId": %d,
+          "buildingId": %d
+        }
+        """.formatted(poll.getId(), buildingId);
+
+        permissions.stream()
+                .map(UserBuildingPermission::getUser)
+                .filter(user -> user != null)
+                .distinct()
+                .forEach(user ->
+                        notificationService.create(
+                                user,
+                                "POLL_EXPIRED",
+                                message,
+                                payload
+                        )
+                );
+
+        poll.setExpirationNotified(true);
+        pollRepository.save(poll);
     }
 
 }

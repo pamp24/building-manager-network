@@ -8,6 +8,7 @@ import com.buildingmanager.buildingMember.BuildingMember;
 import com.buildingmanager.buildingMember.BuildingMemberRepository;
 import com.buildingmanager.buildingMember.BuildingMemberStatus;
 import com.buildingmanager.company.Company;
+import com.buildingmanager.permission.BuildingPermissionService;
 import com.buildingmanager.supportTicket.dto.SupportTicketRequest;
 import com.buildingmanager.supportTicket.dto.SupportTicketResponse;
 import com.buildingmanager.user.User;
@@ -29,21 +30,23 @@ public class SupportTicketService {
     private final BuildingMemberRepository buildingMemberRepository;
     private final UserRepository userRepository;
     private final TicketCommentRepository ticketCommentRepository;
-
+    private final BuildingPermissionService buildingPermissionService;
     public SupportTicketService(
             SupportTicketRepository supportTicketRepository,
             BuildingRepository buildingRepository,
             ApartmentRepository apartmentRepository,
             BuildingMemberRepository buildingMemberRepository,
             UserRepository userRepository,
-            TicketCommentRepository ticketCommentRepository
-    ) {
+            TicketCommentRepository ticketCommentRepository,
+            BuildingPermissionService buildingPermissionService) {
         this.supportTicketRepository = supportTicketRepository;
         this.buildingRepository = buildingRepository;
         this.apartmentRepository = apartmentRepository;
         this.buildingMemberRepository = buildingMemberRepository;
         this.userRepository = userRepository;
         this.ticketCommentRepository = ticketCommentRepository;
+        this.buildingPermissionService = buildingPermissionService;
+
     }
 
     private String generateTicketNumber() {
@@ -350,8 +353,20 @@ public class SupportTicketService {
 
         String agentRole = agent.getRole() != null ? agent.getRole().getName() : null;
 
-        if (agentRole == null || !agentRole.equalsIgnoreCase("PropertyAgent")) {
-            throw new IllegalStateException("Selected user is not a PropertyAgent");
+        String currentRole = normalizeRole(
+                currentUser.getRole() != null ? currentUser.getRole().getName() : null
+        );
+
+        String normalizedAgentRole = normalizeRole(agentRole);
+
+        if ("ADMIN".equals(currentRole)) {
+            if (!"ADMINAGENT".equals(normalizedAgentRole) && !"ADMIN_AGENT".equals(normalizedAgentRole)) {
+                throw new IllegalStateException("Selected user is not an AdminAgent");
+            }
+        } else {
+            if (!"PROPERTYAGENT".equals(normalizedAgentRole) && !"PROPERTY_AGENT".equals(normalizedAgentRole)) {
+                throw new IllegalStateException("Selected user is not a PropertyAgent");
+            }
         }
 
         ticket.setAssignedAgent(agent);
@@ -373,7 +388,13 @@ public class SupportTicketService {
 
     @Transactional(readOnly = true)
     public List<TicketAgentResponse> getAvailableAgents(User currentUser) {
-        return userRepository.findByRoleName("PropertyAgent")
+        String role = normalizeRole(
+                currentUser.getRole() != null ? currentUser.getRole().getName() : null
+        );
+
+        String agentRole = "ADMIN".equals(role) ? "AdminAgent" : "PropertyAgent";
+
+        return userRepository.findByRole_Name(agentRole)
                 .stream()
                 .map(user -> new TicketAgentResponse(
                         user.getId(),
@@ -448,33 +469,28 @@ public class SupportTicketService {
     }
     @Transactional(readOnly = true)
     public List<SupportTicketResponse> getListViewTickets(User currentUser) {
-        String normalizedRole = normalizeRole(
+        String role = normalizeRole(
                 currentUser.getRole() != null ? currentUser.getRole().getName() : null
         );
 
         List<SupportTicket> result;
 
-        switch (normalizedRole) {
-            case "RESIDENT":
-            case "OWNER":
+        if ("ADMIN".equals(role)) {
+            result = supportTicketRepository.findVisibleTicketsForUser(
+                    currentUser.getId(),
+                    SupportTicketTargetRole.ADMIN
+            );
+        } else {
+            List<Integer> buildingIds = buildingPermissionService.getUserBuildingIds(currentUser);
+
+            if (buildingIds.isEmpty()) {
                 result = supportTicketRepository.findByCreatedByIdOrderByCreatedAtDesc(currentUser.getId());
-                break;
-
-            case "BUILDINGMANAGER":
-            case "BUILDING_MANAGER":
-            case "PROPERTYMANAGER":
-            case "PROPERTY_MANAGER":
-            case "ADMIN":
-                result = supportTicketRepository.findVisibleTicketsForUser(currentUser.getId(), mapUserRoleToTargetRole(normalizedRole));
-                break;
-
-            case "PROPERTYAGENT":
-            case "PROPERTY_AGENT":
-                result = supportTicketRepository.findVisibleTicketsForAgent(currentUser.getId());
-                break;
-
-            default:
-                throw new IllegalStateException("User role is not allowed to view ticket list");
+            } else {
+                result = supportTicketRepository.findTicketsForUser(
+                        currentUser.getId(),
+                        buildingIds
+                );
+            }
         }
 
         return result.stream()

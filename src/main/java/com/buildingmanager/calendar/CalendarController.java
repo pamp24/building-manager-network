@@ -22,21 +22,26 @@ public class CalendarController {
     }
 
     @PostMapping
-    public CalendarDTO create(@RequestBody CalendarDTO dto) {
-        return calendarService.create(dto);
+    public CalendarDTO create(@RequestBody CalendarDTO dto, Authentication auth) {
+        User user = (User) auth.getPrincipal();
+        return calendarService.create(dto, user);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Integer id) {
-        calendarService.delete(id);
+    public void delete(@PathVariable Integer id, Authentication auth) {
+        User user = (User) auth.getPrincipal();
+        calendarService.delete(id, user);
     }
+
     @PutMapping("/{id}")
-    public CalendarDTO update(@PathVariable Integer id, @RequestBody CalendarDTO dto) {
-        return calendarService.update(id, dto);
+    public CalendarDTO update(@PathVariable Integer id, @RequestBody CalendarDTO dto, Authentication auth) {
+        User user = (User) auth.getPrincipal();
+        return calendarService.update(id, dto, user);
     }
 
     @PutMapping("/{id}/pin")
-    public CalendarDTO pin(@PathVariable Integer id, @RequestParam boolean pinned) {
-        return calendarService.pin(id, pinned);
+    public CalendarDTO pin(@PathVariable Integer id, @RequestParam boolean pinned, Authentication auth) {
+        User user = (User) auth.getPrincipal();
+        return calendarService.pin(id, pinned, user);
     }
 }

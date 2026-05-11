@@ -7,11 +7,16 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/property-agents")
+@RequestMapping("/agents")
 @RequiredArgsConstructor
 public class PropertyAgentManagementController {
 
     private final PropertyAgentManagementService propertyAgentManagementService;
+
+    @GetMapping
+    public ResponseEntity<List<PropertyAgentManagementResponse>> getAgents() {
+        return ResponseEntity.ok(propertyAgentManagementService.getAgents());
+    }
 
     @GetMapping("/my-company")
     public ResponseEntity<List<PropertyAgentManagementResponse>> getMyCompanyAgents() {
