@@ -120,4 +120,5 @@ public class SupportTicketController {
         User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok(supportTicketService.getListViewTickets(user));
     }
+
 }

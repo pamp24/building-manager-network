@@ -162,7 +162,9 @@ public class SupportTicketService {
                 "BUILDINGMANAGER",
                 "BUILDING_MANAGER",
                 "PROPERTYMANAGER",
-                "PROPERTY_MANAGER"
+                "PROPERTY_MANAGER",
+                "PROPERTYAGENT",
+                "PROPERTY_AGENT"
         );
 
         if (!allowedRoles.contains(normalizedRole)) {
@@ -182,6 +184,16 @@ public class SupportTicketService {
         boolean hasPropertyManager = building.getPropertyManager() != null;
 
         switch (normalizedRole) {
+            case "PROPERTYAGENT":
+            case "PROPERTY_AGENT":
+                if (targetRole != SupportTicketTargetRole.PROPERTY_MANAGER) {
+                    throw new IllegalStateException("PropertyAgent can create tickets only for PropertyManager");
+                }
+
+                if (!hasPropertyManager) {
+                    throw new IllegalStateException("This building has no PropertyManager");
+                }
+                break;
             case "PROPERTYMANAGER":
             case "PROPERTY_MANAGER":
                 if (targetRole != SupportTicketTargetRole.ADMIN) {
@@ -257,11 +269,18 @@ public class SupportTicketService {
     }
 
     private void validateTicketReadAccess(User currentUser, SupportTicket ticket) {
-        if (ticket.getCreatedBy() != null && ticket.getCreatedBy().getId().equals(currentUser.getId())) {
+        if (ticket.getCreatedBy() != null &&
+                ticket.getCreatedBy().getId().equals(currentUser.getId())) {
             return;
         }
 
-        if (ticket.getAssignedAgent() != null && ticket.getAssignedAgent().getId().equals(currentUser.getId())) {
+        if (ticket.getAssignedAgent() != null &&
+                ticket.getAssignedAgent().getId().equals(currentUser.getId())) {
+            return;
+        }
+
+        if (ticket.getBuilding() != null &&
+                buildingPermissionService.canViewBuilding(currentUser, ticket.getBuilding().getId())) {
             return;
         }
 
@@ -319,9 +338,14 @@ public class SupportTicketService {
         } else if ("ADMIN".equals(normalizedRole)) {
             allowed = ticket.getTargetRole() == SupportTicketTargetRole.ADMIN;
         } else if ("PROPERTYAGENT".equals(normalizedRole) || "PROPERTY_AGENT".equals(normalizedRole)) {
-            allowed = ticket.getAssignedAgent() != null
-                    && ticket.getAssignedAgent().getId().equals(currentUser.getId());
-        }
+        allowed =
+                ticket.getTargetRole() == SupportTicketTargetRole.PROPERTY_MANAGER
+                        && ticket.getBuilding() != null
+                        && buildingPermissionService.canManageBuilding(
+                        currentUser,
+                        ticket.getBuilding().getId()
+                );
+    }
 
         if (!allowed) {
             throw new IllegalStateException("User is not allowed to change the ticket status");
@@ -470,21 +494,33 @@ public class SupportTicketService {
     @Transactional(readOnly = true)
     public List<SupportTicketResponse> getListViewTickets(User currentUser) {
         String role = normalizeRole(
-                currentUser.getRole() != null ? currentUser.getRole().getName() : null
+                currentUser.getRole() != null
+                        ? currentUser.getRole().getName()
+                        : null
         );
-
         List<SupportTicket> result;
-
         if ("ADMIN".equals(role)) {
             result = supportTicketRepository.findVisibleTicketsForUser(
                     currentUser.getId(),
                     SupportTicketTargetRole.ADMIN
             );
+        } else if ("PROPERTYMANAGER".equals(role)
+                || "PROPERTY_MANAGER".equals(role)) {
+            if (currentUser.getCompany() == null) {
+                return List.of();
+            }
+            result = supportTicketRepository
+                    .findByCompanyIdOrderByCreatedAtDesc(
+                            currentUser.getCompany().getId()
+                    );
         } else {
-            List<Integer> buildingIds = buildingPermissionService.getUserBuildingIds(currentUser);
-
+            List<Integer> buildingIds =
+                    buildingPermissionService.getUserBuildingIds(currentUser);
             if (buildingIds.isEmpty()) {
-                result = supportTicketRepository.findByCreatedByIdOrderByCreatedAtDesc(currentUser.getId());
+                result = supportTicketRepository
+                        .findByCreatedByIdOrderByCreatedAtDesc(
+                                currentUser.getId()
+                        );
             } else {
                 result = supportTicketRepository.findTicketsForUser(
                         currentUser.getId(),
@@ -492,7 +528,6 @@ public class SupportTicketService {
                 );
             }
         }
-
         return result.stream()
                 .map(this::mapToDto)
                 .toList();
