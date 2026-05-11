@@ -2,6 +2,7 @@ package com.buildingmanager.supportTicket;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -37,14 +38,21 @@ public interface SupportTicketRepository extends JpaRepository<SupportTicket, In
     List<SupportTicket> findVisibleTicketsForAgent(Integer userId);
 
     @Query("""
-SELECT t FROM SupportTicket t
-WHERE 
-    t.createdBy.id = :userId
-    OR t.assignedAgent.id = :userId
-    OR t.building.id IN :buildingIds
-ORDER BY t.createdAt DESC
+    select distinct t
+    from SupportTicket t
+    where t.building.id in :buildingIds
+       or t.createdBy.id = :userId
+       or t.assignedAgent.id = :userId
+    order by t.updatedAt desc
 """)
-    List<SupportTicket> findTicketsForUser(Integer userId, List<Integer> buildingIds);
+    List<SupportTicket> findTicketsForUser(
+            @Param("userId") Integer userId,
+            @Param("buildingIds") List<Integer> buildingIds
+    );
 
+    List<SupportTicket> findByAssignedAgentIdAndBuilding_IdIn(
+            Integer agentId,
+            List<Integer> buildingIds
+    );
 
 }
