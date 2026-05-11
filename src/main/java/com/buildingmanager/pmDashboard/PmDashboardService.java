@@ -9,14 +9,14 @@ import com.buildingmanager.commonExpenseStatement.CommonExpenseStatement;
 import com.buildingmanager.commonExpenseStatement.CommonExpenseStatementRepository;
 import com.buildingmanager.commonExpenseStatement.StatementStatus;
 import com.buildingmanager.notification.NotificationRepository;
+import com.buildingmanager.permission.BuildingPermissionService;
 import com.buildingmanager.user.User;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import java.time.format.TextStyle;
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -31,13 +31,14 @@ public class PmDashboardService {
     private final NotificationRepository notificationRepository;
     private final BuildingMemberRepository buildingMemberRepository;
     private final ApartmentRepository apartmentRepository;
+    private final BuildingPermissionService buildingPermissionService;
 
     public PmDashboardDTO getDashboard(User user) {
         if (user.getCompany() == null) {
             throw new EntityNotFoundException("Property manager company not found");
         }
 
-        List<Building> buildings = buildingRepository.findByCompany_Id(user.getCompany().getId());
+        List<Building> buildings = getDashboardBuildings(user);
         List<Integer> buildingIds = buildings.stream()
                 .map(Building::getId)
                 .toList();
@@ -156,7 +157,7 @@ public class PmDashboardService {
             throw new EntityNotFoundException("Property manager company not found");
         }
 
-        List<Building> buildings = buildingRepository.findByCompany_Id(user.getCompany().getId());
+        List<Building> buildings = getDashboardBuildings(user);
         List<Integer> buildingIds = buildings.stream().map(Building::getId).toList();
 
         if (buildingIds.isEmpty()) {
@@ -413,7 +414,7 @@ public class PmDashboardService {
             throw new EntityNotFoundException("Property manager company not found");
         }
 
-        List<Building> buildings = buildingRepository.findByCompany_Id(user.getCompany().getId());
+        List<Building> buildings = getDashboardBuildings(user);
         List<Integer> buildingIds = buildings.stream()
                 .map(Building::getId)
                 .toList();
@@ -468,7 +469,7 @@ public class PmDashboardService {
             throw new EntityNotFoundException("Property manager company not found");
         }
 
-        List<Building> buildings = buildingRepository.findByCompany_Id(user.getCompany().getId());
+        List<Building> buildings = getDashboardBuildings(user);
 
         if (buildings.isEmpty()) {
             return List.of();
@@ -572,7 +573,7 @@ public class PmDashboardService {
             throw new EntityNotFoundException("Property manager company not found");
         }
 
-        List<Building> buildings = buildingRepository.findByCompany_Id(user.getCompany().getId());
+        List<Building> buildings = getDashboardBuildings(user);
 
         List<Integer> buildingIds = buildings.stream()
                 .map(Building::getId)
@@ -616,7 +617,7 @@ public class PmDashboardService {
             throw new EntityNotFoundException("Property manager company not found");
         }
 
-        List<Building> buildings = buildingRepository.findByCompany_Id(user.getCompany().getId());
+        List<Building> buildings = getDashboardBuildings(user);
 
         return buildings.stream()
                 .map(building -> {
@@ -635,5 +636,27 @@ public class PmDashboardService {
                             .build();
                 })
                 .toList();
+    }
+
+    private List<Building> getDashboardBuildings(User user) {
+        if (user.getCompany() == null) {
+            throw new EntityNotFoundException("Property manager company not found");
+        }
+
+        boolean isAgent =
+                user.getRole() != null &&
+                        "PropertyAgent".equalsIgnoreCase(user.getRole().getName());
+
+        if (isAgent) {
+            List<Integer> buildingIds = buildingPermissionService.getUserBuildingIds(user);
+
+            if (buildingIds.isEmpty()) {
+                return List.of();
+            }
+
+            return buildingRepository.findAllById(buildingIds);
+        }
+
+        return buildingRepository.findByCompany_Id(user.getCompany().getId());
     }
 }

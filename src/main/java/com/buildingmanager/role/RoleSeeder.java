@@ -21,7 +21,8 @@ public class RoleSeeder implements CommandLineRunner {
                 "Owner",
                 "PropertyManager",
                 "BuildingManager",
-                "PropertyAgent"
+                "PropertyAgent",
+                "AdminAgent"
         );
 
         for (String roleName : roles) {

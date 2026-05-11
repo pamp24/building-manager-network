@@ -24,6 +24,8 @@ public class Poll extends BaseEntity {
     private LocalDateTime endDate;
     private boolean active = true;
     private boolean multipleChoice = false;
+    @Column(nullable = false)
+    private boolean expirationNotified = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "building_id")

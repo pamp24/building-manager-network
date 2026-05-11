@@ -21,6 +21,9 @@ public class PollDTO {
     private Integer buildingId;
     private List<PollOptionDTO> options;
 
+    private Boolean canView;
+    private Boolean canManage;
+
     private String leadingOption;
 
 }

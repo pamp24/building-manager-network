@@ -1,24 +1,25 @@
 package com.buildingmanager.apartment;
 
-import com.buildingmanager.exceptions.OperationNotPermittedException;
 import com.buildingmanager.building.Building;
 import com.buildingmanager.building.BuildingRepository;
 import com.buildingmanager.common.PageResponse;
 import com.buildingmanager.invite.InviteRepository;
+import com.buildingmanager.permission.BuildingPermissionService;
 import com.buildingmanager.user.User;
 import com.buildingmanager.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Page;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.access.AccessDeniedException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -28,11 +29,17 @@ public class ApartmentService {
     private final ApartmentRepository apartmentRepository;
     private final UserRepository userRepository;
     private final InviteRepository inviteRepository;
+    private final BuildingPermissionService buildingPermissionService;
 
     public Object save(ApartmentRequest request, Authentication connectedUser) {
         Building building = buildingRepository.findById(request.buildingId())
                 .orElseThrow(() -> new EntityNotFoundException("No Building found with ID:: " + request.buildingId()));
         User userEntity = (User) connectedUser.getPrincipal();
+
+        if (!buildingPermissionService.canManageBuilding(userEntity, request.buildingId())) {
+            throw new AccessDeniedException("Δεν έχεις δικαίωμα δημιουργίας διαμερίσματος σε αυτή την πολυκατοικία");
+        }
+
         Apartment apartment = apartmentMapper.toApartment(request);
         // Αν το διαμέρισμα είναι "Διαμέρισμα Διαχειριστή", θέλουμε να ορίσουμε τον ownerId ως τον χρήστη που το δημιουργεί
         if (request.isManagerHouse()) {
@@ -59,6 +66,11 @@ public class ApartmentService {
     public PageResponse<ApartmentResponse> findAllApartmentsByBuilding(Integer buildingId, int page, int size, Authentication connectedUser) {
         Pageable pageable = PageRequest.of(page, size);
         User userEntity = ((User) connectedUser.getPrincipal());
+
+        if (!buildingPermissionService.canViewBuilding(userEntity, buildingId)) {
+            throw new AccessDeniedException("Δεν έχεις πρόσβαση στα διαμερίσματα αυτής της πολυκατοικίας");
+        }
+
         Page<Apartment> apartments = apartmentRepository.findAllByBuildingId(buildingId, pageable);
         List<ApartmentResponse> apartmentResponses = apartments.stream()
                 .map(f -> (ApartmentResponse) apartmentMapper.toApartmentResponse(f, userEntity.getId()))
@@ -83,8 +95,8 @@ public class ApartmentService {
                     .orElseThrow(() -> new EntityNotFoundException("No Building found with ID:: " + request.buildingId()));
 
 
-            if (!Objects.equals(building.getCreatedBy(), userEntity.getId())) {
-                throw new OperationNotPermittedException("You are not the owner of this building.");
+            if (!buildingPermissionService.canManageBuilding(userEntity, request.buildingId())) {
+                throw new AccessDeniedException("Δεν έχεις δικαίωμα δημιουργίας διαμερισμάτων σε αυτή την πολυκατοικία");
             }
 
             Apartment apartment = apartmentMapper.toApartment(request);
@@ -139,7 +151,13 @@ public class ApartmentService {
                 .toList();
     }
 
-    public List<ApartmentResponse> getAvailableApartments(Integer buildingId, String role) {
+    public List<ApartmentResponse> getAvailableApartments(Integer buildingId, String role, Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+
+        if (!buildingPermissionService.canViewBuilding(user, buildingId)) {
+            throw new AccessDeniedException("Δεν έχεις πρόσβαση σε αυτή την πολυκατοικία");
+        }
+
         return apartmentRepository.findAvailableApartmentsForRole(buildingId, role)
                 .stream()
                 .map(apartmentMapper::toApartmentResponse)
@@ -156,7 +174,12 @@ public class ApartmentService {
         boolean isOwner = apartment.getOwner() != null && apartment.getOwner().getId().equals(user.getId());
         boolean isResident = apartment.getResident() != null && apartment.getResident().getId().equals(user.getId());
 
-        if (!isOwner && !isResident) {
+        boolean canManageBuilding = buildingPermissionService.canManageBuilding(
+                user,
+                apartment.getBuilding().getId()
+        );
+
+        if (!isOwner && !isResident && !canManageBuilding) {
             throw new AccessDeniedException("Δεν έχετε δικαίωμα να επεξεργαστείτε αυτό το διαμέρισμα");
         }
 
@@ -202,6 +225,19 @@ public class ApartmentService {
         return apartmentMapper.toApartmentResponse(saved);
     }
 
+    @Transactional(readOnly = true)
+    public List<ApartmentResponse> getApartmentsByBuildingList(Integer buildingId, Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+
+        if (!buildingPermissionService.canViewBuilding(user, buildingId)) {
+            throw new AccessDeniedException("Δεν έχεις πρόσβαση στα διαμερίσματα αυτής της πολυκατοικίας");
+        }
+
+        return apartmentRepository.findAllByBuilding_IdOrderByFloorAscNumberAsc(buildingId)
+                .stream()
+                .map(apartment -> apartmentMapper.toApartmentResponse(apartment, user.getId()))
+                .toList();
+    }
 
 
 }

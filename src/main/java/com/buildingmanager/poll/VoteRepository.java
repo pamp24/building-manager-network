@@ -9,10 +9,8 @@ import java.util.List;
 @Repository
 public interface VoteRepository extends JpaRepository<Vote, Integer> {
 
-    // για single vote polls
     boolean existsByPollIdAndUserId(Integer pollId, Integer userId);
 
-    // για multiple choice (να μην ξαναψηφίσει την ίδια επιλογή)
     boolean existsByOptionIdAndUserId(Integer optionId, Integer userId);
 
     List<Vote> findByPollAndUser(Poll poll, User user);

@@ -7,6 +7,8 @@ import com.buildingmanager.buildingMember.BuildingMember;
 import com.buildingmanager.buildingMember.BuildingMemberRepository;
 import com.buildingmanager.buildingMember.BuildingMemberStatus;
 import com.buildingmanager.common.PageResponse;
+import com.buildingmanager.permission.BuildingPermissionService;
+import com.buildingmanager.permission.UserBuildingPermissionRepository;
 import com.buildingmanager.role.Role;
 import com.buildingmanager.role.RoleRepository;
 import com.buildingmanager.user.User;
@@ -38,6 +40,8 @@ public class BuildingService {
     private final ApartmentRepository apartmentRepository;
     private final BuildingMemberRepository buildingMemberRepository;
     private final RoleRepository roleRepository;
+    private final BuildingPermissionService buildingPermissionService;
+    private final UserBuildingPermissionRepository userBuildingPermissionRepository;
 
     private User freshUser(Authentication auth) {
         User principal = (User) auth.getPrincipal();
@@ -167,11 +171,16 @@ public class BuildingService {
         return UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 
-    public BuildingResponse findById(Integer buildingId){
+    public BuildingResponse findById(Integer buildingId, Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+
+        if (!buildingPermissionService.canViewBuilding(user, buildingId)) {
+            throw new AccessDeniedException("Δεν έχεις πρόσβαση σε αυτή την πολυκατοικία");
+        }
 
         return buildingRepository.findById(buildingId)
                 .map(buildingMapper::toBuildingResponse)
-                .orElseThrow(() -> new EntityNotFoundException("No Building Found with the ID: "+ buildingId));
+                .orElseThrow(() -> new EntityNotFoundException("No Building Found with the ID: " + buildingId));
     }
 
     public PageResponse<BuildingResponse> findAllBuildings(int page, int size, Authentication connectedUser) {
@@ -225,13 +234,8 @@ public class BuildingService {
         Building building = buildingRepository.findById(buildingId)
                 .orElseThrow(() -> new EntityNotFoundException("Building not found"));
 
-        boolean userIsLinked = buildingMemberRepository
-                .findByBuildingId(buildingId)
-                .stream()
-                .anyMatch(m -> m.getUser().getId().equals(user.getId()));
-
-        if (!userIsLinked) {
-            throw new AccessDeniedException("Not allowed to delete this building");
+        if (!buildingPermissionService.canFullManageBuilding(user, buildingId)) {
+            throw new AccessDeniedException("Δεν έχεις πλήρη δικαιώματα διαχείρισης αυτής της πολυκατοικίας");
         }
 
         buildingRepository.delete(building);
@@ -288,14 +292,8 @@ public class BuildingService {
         Building building = buildingRepository.findById(buildingId)
                 .orElseThrow(() -> new EntityNotFoundException("Building not found"));
 
-        boolean userIsManager = buildingMemberRepository
-                .findByBuildingId(buildingId)
-                .stream()
-                .anyMatch(m -> m.getUser().getId().equals(user.getId())
-                        && m.getRole().getName().equals("BuildingManager"));
-
-        if (!userIsManager) {
-            throw new AccessDeniedException("Μόνο ο διαχειριστής μπορεί να επεξεργαστεί την πολυκατοικία");
+        if (!buildingPermissionService.canManageBuilding(user, buildingId)) {
+            throw new AccessDeniedException("Δεν έχεις δικαίωμα επεξεργασίας αυτής της πολυκατοικίας");
         }
 
         // Update fields
@@ -375,7 +373,12 @@ public class BuildingService {
                 .map(Apartment::getBuilding)
                 .toList();
 
-        return Stream.of(fromManager, fromPropertyManager, fromApartments)
+        var fromPermissions = userBuildingPermissionRepository.findByUserId(user.getId())
+                .stream()
+                .map(permission -> permission.getBuilding())
+                .toList();
+
+        return Stream.of(fromManager, fromPropertyManager, fromApartments, fromPermissions)
                 .flatMap(List::stream)
                 .distinct()
                 .map(buildingMapper::toDTO)
@@ -395,6 +398,19 @@ public class BuildingService {
         return buildingRepository.findByCompany_Id(user.getCompany().getId())
                 .stream()
                 .map(buildingMapper::toBuildingResponse) // έχει και company μέσα
+                .toList();
+    }
+
+    public List<BuildingDTO> getAllBuildingsForAdmin(User currentUser) {
+        String role = currentUser.getRole().getName().trim().toUpperCase().replace(" ", "_");
+
+        if (!"ADMIN".equals(role)) {
+            throw new AccessDeniedException("Μόνο Admin.");
+        }
+
+        return buildingRepository.findAll()
+                .stream()
+                .map(buildingMapper::toDTO)
                 .toList();
     }
 

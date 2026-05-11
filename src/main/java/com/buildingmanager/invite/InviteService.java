@@ -32,6 +32,10 @@ public class InviteService {
     // CREATE INVITE
     public Invite createInvite(String email, String role, Integer apartmentId, User inviter) {
 
+        if ("AdminAgent".equalsIgnoreCase(role)) {
+            return createAdminAgentInvite(email, inviter);
+        }
+
         if ("PropertyAgent".equalsIgnoreCase(role)) {
             return createPropertyAgentInvite(email, inviter);
         }
@@ -90,26 +94,29 @@ public class InviteService {
     // PROPERTY AGENT INVITE
     private Invite createPropertyAgentInvite(String email, User inviter) {
 
+        String role = inviter.getRole().getName().toUpperCase();
+
         Company company = inviter.getCompany();
 
-        if (company == null) {
-            throw new RuntimeException("Ο inviter δεν ανήκει σε εταιρία");
-        }
-
-        if (inviteRepository.existsByEmailAndRoleAndStatus(email, "PropertyAgent", InviteStatus.PENDING)) {
-            throw new RuntimeException("Υπάρχει ήδη ενεργή πρόσκληση για Property Agent");
+        if ("ADMIN".equals(role)) {
+            // admin μπορεί να στείλει invite χωρίς εταιρία
+            company = null;
+        } else if ("PROPERTYMANAGER".equals(role)) {
+            if (company == null) {
+                throw new RuntimeException("Ο inviter δεν ανήκει σε εταιρία");
+            }
+        } else {
+            throw new RuntimeException("Δεν έχεις δικαίωμα να καλέσεις agent");
         }
 
         Invite invite = Invite.builder()
                 .email(email)
                 .role("PropertyAgent")
-                .apartment(null)
                 .company(company)
                 .inviter(inviter)
                 .build();
 
         inviteRepository.save(invite);
-
         sendInviteEmail(invite, inviter);
 
         return invite;
@@ -146,6 +153,12 @@ public class InviteService {
         user.setRole(role);
 
         switch (invite.getRole()) {
+
+            case "AdminAgent" -> {
+                user.setCompany(null);
+                userRepository.save(user);
+            }
+
             case "Owner" -> {
                 Apartment apartment = invite.getApartment();
                 apartment.setOwner(user);
@@ -207,6 +220,7 @@ public class InviteService {
             case "Owner" -> "Πρόσκληση ως Ιδιοκτήτης";
             case "Resident" -> "Πρόσκληση ως Ένοικος";
             case "BuildingManager" -> "Πρόσκληση ως Διαχειριστής";
+            case "AdminAgent" -> "Πρόσκληση ως Admin Support Agent";
             default -> "Πρόσκληση στην εφαρμογή";
         };
 
@@ -215,6 +229,7 @@ public class InviteService {
             case "Owner" -> "Ιδιοκτήτης";
             case "Resident" -> "Ένοικος";
             case "BuildingManager" -> "Διαχειριστής";
+            case "AdminAgent" -> "Admin Support Agent";
             default -> invite.getRole();
         };
 
@@ -240,6 +255,33 @@ public class InviteService {
         } catch (MessagingException e) {
             throw new RuntimeException("Αποτυχία αποστολής πρόσκλησης", e);
         }
+    }
+
+    private Invite createAdminAgentInvite(String email, User inviter) {
+
+        String inviterRole = inviter.getRole() != null ? inviter.getRole().getName() : null;
+
+        if (inviterRole == null || !inviterRole.equalsIgnoreCase("Admin")) {
+            throw new RuntimeException("Μόνο Admin μπορεί να προσκαλέσει Admin Agent");
+        }
+
+        if (inviteRepository.existsByEmailAndRoleAndStatus(email, "AdminAgent", InviteStatus.PENDING)) {
+            throw new RuntimeException("Υπάρχει ήδη ενεργή πρόσκληση για Admin Agent");
+        }
+
+        Invite invite = Invite.builder()
+                .email(email)
+                .role("AdminAgent")
+                .apartment(null)
+                .company(null)
+                .inviter(inviter)
+                .build();
+
+        inviteRepository.save(invite);
+
+        sendInviteEmail(invite, inviter);
+
+        return invite;
     }
 
     // DTO
