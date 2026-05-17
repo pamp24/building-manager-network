@@ -125,6 +125,7 @@ public class AuthenticationService {
                 .name(user.fullName())
                 .role(mainRole)
                 .profileImageUrl(user.getProfileImageUrl())
+                .professionalsFavoritesOnly(user.isProfessionalsFavoritesOnly())
                 .build();
 
         return AuthenticationResponse.builder()

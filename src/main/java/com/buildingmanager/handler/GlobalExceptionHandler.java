@@ -112,7 +112,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(status)
-                .contentType(MediaType.APPLICATION_JSON) // 👈 αυτό προσθέτεις
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(body);
     }
 

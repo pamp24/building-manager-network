@@ -1,8 +1,9 @@
 package com.buildingmanager.auth;
 
 import com.buildingmanager.token.TokenRequest;
-import com.buildingmanager.user.*;
-import com.buildingmanager.user.UserResponseDTO;
+import com.buildingmanager.user.User;
+import com.buildingmanager.user.UserRepository;
+import com.buildingmanager.user.UserResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
@@ -10,11 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
 
 @RestController
 @RequestMapping("auth")
@@ -70,23 +68,25 @@ public class AuthenticationController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponseDTO> getCurrentUser() {
-        try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication == null || !authentication.isAuthenticated()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-
-            String email = authentication.getName();
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-            return ResponseEntity.ok(new UserResponseDTO(user));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    public ResponseEntity<UserResponse> getCurrentUser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+
+        User user = (User) authentication.getPrincipal();
+
+        UserResponse response = UserResponse.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .name(user.fullName())
+                .role(user.getRole() != null ? user.getRole().getName() : null)
+                .profileImageUrl(user.getProfileImageUrl())
+                .professionalsFavoritesOnly(user.isProfessionalsFavoritesOnly())
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 
 
