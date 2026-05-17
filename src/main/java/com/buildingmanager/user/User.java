@@ -125,4 +125,7 @@ public class User extends BaseEntity implements UserDetails {
     @ManyToOne
     @JoinColumn(name = "company_id")
     private Company company;
+
+    @Column(nullable = false)
+    private boolean professionalsFavoritesOnly = false;
 }

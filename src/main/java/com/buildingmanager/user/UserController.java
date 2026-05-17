@@ -132,5 +132,16 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/preferences/professionals-favorites-only")
+    public ResponseEntity<Void> updateProfessionalsFavoritesOnly(
+            @RequestParam boolean enabled,
+            Authentication authentication
+    ) {
+        User user = (User) authentication.getPrincipal();
+
+        userService.updateProfessionalsFavoritesOnly(user.getId(), enabled);
+
+        return ResponseEntity.ok().build();
+    }
 
 }

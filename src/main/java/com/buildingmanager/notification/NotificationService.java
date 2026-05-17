@@ -2,7 +2,6 @@ package com.buildingmanager.notification;
 
 import com.buildingmanager.user.User;
 import com.buildingmanager.user.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +13,7 @@ import java.util.List;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final UserRepository userRepository;
 
     public void create(User receiver, String type, String message, String payload) {
         Notification n = Notification.builder()
@@ -46,6 +46,23 @@ public class NotificationService {
         List<Notification> list = notificationRepository.findByUser_IdOrderByCreatedAtDesc(userId);
         list.forEach(n -> n.setRead(true));
         notificationRepository.saveAll(list);
+    }
+
+    public void notifyAdmins(String type, String message, String payload) {
+        List<User> admins = userRepository.findByRole_Name("Admin");
+
+        List<Notification> notifications = admins.stream()
+                .map(admin -> Notification.builder()
+                        .user(admin)
+                        .type(type)
+                        .message(message)
+                        .payload(payload)
+                        .read(false)
+                        .createdAt(LocalDateTime.now())
+                        .build())
+                .toList();
+
+        notificationRepository.saveAll(notifications);
     }
 }
 

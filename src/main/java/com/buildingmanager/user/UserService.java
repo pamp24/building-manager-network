@@ -136,5 +136,18 @@ public class UserService {
 
     }
 
+    @Transactional
+    public void updateProfessionalsFavoritesOnly(
+            Integer userId,
+            boolean enabled
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow();
+
+        user.setProfessionalsFavoritesOnly(enabled);
+
+        userRepository.save(user);
+    }
+
 
 }

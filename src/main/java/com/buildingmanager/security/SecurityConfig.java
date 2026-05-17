@@ -52,7 +52,11 @@ public class SecurityConfig {
 
                         // Public endpoints
                         .requestMatchers(
-                                "/auth/**",
+                                "/auth/register",
+                                "/auth/authenticate",
+                                "/auth/activate-account",
+                                "/auth/forgot-password",
+                                "/auth/reset-password",
                                 "/api/invite/**",
                                 "/v2/api-docs",
                                 "/v3/api-docs",
@@ -65,7 +69,6 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/swagger-ui.html",
                                 "/uploads/**"
-
                         ).permitAll()
 
                         // Προστατευμένα endpoints
