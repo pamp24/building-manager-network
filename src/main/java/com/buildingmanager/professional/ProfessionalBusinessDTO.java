@@ -42,4 +42,6 @@ public class ProfessionalBusinessDTO {
     private LocalDateTime updatedAt;
 
     private String primaryImageUrl;
+
+    private String workingHours;
 }

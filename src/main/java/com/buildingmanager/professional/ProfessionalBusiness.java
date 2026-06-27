@@ -55,6 +55,12 @@ public class ProfessionalBusiness {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    @Column(columnDefinition = "TEXT")
+    private String workingHours;
+
+    @Column(columnDefinition = "TEXT")
+    private String serviceAreas;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

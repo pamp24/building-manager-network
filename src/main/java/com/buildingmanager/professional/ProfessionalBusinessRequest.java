@@ -38,4 +38,6 @@ public class ProfessionalBusinessRequest {
     private String address;
 
     private String taxNumber;
+
+    private String workingHours;
 }

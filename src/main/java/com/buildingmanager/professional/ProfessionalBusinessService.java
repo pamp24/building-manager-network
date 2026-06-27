@@ -55,7 +55,7 @@ public class ProfessionalBusinessService {
         }
 
         return businesses.stream()
-                .map(this::toDTO)
+                .map(this::mapToDTO)
                 .toList();
     }
 
@@ -84,6 +84,7 @@ public class ProfessionalBusinessService {
                 .active(false)
                 .ratingAverage(0.0)
                 .reviewCount(0)
+                .workingHours(request.getWorkingHours())
                 .build();
 
         ProfessionalBusiness saved = repository.save(business);
@@ -106,14 +107,14 @@ public class ProfessionalBusinessService {
                 payload
         );
 
-        return toDTO(saved);
+        return mapToDTO(saved);
     }
 
     @Transactional(readOnly = true)
     public List<ProfessionalBusinessDTO> getMyBusinesses(User currentUser) {
         return repository.findByCreatedByUser_IdOrderByCreatedAtDesc(currentUser.getId())
                 .stream()
-                .map(this::toDTO)
+                .map(this::mapToDTO)
                 .toList();
     }
 
@@ -123,7 +124,7 @@ public class ProfessionalBusinessService {
 
         return repository.findByVerifiedFalseOrderByCreatedAtDesc()
                 .stream()
-                .map(this::toDTO)
+                .map(this::mapToDTO)
                 .toList();
     }
 
@@ -136,7 +137,7 @@ public class ProfessionalBusinessService {
         business.setVerified(true);
         business.setActive(true);
 
-        return toDTO(repository.save(business));
+        return mapToDTO(repository.save(business));
     }
 
     public void deactivate(Integer id, User currentUser) {
@@ -157,7 +158,7 @@ public class ProfessionalBusinessService {
         }
     }
 
-    private ProfessionalBusinessDTO toDTO(ProfessionalBusiness b) {
+    public ProfessionalBusinessDTO mapToDTO(ProfessionalBusiness b) {
 
         String primaryImageUrl = imageRepository
                 .findByProfessional_IdOrderByPrimaryImageDescCreatedAtDesc(b.getId())
@@ -189,6 +190,7 @@ public class ProfessionalBusinessService {
                 .createdAt(b.getCreatedAt())
                 .updatedAt(b.getUpdatedAt())
                 .primaryImageUrl(primaryImageUrl)
+                .workingHours(b.getWorkingHours())
                 .build();
     }
 
@@ -196,7 +198,7 @@ public class ProfessionalBusinessService {
         ProfessionalBusiness business = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Professional business not found"));
 
-        return toDTO(business);
+        return mapToDTO(business);
     }
 
     public ProfessionalBusinessDTO update(
@@ -226,10 +228,11 @@ public class ProfessionalBusinessService {
         business.setRegion(request.getRegion());
         business.setAddress(request.getAddress());
         business.setTaxNumber(request.getTaxNumber());
+        business.setWorkingHours(request.getWorkingHours());
 
         ProfessionalBusiness saved = repository.save(business);
 
-        return toDTO(saved);
+        return mapToDTO(saved);
     }
 
     public ProfessionalAdminStatsDTO getAdminStats() {
@@ -263,7 +266,7 @@ public class ProfessionalBusinessService {
         );
 
         return repository.findAll(pageable)
-                .map(this::toDTO);
+                .map(this::mapToDTO);
     }
 
     public void deleteBusiness(Integer id, User currentUser) {
