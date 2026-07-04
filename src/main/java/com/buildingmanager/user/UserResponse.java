@@ -17,5 +17,7 @@ public class UserResponse {
     private String role;
     private String profileImageUrl;
     private boolean professionalsFavoritesOnly;
+    private Integer currentBuildingId;
+    private boolean buildingMember;
 }
 
