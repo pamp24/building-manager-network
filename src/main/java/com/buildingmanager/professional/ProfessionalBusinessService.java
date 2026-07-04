@@ -31,30 +31,21 @@ public class ProfessionalBusinessService {
     @Transactional(readOnly = true)
     public List<ProfessionalBusinessDTO> search(
             ProfessionalCategory category,
-            String city
+            String country,
+            String region,
+            String city,
+            String area
     ) {
-        List<ProfessionalBusiness> businesses;
 
-        boolean hasCategory = category != null;
-        boolean hasCity = city != null && !city.isBlank();
-
-        if (hasCategory && hasCity) {
-            businesses = repository
-                    .findByActiveTrueAndVerifiedTrueAndCategoryAndCityContainingIgnoreCaseOrderByCreatedAtDesc(
-                            category,
-                            city.trim()
-                    );
-        } else if (hasCategory) {
-            businesses = repository
-                    .findByActiveTrueAndVerifiedTrueAndCategoryOrderByCreatedAtDesc(category);
-        } else if (hasCity) {
-            businesses = repository
-                    .findByActiveTrueAndVerifiedTrueAndCityContainingIgnoreCaseOrderByCreatedAtDesc(city.trim());
-        } else {
-            businesses = repository.findByActiveTrueAndVerifiedTrueOrderByCreatedAtDesc();
-        }
-
-        return businesses.stream()
+        return repository.findAll(
+                        ProfessionalBusinessSpecification.filter(
+                                category,
+                                country,
+                                region,
+                                city,
+                                area
+                        )
+                ).stream()
                 .map(this::mapToDTO)
                 .toList();
     }
@@ -77,6 +68,7 @@ public class ProfessionalBusinessService {
                 .country(request.getCountry())
                 .city(request.getCity())
                 .region(request.getRegion())
+                .area(request.getArea())
                 .address(request.getAddress())
                 .taxNumber(request.getTaxNumber())
                 .createdByUser(user)
@@ -179,6 +171,7 @@ public class ProfessionalBusinessService {
                 .country(b.getCountry())
                 .city(b.getCity())
                 .region(b.getRegion())
+                .area(b.getArea())
                 .address(b.getAddress())
                 .taxNumber(b.getTaxNumber())
                 .verified(b.isVerified())
@@ -226,6 +219,7 @@ public class ProfessionalBusinessService {
         business.setCountry(request.getCountry());
         business.setCity(request.getCity());
         business.setRegion(request.getRegion());
+        business.setArea(request.getArea());
         business.setAddress(request.getAddress());
         business.setTaxNumber(request.getTaxNumber());
         business.setWorkingHours(request.getWorkingHours());

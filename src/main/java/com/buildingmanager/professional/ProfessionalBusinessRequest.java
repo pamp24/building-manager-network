@@ -34,6 +34,7 @@ public class ProfessionalBusinessRequest {
     private String city;
 
     private String region;
+    private String area;
 
     private String address;
 

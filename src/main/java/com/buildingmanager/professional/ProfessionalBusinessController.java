@@ -20,9 +20,12 @@ public class ProfessionalBusinessController {
     @GetMapping
     public List<ProfessionalBusinessDTO> search(
             @RequestParam(required = false) ProfessionalCategory category,
-            @RequestParam(required = false) String city
+            @RequestParam(required = false) String country,
+            @RequestParam(required = false) String region,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String area
     ) {
-        return service.search(category, city);
+        return service.search(category, country, region, city, area);
     }
 
     @PostMapping("/register")
