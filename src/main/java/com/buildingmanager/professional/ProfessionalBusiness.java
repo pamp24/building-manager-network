@@ -38,6 +38,8 @@ public class ProfessionalBusiness {
     private String country;
     private String city;
     private String region;
+    private String area;
+
     private String address;
 
     private String taxNumber;

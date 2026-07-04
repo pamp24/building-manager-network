@@ -2,25 +2,13 @@ package com.buildingmanager.professional;
 
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.List;
 
-public interface ProfessionalBusinessRepository extends JpaRepository<ProfessionalBusiness, Integer> {
-
-    List<ProfessionalBusiness> findByActiveTrueAndVerifiedTrueOrderByCreatedAtDesc();
-
-    List<ProfessionalBusiness> findByActiveTrueAndVerifiedTrueAndCategoryOrderByCreatedAtDesc(
-            ProfessionalCategory category
-    );
-
-    List<ProfessionalBusiness> findByActiveTrueAndVerifiedTrueAndCityContainingIgnoreCaseOrderByCreatedAtDesc(
-            String city
-    );
-
-    List<ProfessionalBusiness> findByActiveTrueAndVerifiedTrueAndCategoryAndCityContainingIgnoreCaseOrderByCreatedAtDesc(
-            ProfessionalCategory category,
-            String city
-    );
+public interface ProfessionalBusinessRepository
+        extends JpaRepository<ProfessionalBusiness, Integer>,
+        JpaSpecificationExecutor<ProfessionalBusiness> {
 
     List<ProfessionalBusiness> findByCreatedByUser_IdOrderByCreatedAtDesc(Integer userId);
 
@@ -32,5 +20,4 @@ public interface ProfessionalBusinessRepository extends JpaRepository<Profession
 
     long countByActiveFalse();
 
-    long countByVerifiedTrue();
 }
