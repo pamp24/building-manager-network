@@ -56,6 +56,9 @@ public interface BuildingMemberRepository extends JpaRepository<BuildingMember, 
     boolean existsByBuilding_IdAndUser_IdAndApartment_Id(Integer buildingId, Integer userId, Integer apartmentId);
 
 
-
+    Optional<BuildingMember> findFirstByUserIdAndStatus(
+            Integer userId,
+            BuildingMemberStatus status
+    );
 
 }

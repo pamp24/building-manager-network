@@ -22,8 +22,8 @@ public class ProfessionalPartnerService {
     private final ProfessionalPartnerRepository partnerRepository;
     private final BuildingRepository buildingRepository;
     private final ProfessionalBusinessRepository professionalRepository;
-    private final ProfessionalBusinessService professionalBusinessService;
     private final BuildingPermissionService buildingPermissionService;
+    private final ProfessionalBusinessService professionalBusinessService;
 
     public void addPartner(Integer buildingId, Integer professionalId, User user) {
         if (!buildingPermissionService.canManageBuilding(user, buildingId)) {
@@ -65,6 +65,16 @@ public class ProfessionalPartnerService {
     }
 
     public List<ProfessionalBusinessDTO> getPartners(Integer buildingId, User user) {
+
+        System.out.println("buildingId = " + buildingId);
+        System.out.println("userId = " + user.getId());
+        System.out.println("role = " + user.getRole().getName());
+
+        System.out.println(
+                "canView = " +
+                        buildingPermissionService.canViewBuilding(user, buildingId)
+        );
+
         if (!buildingPermissionService.canViewBuilding(user, buildingId)) {
             throw new AccessDeniedException("Δεν έχετε πρόσβαση σε αυτή την πολυκατοικία.");
         }
@@ -72,36 +82,8 @@ public class ProfessionalPartnerService {
         return partnerRepository.findByBuilding_Id(buildingId)
                 .stream()
                 .map(ProfessionalPartner::getProfessional)
-                .map(this::toDTO)
+                .map(professionalBusinessService::mapToDTO)
                 .toList();
     }
 
-    private ProfessionalBusinessDTO toDTO(ProfessionalBusiness business) {
-        return ProfessionalBusinessDTO.builder()
-                .id(business.getId())
-                .businessName(business.getBusinessName())
-                .ownerFullName(business.getOwnerFullName())
-                .category(business.getCategory())
-                .description(business.getDescription())
-                .phone(business.getPhone())
-                .email(business.getEmail())
-                .website(business.getWebsite())
-                .city(business.getCity())
-                .region(business.getRegion())
-                .address(business.getAddress())
-                .taxNumber(business.getTaxNumber())
-                .verified(business.isVerified())
-                .active(business.isActive())
-                .ratingAverage(business.getRatingAverage())
-                .reviewCount(business.getReviewCount())
-
-                .createdByUserId(
-                        business.getCreatedByUser() != null
-                                ? business.getCreatedByUser().getId()
-                                : null
-                )
-                .workingHours(business.getWorkingHours())
-
-                .build();
-    }
 }

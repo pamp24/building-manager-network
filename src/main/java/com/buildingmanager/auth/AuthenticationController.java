@@ -81,6 +81,7 @@ public class AuthenticationController {
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .name(user.fullName())
+                .phoneNumber(user.getPhoneNumber())
                 .role(user.getRole() != null ? user.getRole().getName() : null)
                 .profileImageUrl(user.getProfileImageUrl())
                 .professionalsFavoritesOnly(user.isProfessionalsFavoritesOnly())

@@ -1,6 +1,9 @@
 package com.buildingmanager.auth;
 
 
+import com.buildingmanager.buildingMember.BuildingMember;
+import com.buildingmanager.buildingMember.BuildingMemberRepository;
+import com.buildingmanager.buildingMember.BuildingMemberStatus;
 import com.buildingmanager.email.EmailService;
 import com.buildingmanager.email.EmailTemplateActivateAccount;
 import com.buildingmanager.email.EmailTemplateForgotPassword;
@@ -42,6 +45,8 @@ public class AuthenticationService {
     @Value("${spring.application.mailing.frontend.activation-url}")
     private String activationUrl;
     private final TokenService tokenService;
+    private final BuildingMemberRepository buildingMemberRepository;
+
     public void register(RegistrationRequest request) throws MessagingException {
         var userRole = roleRepository.findByName("User")
                 //todo - better exception handling
@@ -116,6 +121,12 @@ public class AuthenticationService {
 
         var jwtToken = jwtService.generateToken(claims, user);
 
+        Integer currentBuildingId = buildingMemberRepository
+                .findFirstByUserIdAndStatus(user.getId(), BuildingMemberStatus.JOINED)
+                .map(member -> member.getBuilding().getId())
+                .orElse(null);
+
+
         // Create UserResponse object
         UserResponse userResponse = UserResponse.builder()
                 .id(user.getId())
@@ -126,6 +137,8 @@ public class AuthenticationService {
                 .role(mainRole)
                 .profileImageUrl(user.getProfileImageUrl())
                 .professionalsFavoritesOnly(user.isProfessionalsFavoritesOnly())
+                .currentBuildingId(currentBuildingId)
+                .buildingMember(currentBuildingId != null)
                 .build();
 
         return AuthenticationResponse.builder()

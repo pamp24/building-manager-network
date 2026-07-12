@@ -15,7 +15,10 @@ public class UserResponse {
     private String password;
     private String name;
     private String role;
+    private String phoneNumber;
     private String profileImageUrl;
     private boolean professionalsFavoritesOnly;
+    private Integer currentBuildingId;
+    private boolean buildingMember;
 }
 

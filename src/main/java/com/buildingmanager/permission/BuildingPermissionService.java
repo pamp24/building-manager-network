@@ -18,6 +18,24 @@ public class BuildingPermissionService {
     public boolean canViewBuilding(User user, Integer buildingId) {
         String role = normalizeRole(user);
 
+        System.out.println("Checking building " + buildingId);
+        System.out.println("Role = " + role);
+        System.out.println(
+                "Joined = " +
+                        isJoinedMember(user, buildingId)
+        );
+        System.out.println(
+                "VIEW = " +
+                        hasPermission(user, buildingId, BuildingPermissionLevel.VIEW)
+        );
+        System.out.println(
+                "MANAGE = " +
+                        hasPermission(user, buildingId, BuildingPermissionLevel.MANAGE)
+        );
+        System.out.println(
+                "FULL = " +
+                        hasPermission(user, buildingId, BuildingPermissionLevel.FULL)
+        );
         if ("ADMIN".equals(role)) {
             return true;
         }
