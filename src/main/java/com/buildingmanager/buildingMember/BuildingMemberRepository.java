@@ -9,30 +9,22 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface BuildingMemberRepository extends JpaRepository<BuildingMember, Integer> {
+public interface BuildingMemberRepository
+        extends JpaRepository<BuildingMember, Integer> {
 
-    // Βρες όλα τα μέλη μιας πολυκατοικίας
+    // Existing service-compatible methods
+
     List<BuildingMember> findByBuildingId(Integer buildingId);
 
-    // Βρες όλα τα buildings που ανήκει ο χρήστης
     List<BuildingMember> findByUserId(Integer userId);
 
-    // Βρες τον συγκεκριμένο χρήστη σε συγκεκριμένη πολυκατοικία
-    Optional<BuildingMember> findByBuilding_IdAndUser_Id(Integer buildingId, Integer userId);
-    Optional<BuildingMember> findByBuilding_IdAndRole_Name(Integer buildingId, String roleName);
-
-    Optional<BuildingMember> findFirstByUser_Id(Integer userId);
-
-    List<BuildingMember> findByBuilding_Id(Integer buildingId);
-    long countByBuilding_IdInAndStatus(List<Integer> buildingIds, BuildingMemberStatus status);
-
-    long countByBuilding_IdInAndStatusAndRole_NameIn(
-            List<Integer> buildingIds,
-            BuildingMemberStatus status,
-            List<String> roleNames
+    Optional<BuildingMember> findByUserIdAndBuildingIdAndStatus(
+            Integer userId,
+            Integer buildingId,
+            BuildingMemberStatus status
     );
 
-    Optional<BuildingMember> findByUserIdAndBuildingIdAndStatus(
+    boolean existsByUserIdAndBuildingIdAndStatus(
             Integer userId,
             Integer buildingId,
             BuildingMemberStatus status
@@ -44,21 +36,97 @@ public interface BuildingMemberRepository extends JpaRepository<BuildingMember, 
             BuildingMemberStatus status
     );
 
-    boolean existsByUserIdAndBuildingIdAndStatus(Integer userId, Integer buildingId, BuildingMemberStatus status);
-
-    @Transactional
-    @Modifying
-    @Query("delete from BuildingMember bm where bm.building.id = :buildingId")
-    void deleteByBuildingId(@Param("buildingId") Integer buildingId);
-
-    boolean existsByBuilding_IdAndUser_Id(Integer buildingId, Integer userId);
-
-    boolean existsByBuilding_IdAndUser_IdAndApartment_Id(Integer buildingId, Integer userId, Integer apartmentId);
-
-
     Optional<BuildingMember> findFirstByUserIdAndStatus(
             Integer userId,
             BuildingMemberStatus status
     );
 
+    // Building and user queries
+
+    List<BuildingMember> findByBuilding_Id(Integer buildingId);
+
+    List<BuildingMember> findByUser_Id(Integer userId);
+
+    List<BuildingMember> findByBuilding_IdAndUser_Id(
+            Integer buildingId,
+            Integer userId
+    );
+
+    List<BuildingMember> findByBuilding_IdAndUser_IdAndStatus(
+            Integer buildingId,
+            Integer userId,
+            BuildingMemberStatus status
+    );
+
+    Optional<BuildingMember> findByBuilding_IdAndRole_NameAndStatus(
+            Integer buildingId,
+            String roleName,
+            BuildingMemberStatus status
+    );
+
+    // Counts
+
+    long countByBuilding_IdInAndStatus(
+            List<Integer> buildingIds,
+            BuildingMemberStatus status
+    );
+
+    long countByBuilding_IdInAndStatusAndRole_NameIn(
+            List<Integer> buildingIds,
+            BuildingMemberStatus status,
+            List<String> roleNames
+    );
+
+    // Active membership checks
+
+    boolean existsByBuilding_IdAndUser_IdAndStatusIn(
+            Integer buildingId,
+            Integer userId,
+            List<BuildingMemberStatus> statuses
+    );
+
+    boolean existsByBuilding_IdAndUser_IdAndApartment_IdAndStatusAndIdNot(
+            Integer buildingId,
+            Integer userId,
+            Integer apartmentId,
+            BuildingMemberStatus status,
+            Integer memberId
+    );
+
+    // Legacy methods, only where still needed
+
+    boolean existsByBuilding_IdAndUser_Id(
+            Integer buildingId,
+            Integer userId
+    );
+
+    boolean existsByBuilding_IdAndUser_IdAndApartment_Id(
+            Integer buildingId,
+            Integer userId,
+            Integer apartmentId
+    );
+
+    // Building cleanup
+
+    @Transactional
+    @Modifying
+    @Query("""
+        delete from BuildingMember bm
+        where bm.building.id = :buildingId
+    """)
+    void deleteByBuildingId(
+            @Param("buildingId") Integer buildingId
+    );
+
+    @Transactional
+    @Modifying
+    @Query("""
+        update BuildingMember bm
+           set bm.status = :status
+         where bm.building.id = :buildingId
+    """)
+    int updateStatusByBuildingId(
+            @Param("buildingId") Integer buildingId,
+            @Param("status") BuildingMemberStatus status
+    );
 }

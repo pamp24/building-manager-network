@@ -4,5 +4,7 @@ public enum BuildingMemberStatus {
     INVITED,
     PENDING,
     JOINED,
-    PENDING_APARTMENT
+    PENDING_APARTMENT,
+    LEFT,
+    REMOVED
 }

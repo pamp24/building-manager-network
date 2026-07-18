@@ -15,6 +15,7 @@ public class BuildingPermissionService {
     private final BuildingMemberRepository buildingMemberRepository;
     private final UserBuildingPermissionRepository permissionRepository;
 
+
     public boolean canViewBuilding(User user, Integer buildingId) {
         String role = normalizeRole(user);
 

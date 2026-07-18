@@ -13,10 +13,12 @@ public class BuildingMemberDTO {
     private String fullName;
     private String email;
     private String role;
+    private String profileImageUrl;
     private String status;
     private Integer buildingId;
     private String buildingName;
     private String apartmentNumber;
     private String floor;
+    private Integer apartmentId;
 }
 
