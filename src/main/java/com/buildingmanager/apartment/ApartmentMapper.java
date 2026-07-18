@@ -85,6 +85,9 @@
                     .residentFullName(resident != null ? resident.fullName() : null)
                     .residentEmail(resident != null ? resident.getEmail() : null)
                     .residentPhone(resident != null ? resident.getPhoneNumber() : null)
+                    .residentProfileImageUrl(
+                            resident != null ? resident.getProfileImageUrl() : null
+                    )
 
                     // Owner (null-safe)
                     .owner(owner != null ? String.valueOf(owner.getId()) : null)
@@ -95,7 +98,9 @@
                     .ownerStreet(owner != null ? owner.getAddress1() : null)
                     .ownerStreetNumber(owner != null ? owner.getAddressNumber1() : null)
                     .ownerCity(owner != null ? owner.getCity() : null)
-
+                    .ownerProfileImageUrl(
+                            owner != null ? owner.getProfileImageUrl() : null
+                    )
 
                     .build();
 

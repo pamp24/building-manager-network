@@ -54,6 +54,7 @@ public class ApartmentResponse {
     private String residentFullName;
     private String residentEmail;
     private String residentPhone;
+    private String residentProfileImageUrl;
 
     private String owner;
     private Integer ownerId;
@@ -63,6 +64,8 @@ public class ApartmentResponse {
     private String ownerCity;
     private String ownerStreet;
     private String ownerStreetNumber;
+    private String ownerProfileImageUrl;
+
 
 
 
