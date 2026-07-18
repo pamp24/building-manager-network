@@ -8,6 +8,7 @@ import com.buildingmanager.invite.Invite;
 import com.buildingmanager.invite.InviteRepository;
 import com.buildingmanager.invite.InviteStatus;
 import com.buildingmanager.notification.NotificationService;
+import com.buildingmanager.permission.BuildingPermissionService;
 import com.buildingmanager.role.Role;
 import com.buildingmanager.role.RoleRepository;
 import com.buildingmanager.user.User;
@@ -16,11 +17,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import org.springframework.security.access.AccessDeniedException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,6 +36,7 @@ public class BuildingMemberService {
     private final ApartmentRepository apartmentRepository;
     private final InviteRepository inviteRepository;
     private final NotificationService notificationService;
+    private final BuildingPermissionService buildingPermissionService;
 
 
 
@@ -72,11 +73,13 @@ public class BuildingMemberService {
                     m.getUser() != null ? m.getUser().getFullName() : null,
                     m.getUser() != null ? m.getUser().getEmail() : null,
                     m.getRole() != null ? m.getRole().getName() : null,
+                    m.getUser() != null ? m.getUser().getProfileImageUrl() : null,
                     m.getStatus() != null ? m.getStatus().name() : null,
                     m.getBuilding() != null ? m.getBuilding().getId() : null,
                     m.getBuilding() != null ? m.getBuilding().getName() : null,
                     ap != null ? ap.getNumber() : null,
-                    ap != null ? ap.getFloor() : null
+                    ap != null ? ap.getFloor() : null,
+                    ap != null ? ap.getId() : null
             ));
         }
         //Προσκλήσεις (invites) όπως πριν, χωρίς memberId
@@ -104,11 +107,13 @@ public class BuildingMemberService {
                     fullName,
                     invite.getEmail(),
                     invite.getRole(),
+                    null,
                     invite.getStatus().name(),
                     invite.getApartment().getBuilding().getId(),
                     invite.getApartment().getBuilding().getName(),
                     invite.getApartment().getNumber(),
-                    invite.getApartment().getFloor()
+                    invite.getApartment().getFloor(),
+                    invite.getApartment().getId()
             ));
         }
 
@@ -144,7 +149,7 @@ public class BuildingMemberService {
                 .building(building)
                 .user(joiner)
                 .role(roleUser)
-                .status(BuildingMemberStatus.PENDING)
+                .status(BuildingMemberStatus.PENDING_APARTMENT)
                 .apartment(null)
                 .build();
 
@@ -195,185 +200,487 @@ public class BuildingMemberService {
     }
 
     @Transactional
-    public void assignApartment(Integer memberId, AssignApartmentRequest req, Authentication auth) {
+    public void assignApartment(
+            Integer memberId,
+            AssignApartmentRequest req,
+            Authentication auth
+    ) {
+        User currentUser = getConnectedUser(auth);
 
-        User manager = (User) auth.getPrincipal();
+        BuildingMember member = buildingMemberRepository.findById(memberId)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Building member not found")
+                );
 
-        BuildingMember joinMember = buildingMemberRepository.findById(memberId)
-                .orElseThrow(() -> new EntityNotFoundException("BuildingMember not found"));
 
-        Integer buildingId = joinMember.getBuilding().getId();
-
-        //check manager
-        boolean isManager = buildingMemberRepository.findByBuildingId(buildingId).stream().anyMatch(m ->
-                m.getUser().getId().equals(manager.getId())
-                        && m.getRole() != null
-                        && "BuildingManager".equals(m.getRole().getName())
-        );
-
-        if (!isManager) {
-            throw new AccessDeniedException("Not allowed");
+        if (member.getBuilding() == null) {
+            throw new IllegalStateException(
+                    "Building member is not connected to a building"
+            );
         }
 
-        //find apartment
-        Apartment apartment = apartmentRepository.findById(req.getApartmentId())
-                .orElseThrow(() -> new EntityNotFoundException("Apartment not found"));
-
-        if (!apartment.getBuilding().getId().equals(buildingId)) {
-            throw new IllegalArgumentException("Apartment does not belong to this building");
+        if (member.getUser() == null) {
+            throw new IllegalStateException(
+                    "Building member is not connected to a user"
+            );
         }
 
-        // role name from request
-        String roleName = req.getRole() == null ? "" : req.getRole().trim();
+        Integer buildingId = member.getBuilding().getId();
 
-        Role roleEntity = roleRepository.findByName(roleName)
-                .orElseThrow(() -> new EntityNotFoundException("Role not found: " + roleName));
-
-        User targetUser = joinMember.getUser();
-
-        //μην επιτρέψεις δεύτερη ανάθεση για ίδιο user+apartment
-        boolean alreadyLinked = buildingMemberRepository
-                .existsByBuilding_IdAndUser_IdAndApartment_Id(buildingId, targetUser.getId(), apartment.getId());
-
-        if (alreadyLinked) {
-            throw new IllegalStateException("User already assigned to this apartment");
+        if (!buildingPermissionService.canManageBuilding(
+                currentUser,
+                buildingId
+        )) {
+            throw new AccessDeniedException(
+                    "You are not allowed to manage members of this building"
+            );
         }
 
-        //rules + assign into apartment (owner/resident)
-        if ("Owner".equals(roleName)) {
-            if (apartment.getOwner() != null) {
-                throw new IllegalStateException("Apartment already has owner");
-            }
-            apartment.setOwner(targetUser);
-
-        } else if ("Resident".equals(roleName)) {
-            if (apartment.getResident() != null) {
-                throw new IllegalStateException("Apartment already has resident");
-            }
-            if (!Boolean.TRUE.equals(apartment.getIsRented())) {
-                throw new IllegalStateException("Apartment is not rented");
-            }
-            apartment.setResident(targetUser);
-
-        } else {
-            throw new IllegalArgumentException("Invalid role. Use Owner or Resident");
+        if (req == null || req.getApartmentId() == null) {
+            throw new IllegalArgumentException(
+                    "Apartment id is required"
+            );
         }
 
-        apartmentRepository.save(apartment);
+        String requestedRole = normalizeApartmentRole(req.getRole());
 
-        // ΔΗΜΙΟΥΡΓΗΣΕ ΝΕΟ BuildingMember για αυτή την ανάθεση
-        boolean isFirstAssignmentRow = joinMember.getApartment() == null
-                && joinMember.getStatus() == BuildingMemberStatus.PENDING;
+        Role newRole = roleRepository.findByName(requestedRole)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "Role not found: " + requestedRole
+                        )
+                );
 
-        //1ο assign: update joinMember (δεν δημιουργώ νέο row)
-        if (isFirstAssignmentRow) {
+        Apartment newApartment = apartmentRepository
+                .findById(req.getApartmentId())
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Apartment not found")
+                );
 
-            joinMember.setRole(roleEntity);          // Owner ή Resident
-            joinMember.setApartment(apartment);      // A1
-            joinMember.setStatus(BuildingMemberStatus.JOINED);        // ή "JOINED" όπως θες
-
-            buildingMemberRepository.save(joinMember);
-
-        } else {
-            //2ο+ assign: δημιουργώ νέο row (κρατάω το παλιό ως έχει)
-            BuildingMember assigned = BuildingMember.builder()
-                    .building(joinMember.getBuilding())
-                    .user(targetUser)
-                    .role(roleEntity)
-                    .status(BuildingMemberStatus.JOINED)
-                    .apartment(apartment)
-                    .build();
-
-            buildingMemberRepository.save(assigned);
+        if (newApartment.getBuilding() == null
+                || !buildingId.equals(
+                newApartment.getBuilding().getId()
+        )) {
+            throw new IllegalArgumentException(
+                    "Apartment does not belong to this building"
+            );
         }
-        // GLOBAL ROLE UPDATE with priority: Owner > Resident
 
-        String currentRole = targetUser.getRole() != null
-                ? targetUser.getRole().getName()
+        User targetUser = member.getUser();
+        Apartment oldApartment = member.getApartment();
+
+        String oldRole = member.getRole() != null
+                ? member.getRole().getName()
                 : null;
 
-        boolean alreadyOwner = "Owner".equals(currentRole);
+        boolean sameApartment =
+                oldApartment != null
+                        && oldApartment.getId().equals(newApartment.getId());
 
-        // Αν γίνει assign Owner → πάντα Owner
-        // Αν γίνει assign Resident → ΜΟΝΟ αν ΔΕΝ είναι ήδη Owner
-        if ("Owner".equals(roleName) || !alreadyOwner) {
-            targetUser.setRole(roleEntity);
-            userRepository.save(targetUser);
+        boolean sameRole = requestedRole.equals(oldRole);
+
+        /*
+         * Δεν χρειάζεται database update αν δεν άλλαξε τίποτα.
+         */
+        if (sameApartment && sameRole) {
+            return;
+        }
+        boolean duplicateExists =
+                buildingMemberRepository
+                        .existsByBuilding_IdAndUser_IdAndApartment_IdAndStatusAndIdNot(
+                                buildingId,
+                                targetUser.getId(),
+                                newApartment.getId(),
+                                BuildingMemberStatus.JOINED,
+                                member.getId()
+                        );
+
+        if (duplicateExists) {
+            throw new IllegalStateException(
+                    "The user is already actively assigned to this apartment"
+            );
         }
 
+        /*
+         * Πρώτα ελέγχουμε αν η νέα θέση είναι διαθέσιμη.
+         * Επιτρέπουμε τον ίδιο user, επειδή μπορεί να αλλάζει μόνο role
+         * ή να διορθώνεται ένα ήδη υπάρχον association.
+         */
+        validateApartmentAvailability(
+                newApartment,
+                targetUser,
+                requestedRole
+        );
 
-        //notification στον χρήστη (APARTMENT_ASSIGNED)
-        Map<String, Object> payloadMap = new HashMap<>();
-        payloadMap.put("buildingId", buildingId);
-        payloadMap.put("buildingName", joinMember.getBuilding().getName());
-        payloadMap.put("apartmentId", apartment.getId());
-        payloadMap.put("apartmentFloor", apartment.getFloor());
-        payloadMap.put("apartmentNumber", apartment.getNumber());
-        payloadMap.put("assignedRole", roleName);
+//         * Καθαρίζουμε την παλιά σχέση μόνο όταν υπάρχει παλιό apartment.
+//         *
+//         * Αυτό καλύπτει:
+//         * - αλλαγή apartment
+//         * - αλλαγή role στο ίδιο apartment
+//         * - αλλαγή role και apartment μαζί
+
+        if (oldApartment != null) {
+            clearPreviousApartmentAssignment(
+                    oldApartment,
+                    targetUser,
+                    oldRole
+            );
+        }
+
+        applyApartmentAssignment(
+                newApartment,
+                targetUser,
+                requestedRole
+        );
+
+        if (oldApartment != null
+                && !oldApartment.getId().equals(newApartment.getId())) {
+            apartmentRepository.save(oldApartment);
+        }
+
+        apartmentRepository.save(newApartment);
+
+//         * Ενημερώνουμε το ίδιο BuildingMember row.
+//         * Δεν δημιουργούμε δεύτερο membership.
+        member.setApartment(newApartment);
+        member.setRole(newRole);
+        member.setStatus(BuildingMemberStatus.JOINED);
+
+        buildingMemberRepository.save(member);
+
+        recalculateGlobalUserRole(targetUser);
+
+        sendApartmentAssignmentNotification(
+                targetUser,
+                member,
+                newApartment,
+                requestedRole,
+                oldApartment,
+                oldRole
+        );
+    }
+
+    private String normalizeApartmentRole(String role) {
+        if (role == null || role.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Role is required"
+            );
+        }
+
+        String normalizedRole = role.trim();
+
+        if (!"Owner".equals(normalizedRole)
+                && !"Resident".equals(normalizedRole)) {
+            throw new IllegalArgumentException(
+                    "Invalid role. Allowed roles: Owner, Resident"
+            );
+        }
+
+        return normalizedRole;
+    }
+
+
+
+    private void validateApartmentAvailability(
+            Apartment apartment,
+            User targetUser,
+            String roleName
+    ) {
+        if ("Owner".equals(roleName)) {
+            User existingOwner = apartment.getOwner();
+
+            if (existingOwner != null
+                    && !existingOwner.getId().equals(targetUser.getId())) {
+                throw new IllegalStateException(
+                        "The selected apartment already has an owner"
+                );
+            }
+
+            return;
+        }
+
+        if ("Resident".equals(roleName)) {
+            if (!Boolean.TRUE.equals(apartment.getIsRented())) {
+                throw new IllegalStateException(
+                        "The selected apartment is not marked as rented"
+                );
+            }
+
+            User existingResident = apartment.getResident();
+
+            if (existingResident != null
+                    && !existingResident.getId().equals(targetUser.getId())) {
+                throw new IllegalStateException(
+                        "The selected apartment already has a resident"
+                );
+            }
+        }
+    }
+
+    private void clearPreviousApartmentAssignment(
+            Apartment oldApartment,
+            User targetUser,
+            String oldRole
+    ) {
+        if ("Owner".equals(oldRole)
+                && oldApartment.getOwner() != null
+                && oldApartment.getOwner()
+                .getId()
+                .equals(targetUser.getId())) {
+
+            oldApartment.setOwner(null);
+        }
+
+        if ("Resident".equals(oldRole)
+                && oldApartment.getResident() != null
+                && oldApartment.getResident()
+                .getId()
+                .equals(targetUser.getId())) {
+
+            oldApartment.setResident(null);
+        }
+    }
+
+    private void applyApartmentAssignment(
+            Apartment apartment,
+            User targetUser,
+            String roleName
+    ) {
+        if ("Owner".equals(roleName)) {
+            apartment.setOwner(targetUser);
+            return;
+        }
+
+        if ("Resident".equals(roleName)) {
+            apartment.setResident(targetUser);
+        }
+    }
+
+    private void sendApartmentAssignmentNotification(
+            User targetUser,
+            BuildingMember member,
+            Apartment newApartment,
+            String newRole,
+            Apartment oldApartment,
+            String oldRole
+    ) {
+        Map<String, Object> payload = new HashMap<>();
+
+        payload.put(
+                "buildingId",
+                member.getBuilding().getId()
+        );
+
+        payload.put(
+                "buildingName",
+                member.getBuilding().getName()
+        );
+
+        payload.put(
+                "apartmentId",
+                newApartment.getId()
+        );
+
+        payload.put(
+                "apartmentFloor",
+                newApartment.getFloor()
+        );
+
+        payload.put(
+                "apartmentNumber",
+                newApartment.getNumber()
+        );
+
+        payload.put("assignedRole", newRole);
+
+        if (oldApartment != null) {
+            payload.put(
+                    "previousApartmentId",
+                    oldApartment.getId()
+            );
+
+            payload.put(
+                    "previousApartmentFloor",
+                    oldApartment.getFloor()
+            );
+
+            payload.put(
+                    "previousApartmentNumber",
+                    oldApartment.getNumber()
+            );
+
+            payload.put("previousRole", oldRole);
+        }
 
         String payloadJson;
+
         try {
-            payloadJson = objectMapper.writeValueAsString(payloadMap);
-        } catch (Exception e) {
+            payloadJson = objectMapper.writeValueAsString(payload);
+        } catch (Exception exception) {
             payloadJson = "{}";
         }
 
+        boolean wasUpdate = oldApartment != null;
+
         notificationService.create(
                 targetUser,
-                "Joined",
-                "Apartment was assigned",
+                wasUpdate
+                        ? "APARTMENT_UPDATED"
+                        : "APARTMENT_ASSIGNED",
+                wasUpdate
+                        ? "Your apartment assignment was updated"
+                        : "An apartment was assigned to you",
                 payloadJson
         );
     }
 
-    @Transactional
-    public void deleteMember(Integer memberId, Authentication auth) {
+    private void recalculateGlobalUserRole(User targetUser) {
+        String currentRole = targetUser.getRole() != null
+                ? targetUser.getRole().getName()
+                : null;
 
-        User manager = (User) auth.getPrincipal();
+        if ("Admin".equals(currentRole)
+                || "BuildingManager".equals(currentRole)
+                || "PropertyManager".equals(currentRole)
+                || "PropertyAgent".equals(currentRole)) {
+            return;
+        }
+
+        List<BuildingMember> memberships =
+                buildingMemberRepository.findByUserId(targetUser.getId());
+
+        boolean hasOwnerMembership = memberships.stream()
+                .anyMatch(m ->
+                        m.getStatus() == BuildingMemberStatus.JOINED
+                                && m.getRole() != null
+                                && "Owner".equals(m.getRole().getName())
+                );
+
+        boolean hasResidentMembership = memberships.stream()
+                .anyMatch(m ->
+                        m.getStatus() == BuildingMemberStatus.JOINED
+                                && m.getRole() != null
+                                && "Resident".equals(m.getRole().getName())
+                );
+
+        String roleName = hasOwnerMembership
+                ? "Owner"
+                : hasResidentMembership
+                ? "Resident"
+                : "User";
+
+        Role role = roleRepository.findByName(roleName)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Role not found: " + roleName)
+                );
+
+        targetUser.setRole(role);
+        userRepository.save(targetUser);
+    }
+
+    @Transactional
+    public void deleteMember(
+            Integer memberId,
+            Authentication auth
+    ) {
+        User currentUser = getConnectedUser(auth);
 
         BuildingMember member = buildingMemberRepository.findById(memberId)
-                .orElseThrow(() -> new EntityNotFoundException("Member not found"));
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Member not found")
+                );
+
+        if (member.getBuilding() == null) {
+            throw new IllegalStateException(
+                    "Building member is not connected to a building"
+            );
+        }
+
+        if (member.getUser() == null) {
+            throw new IllegalStateException(
+                    "Building member is not connected to a user"
+            );
+        }
 
         Integer buildingId = member.getBuilding().getId();
 
-        //check manager rights
-        boolean isManager = buildingMemberRepository.findByBuildingId(buildingId)
-                .stream()
-                .anyMatch(m ->
-                        m.getUser().getId().equals(manager.getId()) &&
-                                m.getRole() != null &&
-                                "BuildingManager".equals(m.getRole().getName())
-                );
-
-        if (!isManager) {
-            throw new AccessDeniedException("Not allowed");
+        if (!buildingPermissionService.canManageBuilding(
+                currentUser,
+                buildingId
+        )) {
+            throw new AccessDeniedException(
+                    "You are not allowed to remove members from this building"
+            );
         }
 
-        //αν υπάρχει apartment, καθάρισε owner/resident
-        Apartment apartment = member.getApartment();
-        if (apartment != null) {
+        if (member.getUser().getId().equals(currentUser.getId())) {
+            throw new IllegalStateException(
+                    "You cannot remove your own membership"
+            );
+        }
 
-            if (member.getRole() != null) {
-                String roleName = member.getRole().getName();
+        if (member.getStatus() == BuildingMemberStatus.LEFT) {
+            return;
+        }
 
-                if ("Owner".equals(roleName) &&
-                        apartment.getOwner() != null &&
-                        apartment.getOwner().getId().equals(member.getUser().getId())) {
-                    apartment.setOwner(null);
-                }
+        if (member.getRole() != null
+                && "BuildingManager".equals(
+                member.getRole().getName()
+        )) {
 
-                if ("Resident".equals(roleName) &&
-                        apartment.getResident() != null &&
-                        apartment.getResident().getId().equals(member.getUser().getId())) {
-                    apartment.setResident(null);
-                }
+            long activeManagerCount =
+                    buildingMemberRepository
+                            .findByBuildingId(buildingId)
+                            .stream()
+                            .filter(item ->
+                                    item.getStatus()
+                                            == BuildingMemberStatus.JOINED
+                            )
+                            .filter(item ->
+                                    item.getRole() != null
+                            )
+                            .filter(item ->
+                                    "BuildingManager".equals(
+                                            item.getRole().getName()
+                                    )
+                            )
+                            .count();
+
+            if (activeManagerCount <= 1) {
+                throw new IllegalStateException(
+                        "The last building manager cannot be removed"
+                );
             }
+        }
+
+        Apartment apartment = member.getApartment();
+
+        if (apartment != null) {
+            String roleName = member.getRole() != null
+                    ? member.getRole().getName()
+                    : null;
+
+            clearPreviousApartmentAssignment(
+                    apartment,
+                    member.getUser(),
+                    roleName
+            );
 
             apartmentRepository.save(apartment);
         }
 
-        buildingMemberRepository.delete(member);
+        /*
+         * Soft delete.
+         * Κρατάμε building, apartment, user και role
+         * για το ιστορικό των support tickets.
+         */
+        member.setStatus(BuildingMemberStatus.REMOVED);
+        buildingMemberRepository.save(member);
+
+        recalculateGlobalUserRole(member.getUser());
     }
+
+
 
 
 }

@@ -6,6 +6,8 @@ import com.buildingmanager.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "building_member")
 @Getter
@@ -37,6 +39,9 @@ public class BuildingMember {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "apartment_id")
     private com.buildingmanager.apartment.Apartment apartment;
+
+    @Column(name = "removed_at")
+    private LocalDateTime removedAt;
 
 
 }
