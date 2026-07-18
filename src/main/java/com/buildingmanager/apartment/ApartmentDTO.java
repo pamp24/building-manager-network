@@ -40,6 +40,7 @@
         private Integer residentId;
         private String residentEmail;
         private String residentPhone;
+        private String residentProfileImageUrl;
 
         private String owner;
         private Integer ownerId;
@@ -47,6 +48,8 @@
         private String ownerPhone;
         private String ownerCountry;
         private String ownerFullName;
+        private String ownerProfileImageUrl;
+
 
     }
 
