@@ -164,78 +164,156 @@ public class ApartmentService {
                 .toList();
     }
     @Transactional
-    public ApartmentResponse updateMyApartment(ApartmentDTO dto, Authentication connectedUser) {
+    public ApartmentResponse updateApartment(
+            Integer apartmentId,
+            ApartmentDTO dto,
+            Authentication connectedUser
+    ) {
         User user = (User) connectedUser.getPrincipal();
 
-        Apartment apartment = apartmentRepository.findById(dto.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Apartment not found with id " + dto.getId()));
+        Apartment apartment = apartmentRepository.findById(apartmentId)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "Apartment not found with id " + apartmentId
+                        )
+                );
 
-        // Έλεγχος: μόνο ο ιδιοκτήτης ή ο ένοικος μπορεί να ενημερώσει
-        boolean isOwner = apartment.getOwner() != null && apartment.getOwner().getId().equals(user.getId());
-        boolean isResident = apartment.getResident() != null && apartment.getResident().getId().equals(user.getId());
+        Integer buildingId = apartment.getBuilding().getId();
 
-        boolean canManageBuilding = buildingPermissionService.canManageBuilding(
-                user,
-                apartment.getBuilding().getId()
-        );
+        boolean isOwner =
+                apartment.getOwner() != null &&
+                        apartment.getOwner().getId().equals(user.getId());
+
+        boolean isResident =
+                apartment.getResident() != null &&
+                        apartment.getResident().getId().equals(user.getId());
+
+        boolean canManageBuilding =
+                buildingPermissionService.canManageBuilding(
+                        user,
+                        buildingId
+                );
 
         if (!isOwner && !isResident && !canManageBuilding) {
-            throw new AccessDeniedException("Δεν έχετε δικαίωμα να επεξεργαστείτε αυτό το διαμέρισμα");
+            throw new AccessDeniedException(
+                    "Δεν έχετε δικαίωμα να επεξεργαστείτε αυτό το διαμέρισμα"
+            );
         }
 
-        // Ενημέρωση πεδίων
         apartment.setNumber(dto.getNumber());
         apartment.setSqMetersApart(dto.getSqMetersApart());
         apartment.setFloor(dto.getFloor());
+
         apartment.setParkingSpace(
-                dto.getParkingSpace() != null ? dto.getParkingSpace() : false
+                dto.getParkingSpace() != null
+                        ? dto.getParkingSpace()
+                        : false
         );
-        apartment.setIsRented(dto.getIsRented());
-        apartment.setParkingSlot(dto.getParkingSlot());
+
+        apartment.setParkingSlot(
+                Boolean.TRUE.equals(dto.getParkingSpace())
+                        ? dto.getParkingSlot()
+                        : null
+        );
+
+        apartment.setIsRented(
+                dto.getIsRented() != null
+                        ? dto.getIsRented()
+                        : false
+        );
+
         apartment.setApStorageExist(
-                dto.getApStorageExist() != null ? dto.getApStorageExist() : false
+                dto.getApStorageExist() != null
+                        ? dto.getApStorageExist()
+                        : false
         );
-        apartment.setStorageSlot(dto.getStorageSlot());
-        apartment.setIsManagerHouse(
-                dto.getIsManagerHouse() != null ? dto.getIsManagerHouse() : false
+
+        apartment.setStorageSlot(
+                Boolean.TRUE.equals(dto.getApStorageExist())
+                        ? dto.getStorageSlot()
+                        : null
         );
+
         apartment.setCommonPercent(dto.getCommonPercent());
         apartment.setElevatorPercent(dto.getElevatorPercent());
         apartment.setHeatingPercent(dto.getHeatingPercent());
         apartment.setApDescription(dto.getApDescription());
 
-        // Ενημέρωση στοιχείων resident (αν έχει)
-        if (dto.getResidentFirstName() != null && apartment.getResident() != null) {
-            apartment.getResident().setFirstName(dto.getResidentFirstName());
-        }
-        if (dto.getResidentLastName() != null && apartment.getResident() != null) {
-            apartment.getResident().setLastName(dto.getResidentLastName());
-        }
+        /*
+         * Εφόσον ο πραγματικός user συνδέεται αργότερα,
+         * ενημερώνουμε και τα προσωρινά πεδία του apartment.
+         */
+        apartment.setOwnerFirstName(dto.getOwnerFirstName());
+        apartment.setOwnerLastName(dto.getOwnerLastName());
 
-        // Ενημέρωση στοιχείων owner (αν έχει)
-        if (dto.getOwnerFirstName() != null && apartment.getOwner() != null) {
-            apartment.getOwner().setFirstName(dto.getOwnerFirstName());
-        }
-        if (dto.getOwnerLastName() != null && apartment.getOwner() != null) {
-            apartment.getOwner().setLastName(dto.getOwnerLastName());
-        }
+        apartment.setResidentFirstName(
+                Boolean.TRUE.equals(dto.getIsRented())
+                        ? dto.getResidentFirstName()
+                        : null
+        );
+
+        apartment.setResidentLastName(
+                Boolean.TRUE.equals(dto.getIsRented())
+                        ? dto.getResidentLastName()
+                        : null
+        );
 
         Apartment saved = apartmentRepository.save(apartment);
 
         return apartmentMapper.toApartmentResponse(saved);
     }
 
-    @Transactional(readOnly = true)
-    public List<ApartmentResponse> getApartmentsByBuildingList(Integer buildingId, Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+    @Transactional
+    public void deleteApartment(
+            Integer apartmentId,
+            Authentication connectedUser
+    ) {
+        User user = (User) connectedUser.getPrincipal();
 
-        if (!buildingPermissionService.canViewBuilding(user, buildingId)) {
-            throw new AccessDeniedException("Δεν έχεις πρόσβαση στα διαμερίσματα αυτής της πολυκατοικίας");
+        Apartment apartment = apartmentRepository.findById(apartmentId)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "Apartment not found with id " + apartmentId
+                        )
+                );
+
+        Integer buildingId =
+                apartment.getBuilding().getId();
+
+        if (!buildingPermissionService.canManageBuilding(user, buildingId)) {
+            throw new AccessDeniedException(
+                    "Δεν έχετε δικαίωμα διαγραφής αυτού του διαμερίσματος"
+            );
         }
 
-        return apartmentRepository.findAllByBuilding_IdOrderByFloorAscNumberAsc(buildingId)
+        apartment.setActive(false);
+        apartment.setEnable(false);
+
+        apartmentRepository.save(apartment);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ApartmentResponse> getApartmentsByBuildingList(
+            Integer buildingId,
+            Authentication authentication
+    ) {
+        User user = (User) authentication.getPrincipal();
+        if (!buildingPermissionService.canViewBuilding(user, buildingId)) {
+            throw new AccessDeniedException(
+                    "Δεν έχεις πρόσβαση στα διαμερίσματα αυτής της πολυκατοικίας"
+            );
+        }
+        return apartmentRepository
+                .findAllByBuilding_IdAndActiveTrueAndEnableTrueOrderByFloorAscNumberAsc(
+                        buildingId
+                )
                 .stream()
-                .map(apartment -> apartmentMapper.toApartmentResponse(apartment, user.getId()))
+                .map(apartment ->
+                        apartmentMapper.toApartmentResponse(
+                                apartment,
+                                user.getId()
+                        )
+                )
                 .toList();
     }
 
