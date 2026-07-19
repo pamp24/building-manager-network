@@ -92,5 +92,9 @@ public interface ApartmentRepository extends JpaRepository<Apartment, Integer> {
 """)
     long countVacantApartments();
 
+    List<Apartment> findAllByBuilding_IdAndActiveTrueAndEnableTrueOrderByFloorAscNumberAsc(
+            Integer buildingId
+    );
+
 }
 

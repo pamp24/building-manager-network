@@ -102,12 +102,30 @@ public class ApartmentController {
         return ResponseEntity.ok(apartmentService.getAvailableApartments(buildingId, role, authentication));
     }
 
-    @PutMapping("update/myApartment")
-    public ResponseEntity<ApartmentResponse> updateMyApartment(
+    @PutMapping("/update/myApartment/{apartmentId}")
+    public ResponseEntity<ApartmentResponse> updateApartment(
+            @PathVariable Integer apartmentId,
             @RequestBody ApartmentDTO dto,
             Authentication authentication
     ) {
-        return ResponseEntity.ok(apartmentService.updateMyApartment(dto, authentication));
+        dto.setId(apartmentId);
+
+        return ResponseEntity.ok(
+                apartmentService.updateApartment(apartmentId, dto, authentication)
+        );
+    }
+
+    @DeleteMapping("/delete/{apartmentId}")
+    public ResponseEntity<Void> deleteApartment(
+            @PathVariable Integer apartmentId,
+            Authentication authentication
+    ) {
+        apartmentService.deleteApartment(
+                apartmentId,
+                authentication
+        );
+
+        return ResponseEntity.noContent().build();
     }
 
 }
