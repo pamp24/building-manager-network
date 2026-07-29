@@ -71,8 +71,8 @@
                     .buildingStreetNumber(apartment.getBuilding().getStNumber1()    )
                     .buildingCity(apartment.getBuilding().getCity())
 
-                    .active(false)
-                    .enable(false)
+                    .active(apartment.getActive())
+                    .enable(apartment.getEnable())
                     .lastModifiedDate(apartment.getLastModifiedDate())
 
                     // Manager (null-safe)

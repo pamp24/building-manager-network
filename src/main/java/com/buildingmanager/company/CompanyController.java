@@ -1,8 +1,10 @@
 package com.buildingmanager.company;
 
 import com.buildingmanager.building.Building;
+import com.buildingmanager.exceptions.UserNotFoundException;
 import com.buildingmanager.user.User;
 import com.buildingmanager.user.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -60,13 +62,11 @@ public class CompanyController {
 
     @PostMapping("/user/{userId}")
     public ResponseEntity<Company> createCompanyForUser(@PathVariable Integer userId, @RequestBody Company company) {
-        Optional<User> userOpt = userRepository.findById(userId);
-        if (userOpt.isEmpty()) return ResponseEntity.notFound().build();
-
-        User user = userOpt.get();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User with id '" + userId + "' not found"));
 
         if (!user.getRole().equals("PropertyManager")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+            throw new org.springframework.security.access.AccessDeniedException("User is not a PropertyManager");
         }
 
         Company saved = companyService.createCompany(company);
@@ -86,7 +86,7 @@ public class CompanyController {
     public ResponseEntity<CompanyDTO> getMyCompany() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new org.springframework.security.authentication.BadCredentialsException("User is not authenticated");
         }
 
         String email = auth.getName();
@@ -95,11 +95,10 @@ public class CompanyController {
 
         Company company = user.getCompany();
         if (company == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            throw new EntityNotFoundException("No company found for current user");
         }
 
         return ResponseEntity.ok(companyService.toDto(company));
     }
 
 }
-

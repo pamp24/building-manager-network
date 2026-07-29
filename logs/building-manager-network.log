@@ -1,0 +1,450 @@
+2026-07-29 17:13:15.335 [background-preinit] INFO  o.h.validator.internal.util.Version [,] - HV000001: Hibernate Validator 8.0.1.Final
+2026-07-29 17:13:15.355 [main] INFO  c.b.BuildingManagerNetworkApiApplicationTests [,] - Starting BuildingManagerNetworkApiApplicationTests using Java 21.0.5 with PID 33412 (started by FotisPamp in C:\Users\FotisPamp\Documents\GitHub\building-manager-network)
+2026-07-29 17:13:15.356 [main] INFO  c.b.BuildingManagerNetworkApiApplicationTests [,] - The following 1 profile is active: "dev"
+2026-07-29 17:13:17.317 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [,] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-07-29 17:13:17.460 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [,] - Finished Spring Data repository scanning in 122 ms. Found 27 JPA repository interfaces.
+2026-07-29 17:13:19.256 [main] INFO  o.h.jpa.internal.util.LogHelper [,] - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-07-29 17:13:19.426 [main] INFO  org.hibernate.Version [,] - HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-07-29 17:13:19.495 [main] INFO  o.h.c.i.RegionFactoryInitiator [,] - HHH000026: Second-level cache disabled
+2026-07-29 17:13:19.649 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo [,] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-07-29 17:13:19.680 [main] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Starting...
+2026-07-29 17:13:19.783 [main] INFO  com.zaxxer.hikari.pool.HikariPool [,] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@4f93303f
+2026-07-29 17:13:19.784 [main] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Start completed.
+2026-07-29 17:13:19.815 [main] WARN  org.hibernate.orm.deprecation [,] - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-07-29 17:13:21.328 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator [,] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-07-29 17:13:21.667 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [,] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-07-29 17:13:22.232 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory [,] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-07-29 17:13:25.627 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration [,] - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-07-29 17:13:26.333 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver [,] - Exposing 3 endpoint(s) beneath base path '/actuator'
+2026-07-29 17:13:26.405 [main] INFO  o.s.s.web.DefaultSecurityFilterChain [,] - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@4511c7c2, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@419d4ec2, org.springframework.security.web.context.SecurityContextHolderFilter@7eaadd1a, org.springframework.security.web.header.HeaderWriterFilter@22d2eb30, org.springframework.web.filter.CorsFilter@41df2efe, org.springframework.security.web.authentication.logout.LogoutFilter@36dc92ed, com.buildingmanager.security.JwtFilter@5c6f11e, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@20fcfa65, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@64b4c7e7, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@110dd34d, org.springframework.security.web.session.SessionManagementFilter@62468f8c, org.springframework.security.web.access.ExceptionTranslationFilter@5d3fc864, org.springframework.security.web.access.intercept.AuthorizationFilter@2476d6d8]
+2026-07-29 17:13:27.023 [main] INFO  c.b.BuildingManagerNetworkApiApplicationTests [,] - Started BuildingManagerNetworkApiApplicationTests in 12.019 seconds (process running for 14.515)
+2026-07-29 17:13:27.690 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 17:13:27.690 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 17:13:27.691 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 1 ms
+2026-07-29 17:13:27.782 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 17:13:27.783 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 17:13:27.783 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-07-29 17:13:27.936 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 17:13:27.936 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 17:13:27.936 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-07-29 17:13:27.965 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 17:13:27.965 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 17:13:27.965 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-07-29 17:13:27.989 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 17:13:27.990 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 17:13:27.990 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-07-29 17:13:27.999 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 17:13:28.000 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 17:13:28.000 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-07-29 17:13:28.012 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 17:13:28.012 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 17:13:28.013 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-07-29 17:13:28.029 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 17:13:28.030 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 17:13:28.030 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-07-29 17:13:28.048 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 17:13:28.048 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 17:13:28.048 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-07-29 17:13:28.069 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 17:13:28.069 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 17:13:28.069 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-07-29 17:13:28.088 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 17:13:28.088 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 17:13:28.088 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-07-29 17:13:29.605 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [,] - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-07-29 17:13:29.608 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Shutdown initiated...
+2026-07-29 17:13:29.611 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Shutdown completed.
+2026-07-29 17:27:43.377 [background-preinit] INFO  o.h.validator.internal.util.Version [,] - HV000001: Hibernate Validator 8.0.1.Final
+2026-07-29 17:27:43.403 [main] INFO  c.b.BuildingManagerNetworkApiApplication [,] - Starting BuildingManagerNetworkApiApplication using Java 23.0.2 with PID 24828 (C:\Users\FotisPamp\Documents\GitHub\building-manager-network\target\classes started by FotisPamp in C:\Users\FotisPamp\Documents\GitHub\building-manager-network)
+2026-07-29 17:27:43.403 [main] INFO  c.b.BuildingManagerNetworkApiApplication [,] - The following 1 profile is active: "dev"
+2026-07-29 17:27:43.995 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [,] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-07-29 17:27:44.085 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [,] - Finished Spring Data repository scanning in 82 ms. Found 27 JPA repository interfaces.
+2026-07-29 17:27:44.932 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer [,] - Tomcat initialized with port 8080 (http)
+2026-07-29 17:27:44.938 [main] INFO  o.a.coyote.http11.Http11NioProtocol [,] - Initializing ProtocolHandler ["http-nio-8080"]
+2026-07-29 17:27:44.939 [main] INFO  o.a.catalina.core.StandardService [,] - Starting service [Tomcat]
+2026-07-29 17:27:44.939 [main] INFO  o.a.catalina.core.StandardEngine [,] - Starting Servlet engine: [Apache Tomcat/10.1.20]
+2026-07-29 17:27:44.984 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] [,] - Initializing Spring embedded WebApplicationContext
+2026-07-29 17:27:44.984 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext [,] - Root WebApplicationContext: initialization completed in 1531 ms
+2026-07-29 17:27:45.329 [main] INFO  o.h.jpa.internal.util.LogHelper [,] - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-07-29 17:27:45.366 [main] INFO  org.hibernate.Version [,] - HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-07-29 17:27:45.389 [main] INFO  o.h.c.i.RegionFactoryInitiator [,] - HHH000026: Second-level cache disabled
+2026-07-29 17:27:45.547 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo [,] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-07-29 17:27:45.565 [main] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Starting...
+2026-07-29 17:27:45.653 [main] INFO  com.zaxxer.hikari.pool.HikariPool [,] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@49322d04
+2026-07-29 17:27:45.654 [main] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Start completed.
+2026-07-29 17:27:45.683 [main] WARN  org.hibernate.orm.deprecation [,] - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-07-29 17:27:46.923 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator [,] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-07-29 17:27:47.220 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [,] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-07-29 17:27:47.470 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory [,] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-07-29 17:27:49.714 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration [,] - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-07-29 17:27:50.121 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver [,] - Exposing 4 endpoint(s) beneath base path '/actuator'
+2026-07-29 17:27:50.195 [main] INFO  o.s.s.web.DefaultSecurityFilterChain [,] - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@4ebf476d, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@15b8a112, org.springframework.security.web.context.SecurityContextHolderFilter@2fabf464, org.springframework.security.web.header.HeaderWriterFilter@1953dc1c, org.springframework.web.filter.CorsFilter@5cf171b6, org.springframework.security.web.authentication.logout.LogoutFilter@4c58c4c6, com.buildingmanager.security.JwtFilter@4a83736a, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@6b7ef458, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@2b25619, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@52509489, org.springframework.security.web.session.SessionManagementFilter@5d4427c4, org.springframework.security.web.access.ExceptionTranslationFilter@372b0c42, org.springframework.security.web.access.intercept.AuthorizationFilter@4d6dc311]
+2026-07-29 17:27:50.717 [main] INFO  o.a.coyote.http11.Http11NioProtocol [,] - Starting ProtocolHandler ["http-nio-8080"]
+2026-07-29 17:27:50.730 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer [,] - Tomcat started on port 8080 (http) with context path ''
+2026-07-29 17:27:50.740 [main] INFO  c.b.BuildingManagerNetworkApiApplication [,] - Started BuildingManagerNetworkApiApplication in 7.726 seconds (process running for 8.189)
+2026-07-29 17:27:51.339 [RMI TCP Connection(2)-192.168.1.9] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] [,] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-07-29 17:27:51.340 [RMI TCP Connection(2)-192.168.1.9] INFO  o.s.web.servlet.DispatcherServlet [,] - Initializing Servlet 'dispatcherServlet'
+2026-07-29 17:27:51.341 [RMI TCP Connection(2)-192.168.1.9] INFO  o.s.web.servlet.DispatcherServlet [,] - Completed initialization in 1 ms
+2026-07-29 17:29:16.040 [RMI TCP Connection(1)-192.168.1.9] WARN  o.s.b.a.mail.MailHealthIndicator [,] - Mail health check failed
+jakarta.mail.MessagingException: Got bad greeting from SMTP host: localhost, port: 1080, response: HTTP/1.1 408 Request Timeout
+
+	at org.eclipse.angus.mail.smtp.SMTPTransport.openServer(SMTPTransport.java:2231)
+	at org.eclipse.angus.mail.smtp.SMTPTransport.protocolConnect(SMTPTransport.java:729)
+	at jakarta.mail.Service.connect(Service.java:345)
+	at org.springframework.mail.javamail.JavaMailSenderImpl.connectTransport(JavaMailSenderImpl.java:480)
+	at org.springframework.mail.javamail.JavaMailSenderImpl.testConnection(JavaMailSenderImpl.java:360)
+	at org.springframework.boot.actuate.mail.MailHealthIndicator.doHealthCheck(MailHealthIndicator.java:52)
+	at org.springframework.boot.actuate.health.AbstractHealthIndicator.health(AbstractHealthIndicator.java:82)
+	at org.springframework.boot.actuate.health.HealthIndicator.getHealth(HealthIndicator.java:37)
+	at org.springframework.boot.actuate.health.HealthEndpoint.getHealth(HealthEndpoint.java:82)
+	at org.springframework.boot.actuate.health.HealthEndpoint.getHealth(HealthEndpoint.java:41)
+	at org.springframework.boot.actuate.health.HealthEndpointSupport.getLoggedHealth(HealthEndpointSupport.java:172)
+	at org.springframework.boot.actuate.health.HealthEndpointSupport.getContribution(HealthEndpointSupport.java:145)
+	at org.springframework.boot.actuate.health.HealthEndpointSupport.getAggregateContribution(HealthEndpointSupport.java:156)
+	at org.springframework.boot.actuate.health.HealthEndpointSupport.getContribution(HealthEndpointSupport.java:141)
+	at org.springframework.boot.actuate.health.HealthEndpointSupport.getHealth(HealthEndpointSupport.java:110)
+	at org.springframework.boot.actuate.health.HealthEndpointSupport.getHealth(HealthEndpointSupport.java:81)
+	at org.springframework.boot.actuate.health.HealthEndpoint.health(HealthEndpoint.java:76)
+	at org.springframework.boot.actuate.health.HealthEndpoint.health(HealthEndpoint.java:66)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:281)
+	at org.springframework.boot.actuate.endpoint.invoke.reflect.ReflectiveOperationInvoker.invoke(ReflectiveOperationInvoker.java:74)
+	at org.springframework.boot.actuate.endpoint.annotation.AbstractDiscoveredOperation.invoke(AbstractDiscoveredOperation.java:60)
+	at org.springframework.boot.actuate.endpoint.jmx.EndpointMBean.invoke(EndpointMBean.java:124)
+	at org.springframework.boot.actuate.endpoint.jmx.EndpointMBean.invoke(EndpointMBean.java:97)
+	at java.management/com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.invoke(DefaultMBeanServerInterceptor.java:803)
+	at java.management/com.sun.jmx.mbeanserver.JmxMBeanServer.invoke(JmxMBeanServer.java:802)
+	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.doOperation(RMIConnectionImpl.java:1520)
+	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl$PrivilegedOperation.run(RMIConnectionImpl.java:1348)
+	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.doPrivilegedOperation(RMIConnectionImpl.java:1435)
+	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.invoke(RMIConnectionImpl.java:841)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.rmi/sun.rmi.server.UnicastServerRef.dispatch(UnicastServerRef.java:360)
+	at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:200)
+	at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:197)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:714)
+	at java.rmi/sun.rmi.transport.Transport.serviceCall(Transport.java:196)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport.handleMessages(TCPTransport.java:598)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run0(TCPTransport.java:844)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.lambda$run$0(TCPTransport.java:721)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:400)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(TCPTransport.java:720)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1575)
+2026-07-29 17:29:16.045 [RMI TCP Connection(1)-192.168.1.9] WARN  o.s.b.a.health.HealthEndpointSupport [,] - Health contributor org.springframework.boot.actuate.mail.MailHealthIndicator (mail) took 84700ms to respond
+2026-07-29 17:29:34.752 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [,] - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-07-29 17:29:34.753 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Shutdown initiated...
+2026-07-29 17:29:34.755 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Shutdown completed.
+2026-07-29 17:29:37.482 [background-preinit] INFO  o.h.validator.internal.util.Version [,] - HV000001: Hibernate Validator 8.0.1.Final
+2026-07-29 17:29:37.508 [main] INFO  c.b.BuildingManagerNetworkApiApplication [,] - Starting BuildingManagerNetworkApiApplication using Java 23.0.2 with PID 14660 (C:\Users\FotisPamp\Documents\GitHub\building-manager-network\target\classes started by FotisPamp in C:\Users\FotisPamp\Documents\GitHub\building-manager-network)
+2026-07-29 17:29:37.509 [main] INFO  c.b.BuildingManagerNetworkApiApplication [,] - The following 1 profile is active: "dev"
+2026-07-29 17:29:38.094 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [,] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-07-29 17:29:38.179 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [,] - Finished Spring Data repository scanning in 80 ms. Found 27 JPA repository interfaces.
+2026-07-29 17:29:39.033 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer [,] - Tomcat initialized with port 8080 (http)
+2026-07-29 17:29:39.041 [main] INFO  o.a.coyote.http11.Http11NioProtocol [,] - Initializing ProtocolHandler ["http-nio-8080"]
+2026-07-29 17:29:39.042 [main] INFO  o.a.catalina.core.StandardService [,] - Starting service [Tomcat]
+2026-07-29 17:29:39.042 [main] INFO  o.a.catalina.core.StandardEngine [,] - Starting Servlet engine: [Apache Tomcat/10.1.20]
+2026-07-29 17:29:39.090 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] [,] - Initializing Spring embedded WebApplicationContext
+2026-07-29 17:29:39.090 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext [,] - Root WebApplicationContext: initialization completed in 1537 ms
+2026-07-29 17:29:39.446 [main] INFO  o.h.jpa.internal.util.LogHelper [,] - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-07-29 17:29:39.480 [main] INFO  org.hibernate.Version [,] - HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-07-29 17:29:39.503 [main] INFO  o.h.c.i.RegionFactoryInitiator [,] - HHH000026: Second-level cache disabled
+2026-07-29 17:29:39.647 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo [,] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-07-29 17:29:39.667 [main] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Starting...
+2026-07-29 17:29:39.776 [main] INFO  com.zaxxer.hikari.pool.HikariPool [,] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@106edde4
+2026-07-29 17:29:39.777 [main] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Start completed.
+2026-07-29 17:29:39.805 [main] WARN  org.hibernate.orm.deprecation [,] - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-07-29 17:29:41.100 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator [,] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-07-29 17:29:41.417 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [,] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-07-29 17:29:41.693 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory [,] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-07-29 17:29:44.127 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration [,] - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-07-29 17:29:44.563 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver [,] - Exposing 4 endpoint(s) beneath base path '/actuator'
+2026-07-29 17:29:44.646 [main] INFO  o.s.s.web.DefaultSecurityFilterChain [,] - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@7e5ecc5f, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@13e0272a, org.springframework.security.web.context.SecurityContextHolderFilter@4c42024c, org.springframework.security.web.header.HeaderWriterFilter@d0f7018, org.springframework.web.filter.CorsFilter@aee4e71, org.springframework.security.web.authentication.logout.LogoutFilter@641312f, com.buildingmanager.security.JwtFilter@6f4fa62f, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@150cf9aa, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@269ae5fa, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@3b9550fc, org.springframework.security.web.session.SessionManagementFilter@1953dc1c, org.springframework.security.web.access.ExceptionTranslationFilter@7d039e13, org.springframework.security.web.access.intercept.AuthorizationFilter@3116f1c6]
+2026-07-29 17:29:45.202 [main] INFO  o.a.coyote.http11.Http11NioProtocol [,] - Starting ProtocolHandler ["http-nio-8080"]
+2026-07-29 17:29:45.217 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer [,] - Tomcat started on port 8080 (http) with context path ''
+2026-07-29 17:29:45.227 [main] INFO  c.b.BuildingManagerNetworkApiApplication [,] - Started BuildingManagerNetworkApiApplication in 8.115 seconds (process running for 8.57)
+2026-07-29 17:29:45.576 [RMI TCP Connection(3)-192.168.1.9] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] [,] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-07-29 17:29:45.576 [RMI TCP Connection(3)-192.168.1.9] INFO  o.s.web.servlet.DispatcherServlet [,] - Initializing Servlet 'dispatcherServlet'
+2026-07-29 17:29:45.579 [RMI TCP Connection(3)-192.168.1.9] INFO  o.s.web.servlet.DispatcherServlet [,] - Completed initialization in 1 ms
+2026-07-29 17:30:46.055 [RMI TCP Connection(2)-192.168.1.9] WARN  o.s.b.a.mail.MailHealthIndicator [,] - Mail health check failed
+jakarta.mail.MessagingException: Got bad greeting from SMTP host: localhost, port: 1080, response: HTTP/1.1 408 Request Timeout
+
+	at org.eclipse.angus.mail.smtp.SMTPTransport.openServer(SMTPTransport.java:2231)
+	at org.eclipse.angus.mail.smtp.SMTPTransport.protocolConnect(SMTPTransport.java:729)
+	at jakarta.mail.Service.connect(Service.java:345)
+	at org.springframework.mail.javamail.JavaMailSenderImpl.connectTransport(JavaMailSenderImpl.java:480)
+	at org.springframework.mail.javamail.JavaMailSenderImpl.testConnection(JavaMailSenderImpl.java:360)
+	at org.springframework.boot.actuate.mail.MailHealthIndicator.doHealthCheck(MailHealthIndicator.java:52)
+	at org.springframework.boot.actuate.health.AbstractHealthIndicator.health(AbstractHealthIndicator.java:82)
+	at org.springframework.boot.actuate.health.HealthIndicator.getHealth(HealthIndicator.java:37)
+	at org.springframework.boot.actuate.health.HealthEndpoint.getHealth(HealthEndpoint.java:82)
+	at org.springframework.boot.actuate.health.HealthEndpoint.getHealth(HealthEndpoint.java:41)
+	at org.springframework.boot.actuate.health.HealthEndpointSupport.getLoggedHealth(HealthEndpointSupport.java:172)
+	at org.springframework.boot.actuate.health.HealthEndpointSupport.getContribution(HealthEndpointSupport.java:145)
+	at org.springframework.boot.actuate.health.HealthEndpointSupport.getAggregateContribution(HealthEndpointSupport.java:156)
+	at org.springframework.boot.actuate.health.HealthEndpointSupport.getContribution(HealthEndpointSupport.java:141)
+	at org.springframework.boot.actuate.health.HealthEndpointSupport.getHealth(HealthEndpointSupport.java:110)
+	at org.springframework.boot.actuate.health.HealthEndpointSupport.getHealth(HealthEndpointSupport.java:81)
+	at org.springframework.boot.actuate.health.HealthEndpoint.health(HealthEndpoint.java:76)
+	at org.springframework.boot.actuate.health.HealthEndpoint.health(HealthEndpoint.java:66)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:281)
+	at org.springframework.boot.actuate.endpoint.invoke.reflect.ReflectiveOperationInvoker.invoke(ReflectiveOperationInvoker.java:74)
+	at org.springframework.boot.actuate.endpoint.annotation.AbstractDiscoveredOperation.invoke(AbstractDiscoveredOperation.java:60)
+	at org.springframework.boot.actuate.endpoint.jmx.EndpointMBean.invoke(EndpointMBean.java:124)
+	at org.springframework.boot.actuate.endpoint.jmx.EndpointMBean.invoke(EndpointMBean.java:97)
+	at java.management/com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.invoke(DefaultMBeanServerInterceptor.java:803)
+	at java.management/com.sun.jmx.mbeanserver.JmxMBeanServer.invoke(JmxMBeanServer.java:802)
+	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.doOperation(RMIConnectionImpl.java:1520)
+	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl$PrivilegedOperation.run(RMIConnectionImpl.java:1348)
+	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.doPrivilegedOperation(RMIConnectionImpl.java:1435)
+	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.invoke(RMIConnectionImpl.java:841)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.rmi/sun.rmi.server.UnicastServerRef.dispatch(UnicastServerRef.java:360)
+	at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:200)
+	at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:197)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:714)
+	at java.rmi/sun.rmi.transport.Transport.serviceCall(Transport.java:196)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport.handleMessages(TCPTransport.java:598)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run0(TCPTransport.java:844)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.lambda$run$0(TCPTransport.java:721)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:400)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(TCPTransport.java:720)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1575)
+2026-07-29 17:30:46.061 [RMI TCP Connection(2)-192.168.1.9] WARN  o.s.b.a.health.HealthEndpointSupport [,] - Health contributor org.springframework.boot.actuate.mail.MailHealthIndicator (mail) took 60477ms to respond
+2026-07-29 17:31:33.243 [http-nio-8080-exec-5] INFO  c.b.u.UserDashboardService [6a6a0ec5244719340baea6e2f8abd6b8,4c4459361010e6ee] - Loading dashboard history for user 18
+2026-07-29 17:31:33.243 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6a6a0ec5316bcd28861d1b5f46ad5849,4d30f66432fab5b0] -   Loading dashboard for user 18
+2026-07-29 17:31:33.262 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6a6a0ec5316bcd28861d1b5f46ad5849,4d30f66432fab5b0] - Selected OWNER apartment 52
+2026-07-29 17:31:33.264 [http-nio-8080-exec-2] WARN  c.b.u.UserDashboardService [6a6a0ec5316bcd28861d1b5f46ad5849,4d30f66432fab5b0] - No statements found for building 12
+2026-07-29 17:31:33.283 [http-nio-8080-exec-7] INFO  c.b.u.UserDashboardService [6a6a0ec5668ef2fa035947b0518b66aa,dd2561523264d107] -   Loading dashboard for user 18
+2026-07-29 17:31:33.292 [http-nio-8080-exec-7] INFO  c.b.u.UserDashboardService [6a6a0ec5668ef2fa035947b0518b66aa,dd2561523264d107] - Selected OWNER apartment 52
+2026-07-29 17:31:33.293 [http-nio-8080-exec-7] WARN  c.b.u.UserDashboardService [6a6a0ec5668ef2fa035947b0518b66aa,dd2561523264d107] - No statements found for building 12
+2026-07-29 17:31:33.942 [AsyncReporter{org.springframework.boot.actuate.autoconfigure.tracing.zipkin.ZipkinRestTemplateSender@69d7bc1a}] WARN  z.r.AsyncReporter$BoundedAsyncReporter [,] - Spans were dropped due to exceptions. All subsequent errors will be logged at FINE level.
+2026-07-29 17:31:33.942 [AsyncReporter{org.springframework.boot.actuate.autoconfigure.tracing.zipkin.ZipkinRestTemplateSender@69d7bc1a}] WARN  z.r.AsyncReporter$BoundedAsyncReporter [,] - Dropped 93 spans due to ResourceAccessException(I/O error on POST request for "http://localhost:9411/api/v2/spans": Connection refused: getsockopt)
+org.springframework.web.client.ResourceAccessException: I/O error on POST request for "http://localhost:9411/api/v2/spans": Connection refused: getsockopt
+	at org.springframework.web.client.RestTemplate.createResourceAccessException(RestTemplate.java:915)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:895)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:790)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:672)
+	at org.springframework.boot.actuate.autoconfigure.tracing.zipkin.ZipkinRestTemplateSender$RestTemplateHttpPostCall.doExecute(ZipkinRestTemplateSender.java:68)
+	at org.springframework.boot.actuate.autoconfigure.tracing.zipkin.ZipkinRestTemplateSender$RestTemplateHttpPostCall.doExecute(ZipkinRestTemplateSender.java:48)
+	at zipkin2.Call$Base.execute(Call.java:391)
+	at zipkin2.reporter.AsyncReporter$BoundedAsyncReporter.flush(AsyncReporter.java:299)
+	at zipkin2.reporter.AsyncReporter$Flusher.run(AsyncReporter.java:378)
+	at java.base/java.lang.Thread.run(Thread.java:1575)
+Caused by: java.net.ConnectException: Connection refused: getsockopt
+	at java.base/sun.nio.ch.Net.pollConnect(Native Method)
+	at java.base/sun.nio.ch.Net.pollConnectNow(Net.java:682)
+	at java.base/sun.nio.ch.NioSocketImpl.timedFinishConnect(NioSocketImpl.java:542)
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:592)
+	at java.base/java.net.Socket.connect(Socket.java:760)
+	at java.base/sun.net.NetworkClient.doConnect(NetworkClient.java:178)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:531)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:636)
+	at java.base/sun.net.www.http.HttpClient.<init>(HttpClient.java:280)
+	at java.base/sun.net.www.http.HttpClient.New(HttpClient.java:386)
+	at java.base/sun.net.www.http.HttpClient.New(HttpClient.java:408)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getNewHttpClient(HttpURLConnection.java:1310)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:1243)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:1129)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.connect(HttpURLConnection.java:1058)
+	at org.springframework.http.client.SimpleClientHttpRequest.executeInternal(SimpleClientHttpRequest.java:79)
+	at org.springframework.http.client.AbstractStreamingClientHttpRequest.executeInternal(AbstractStreamingClientHttpRequest.java:70)
+	at org.springframework.http.client.AbstractClientHttpRequest.execute(AbstractClientHttpRequest.java:66)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:889)
+	... 8 common frames omitted
+2026-07-29 18:31:07.389 [http-nio-8080-exec-8] INFO  c.b.u.UserDashboardService [6a6a1cbb839ed156dcf98e59e31a0f05,2b5a7dd8e1dcb18f] -   Loading dashboard for user 18
+2026-07-29 18:31:07.394 [http-nio-8080-exec-4] INFO  c.b.u.UserDashboardService [6a6a1cbb986469fdae1484b2cdf6a686,5011a0e08b9f13af] - Loading dashboard history for user 18
+2026-07-29 18:31:07.406 [http-nio-8080-exec-8] INFO  c.b.u.UserDashboardService [6a6a1cbb839ed156dcf98e59e31a0f05,2b5a7dd8e1dcb18f] - Selected OWNER apartment 52
+2026-07-29 18:31:07.409 [http-nio-8080-exec-8] WARN  c.b.u.UserDashboardService [6a6a1cbb839ed156dcf98e59e31a0f05,2b5a7dd8e1dcb18f] - No statements found for building 12
+2026-07-29 18:31:07.419 [http-nio-8080-exec-1] INFO  c.b.u.UserDashboardService [6a6a1cbbc31a756b0f3d0c7a3408a132,0aa211f4974331ce] -   Loading dashboard for user 18
+2026-07-29 18:31:07.425 [http-nio-8080-exec-1] INFO  c.b.u.UserDashboardService [6a6a1cbbc31a756b0f3d0c7a3408a132,0aa211f4974331ce] - Selected OWNER apartment 52
+2026-07-29 18:31:07.426 [http-nio-8080-exec-1] WARN  c.b.u.UserDashboardService [6a6a1cbbc31a756b0f3d0c7a3408a132,0aa211f4974331ce] - No statements found for building 12
+2026-07-29 18:37:34.055 [background-preinit] INFO  o.h.validator.internal.util.Version [,] - HV000001: Hibernate Validator 8.0.1.Final
+2026-07-29 18:37:34.075 [main] INFO  c.b.BuildingManagerNetworkApiApplicationTests [,] - Starting BuildingManagerNetworkApiApplicationTests using Java 21.0.5 with PID 4372 (started by FotisPamp in C:\Users\FotisPamp\Documents\GitHub\building-manager-network)
+2026-07-29 18:37:34.077 [main] INFO  c.b.BuildingManagerNetworkApiApplicationTests [,] - The following 1 profile is active: "dev"
+2026-07-29 18:37:36.146 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [,] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-07-29 18:37:36.272 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [,] - Finished Spring Data repository scanning in 120 ms. Found 28 JPA repository interfaces.
+2026-07-29 18:37:38.011 [main] INFO  o.h.jpa.internal.util.LogHelper [,] - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-07-29 18:37:38.198 [main] INFO  org.hibernate.Version [,] - HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-07-29 18:37:38.303 [main] INFO  o.h.c.i.RegionFactoryInitiator [,] - HHH000026: Second-level cache disabled
+2026-07-29 18:37:38.451 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo [,] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-07-29 18:37:38.484 [main] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Starting...
+2026-07-29 18:37:38.590 [main] INFO  com.zaxxer.hikari.pool.HikariPool [,] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@6c54d0dc
+2026-07-29 18:37:38.591 [main] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Start completed.
+2026-07-29 18:37:38.618 [main] WARN  org.hibernate.orm.deprecation [,] - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-07-29 18:37:40.107 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator [,] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-07-29 18:37:40.496 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [,] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-07-29 18:37:41.099 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory [,] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-07-29 18:37:44.489 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration [,] - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-07-29 18:37:45.089 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver [,] - Exposing 3 endpoint(s) beneath base path '/actuator'
+2026-07-29 18:37:45.155 [main] INFO  o.s.s.web.DefaultSecurityFilterChain [,] - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@cf68fb2, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@58f1c4fb, org.springframework.security.web.context.SecurityContextHolderFilter@49f47fef, org.springframework.security.web.header.HeaderWriterFilter@10e222a7, org.springframework.web.filter.CorsFilter@aa00336, org.springframework.security.web.authentication.logout.LogoutFilter@13449e7b, com.buildingmanager.security.JwtFilter@7a4d1c9f, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@13da10da, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@7298a2c1, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@4a0176f1, org.springframework.security.web.session.SessionManagementFilter@3dffaf90, org.springframework.security.web.access.ExceptionTranslationFilter@1cbdcfc0, org.springframework.security.web.access.intercept.AuthorizationFilter@6c4b93b2]
+2026-07-29 18:37:45.784 [main] INFO  c.b.BuildingManagerNetworkApiApplicationTests [,] - Started BuildingManagerNetworkApiApplicationTests in 12.042 seconds (process running for 14.489)
+2026-07-29 18:37:46.422 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 18:37:46.423 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 18:37:46.423 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-07-29 18:37:46.529 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 18:37:46.529 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 18:37:46.529 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-07-29 18:37:46.668 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 18:37:46.668 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 18:37:46.668 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-07-29 18:37:46.710 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 18:37:46.710 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 18:37:46.711 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 1 ms
+2026-07-29 18:37:46.737 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 18:37:46.737 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 18:37:46.738 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-07-29 18:37:46.754 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 18:37:46.754 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 18:37:46.755 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 1 ms
+2026-07-29 18:37:46.775 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 18:37:46.775 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 18:37:46.775 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-07-29 18:37:46.802 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 18:37:46.802 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 18:37:46.802 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-07-29 18:37:46.826 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 18:37:46.826 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 18:37:46.826 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-07-29 18:37:46.848 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 18:37:46.849 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 18:37:46.849 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-07-29 18:37:46.883 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-07-29 18:37:46.883 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-07-29 18:37:46.884 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 1 ms
+2026-07-29 18:37:48.455 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [,] - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-07-29 18:37:48.456 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Shutdown initiated...
+2026-07-29 18:37:48.460 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Shutdown completed.
+2026-07-29 18:38:05.115 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [,] - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-07-29 18:38:05.116 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Shutdown initiated...
+2026-07-29 18:38:05.118 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Shutdown completed.
+2026-07-29 18:38:11.094 [background-preinit] INFO  o.h.validator.internal.util.Version [,] - HV000001: Hibernate Validator 8.0.1.Final
+2026-07-29 18:38:11.120 [main] INFO  c.b.BuildingManagerNetworkApiApplication [,] - Starting BuildingManagerNetworkApiApplication using Java 23.0.2 with PID 27616 (C:\Users\FotisPamp\Documents\GitHub\building-manager-network\target\classes started by FotisPamp in C:\Users\FotisPamp\Documents\GitHub\building-manager-network)
+2026-07-29 18:38:11.121 [main] INFO  c.b.BuildingManagerNetworkApiApplication [,] - The following 1 profile is active: "dev"
+2026-07-29 18:38:11.819 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [,] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-07-29 18:38:11.911 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [,] - Finished Spring Data repository scanning in 84 ms. Found 28 JPA repository interfaces.
+2026-07-29 18:38:12.806 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer [,] - Tomcat initialized with port 8080 (http)
+2026-07-29 18:38:12.813 [main] INFO  o.a.coyote.http11.Http11NioProtocol [,] - Initializing ProtocolHandler ["http-nio-8080"]
+2026-07-29 18:38:12.814 [main] INFO  o.a.catalina.core.StandardService [,] - Starting service [Tomcat]
+2026-07-29 18:38:12.814 [main] INFO  o.a.catalina.core.StandardEngine [,] - Starting Servlet engine: [Apache Tomcat/10.1.20]
+2026-07-29 18:38:12.861 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] [,] - Initializing Spring embedded WebApplicationContext
+2026-07-29 18:38:12.861 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext [,] - Root WebApplicationContext: initialization completed in 1691 ms
+2026-07-29 18:38:13.237 [main] INFO  o.h.jpa.internal.util.LogHelper [,] - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-07-29 18:38:13.273 [main] INFO  org.hibernate.Version [,] - HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-07-29 18:38:13.294 [main] INFO  o.h.c.i.RegionFactoryInitiator [,] - HHH000026: Second-level cache disabled
+2026-07-29 18:38:13.448 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo [,] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-07-29 18:38:13.465 [main] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Starting...
+2026-07-29 18:38:13.553 [main] INFO  com.zaxxer.hikari.pool.HikariPool [,] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@7de43652
+2026-07-29 18:38:13.554 [main] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Start completed.
+2026-07-29 18:38:13.584 [main] WARN  org.hibernate.orm.deprecation [,] - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-07-29 18:38:14.708 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator [,] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-07-29 18:38:15.002 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [,] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-07-29 18:38:15.240 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory [,] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-07-29 18:38:17.683 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration [,] - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-07-29 18:38:18.119 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver [,] - Exposing 4 endpoint(s) beneath base path '/actuator'
+2026-07-29 18:38:18.194 [main] INFO  o.s.s.web.DefaultSecurityFilterChain [,] - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@468f790f, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@7d88f0b, org.springframework.security.web.context.SecurityContextHolderFilter@b00e9a7, org.springframework.security.web.header.HeaderWriterFilter@b0b3093, org.springframework.web.filter.CorsFilter@7360a15, org.springframework.security.web.authentication.logout.LogoutFilter@19314fee, com.buildingmanager.security.JwtFilter@1db33525, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@7ee1e26b, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@a916734, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@75820776, org.springframework.security.web.session.SessionManagementFilter@521c1cfb, org.springframework.security.web.access.ExceptionTranslationFilter@73cbe6ed, org.springframework.security.web.access.intercept.AuthorizationFilter@306fa069]
+2026-07-29 18:38:18.716 [main] INFO  o.a.coyote.http11.Http11NioProtocol [,] - Starting ProtocolHandler ["http-nio-8080"]
+2026-07-29 18:38:18.730 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer [,] - Tomcat started on port 8080 (http) with context path ''
+2026-07-29 18:38:18.740 [main] INFO  c.b.BuildingManagerNetworkApiApplication [,] - Started BuildingManagerNetworkApiApplication in 8.019 seconds (process running for 8.468)
+2026-07-29 18:38:19.230 [RMI TCP Connection(2)-192.168.1.9] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] [,] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-07-29 18:38:19.231 [RMI TCP Connection(2)-192.168.1.9] INFO  o.s.web.servlet.DispatcherServlet [,] - Initializing Servlet 'dispatcherServlet'
+2026-07-29 18:38:19.233 [RMI TCP Connection(2)-192.168.1.9] INFO  o.s.web.servlet.DispatcherServlet [,] - Completed initialization in 2 ms
+2026-07-29 18:39:46.390 [RMI TCP Connection(1)-192.168.1.9] WARN  o.s.b.a.mail.MailHealthIndicator [,] - Mail health check failed
+jakarta.mail.MessagingException: Got bad greeting from SMTP host: localhost, port: 1080, response: HTTP/1.1 408 Request Timeout
+
+	at org.eclipse.angus.mail.smtp.SMTPTransport.openServer(SMTPTransport.java:2231)
+	at org.eclipse.angus.mail.smtp.SMTPTransport.protocolConnect(SMTPTransport.java:729)
+	at jakarta.mail.Service.connect(Service.java:345)
+	at org.springframework.mail.javamail.JavaMailSenderImpl.connectTransport(JavaMailSenderImpl.java:480)
+	at org.springframework.mail.javamail.JavaMailSenderImpl.testConnection(JavaMailSenderImpl.java:360)
+	at org.springframework.boot.actuate.mail.MailHealthIndicator.doHealthCheck(MailHealthIndicator.java:52)
+	at org.springframework.boot.actuate.health.AbstractHealthIndicator.health(AbstractHealthIndicator.java:82)
+	at org.springframework.boot.actuate.health.HealthIndicator.getHealth(HealthIndicator.java:37)
+	at org.springframework.boot.actuate.health.HealthEndpoint.getHealth(HealthEndpoint.java:82)
+	at org.springframework.boot.actuate.health.HealthEndpoint.getHealth(HealthEndpoint.java:41)
+	at org.springframework.boot.actuate.health.HealthEndpointSupport.getLoggedHealth(HealthEndpointSupport.java:172)
+	at org.springframework.boot.actuate.health.HealthEndpointSupport.getContribution(HealthEndpointSupport.java:145)
+	at org.springframework.boot.actuate.health.HealthEndpointSupport.getAggregateContribution(HealthEndpointSupport.java:156)
+	at org.springframework.boot.actuate.health.HealthEndpointSupport.getContribution(HealthEndpointSupport.java:141)
+	at org.springframework.boot.actuate.health.HealthEndpointSupport.getHealth(HealthEndpointSupport.java:110)
+	at org.springframework.boot.actuate.health.HealthEndpointSupport.getHealth(HealthEndpointSupport.java:81)
+	at org.springframework.boot.actuate.health.HealthEndpoint.health(HealthEndpoint.java:76)
+	at org.springframework.boot.actuate.health.HealthEndpoint.health(HealthEndpoint.java:66)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:281)
+	at org.springframework.boot.actuate.endpoint.invoke.reflect.ReflectiveOperationInvoker.invoke(ReflectiveOperationInvoker.java:74)
+	at org.springframework.boot.actuate.endpoint.annotation.AbstractDiscoveredOperation.invoke(AbstractDiscoveredOperation.java:60)
+	at org.springframework.boot.actuate.endpoint.jmx.EndpointMBean.invoke(EndpointMBean.java:124)
+	at org.springframework.boot.actuate.endpoint.jmx.EndpointMBean.invoke(EndpointMBean.java:97)
+	at java.management/com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.invoke(DefaultMBeanServerInterceptor.java:803)
+	at java.management/com.sun.jmx.mbeanserver.JmxMBeanServer.invoke(JmxMBeanServer.java:802)
+	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.doOperation(RMIConnectionImpl.java:1520)
+	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl$PrivilegedOperation.run(RMIConnectionImpl.java:1348)
+	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.doPrivilegedOperation(RMIConnectionImpl.java:1435)
+	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.invoke(RMIConnectionImpl.java:841)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.rmi/sun.rmi.server.UnicastServerRef.dispatch(UnicastServerRef.java:360)
+	at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:200)
+	at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:197)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:714)
+	at java.rmi/sun.rmi.transport.Transport.serviceCall(Transport.java:196)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport.handleMessages(TCPTransport.java:598)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run0(TCPTransport.java:844)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.lambda$run$0(TCPTransport.java:721)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:400)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(TCPTransport.java:720)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1575)
+2026-07-29 18:39:46.395 [RMI TCP Connection(1)-192.168.1.9] WARN  o.s.b.a.health.HealthEndpointSupport [,] - Health contributor org.springframework.boot.actuate.mail.MailHealthIndicator (mail) took 87159ms to respond
+2026-07-29 18:52:19.309 [http-nio-8080-exec-9] INFO  c.b.u.UserDashboardService [6a6a21b3ae2b6702ae34ff77595f3bbd,72d6568bc6e001bc] -   Loading dashboard for user 18
+2026-07-29 18:52:19.309 [http-nio-8080-exec-10] INFO  c.b.u.UserDashboardService [6a6a21b354851d0c7f160241a3a10373,e7ce2b9fdea7a112] - Loading dashboard history for user 18
+2026-07-29 18:52:19.330 [http-nio-8080-exec-9] INFO  c.b.u.UserDashboardService [6a6a21b3ae2b6702ae34ff77595f3bbd,72d6568bc6e001bc] - Selected OWNER apartment 52
+2026-07-29 18:52:19.333 [http-nio-8080-exec-9] WARN  c.b.u.UserDashboardService [6a6a21b3ae2b6702ae34ff77595f3bbd,72d6568bc6e001bc] - No statements found for building 12
+2026-07-29 18:52:19.364 [http-nio-8080-exec-1] INFO  c.b.u.UserDashboardService [6a6a21b3321aa0596cc05e4df7c4740a,dcf2ef822faccbde] -   Loading dashboard for user 18
+2026-07-29 18:52:19.372 [http-nio-8080-exec-1] INFO  c.b.u.UserDashboardService [6a6a21b3321aa0596cc05e4df7c4740a,dcf2ef822faccbde] - Selected OWNER apartment 52
+2026-07-29 18:52:19.374 [http-nio-8080-exec-1] WARN  c.b.u.UserDashboardService [6a6a21b3321aa0596cc05e4df7c4740a,dcf2ef822faccbde] - No statements found for building 12
+2026-07-29 18:52:20.236 [AsyncReporter{org.springframework.boot.actuate.autoconfigure.tracing.zipkin.ZipkinRestTemplateSender@5534e6f1}] WARN  z.r.AsyncReporter$BoundedAsyncReporter [,] - Spans were dropped due to exceptions. All subsequent errors will be logged at FINE level.
+2026-07-29 18:52:20.237 [AsyncReporter{org.springframework.boot.actuate.autoconfigure.tracing.zipkin.ZipkinRestTemplateSender@5534e6f1}] WARN  z.r.AsyncReporter$BoundedAsyncReporter [,] - Dropped 85 spans due to ResourceAccessException(I/O error on POST request for "http://localhost:9411/api/v2/spans": Connection refused: getsockopt)
+org.springframework.web.client.ResourceAccessException: I/O error on POST request for "http://localhost:9411/api/v2/spans": Connection refused: getsockopt
+	at org.springframework.web.client.RestTemplate.createResourceAccessException(RestTemplate.java:915)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:895)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:790)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:672)
+	at org.springframework.boot.actuate.autoconfigure.tracing.zipkin.ZipkinRestTemplateSender$RestTemplateHttpPostCall.doExecute(ZipkinRestTemplateSender.java:68)
+	at org.springframework.boot.actuate.autoconfigure.tracing.zipkin.ZipkinRestTemplateSender$RestTemplateHttpPostCall.doExecute(ZipkinRestTemplateSender.java:48)
+	at zipkin2.Call$Base.execute(Call.java:391)
+	at zipkin2.reporter.AsyncReporter$BoundedAsyncReporter.flush(AsyncReporter.java:299)
+	at zipkin2.reporter.AsyncReporter$Flusher.run(AsyncReporter.java:378)
+	at java.base/java.lang.Thread.run(Thread.java:1575)
+Caused by: java.net.ConnectException: Connection refused: getsockopt
+	at java.base/sun.nio.ch.Net.pollConnect(Native Method)
+	at java.base/sun.nio.ch.Net.pollConnectNow(Net.java:682)
+	at java.base/sun.nio.ch.NioSocketImpl.timedFinishConnect(NioSocketImpl.java:542)
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:592)
+	at java.base/java.net.Socket.connect(Socket.java:760)
+	at java.base/sun.net.NetworkClient.doConnect(NetworkClient.java:178)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:531)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:636)
+	at java.base/sun.net.www.http.HttpClient.<init>(HttpClient.java:280)
+	at java.base/sun.net.www.http.HttpClient.New(HttpClient.java:386)
+	at java.base/sun.net.www.http.HttpClient.New(HttpClient.java:408)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getNewHttpClient(HttpURLConnection.java:1310)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:1243)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:1129)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.connect(HttpURLConnection.java:1058)
+	at org.springframework.http.client.SimpleClientHttpRequest.executeInternal(SimpleClientHttpRequest.java:79)
+	at org.springframework.http.client.AbstractStreamingClientHttpRequest.executeInternal(AbstractStreamingClientHttpRequest.java:70)
+	at org.springframework.http.client.AbstractClientHttpRequest.execute(AbstractClientHttpRequest.java:66)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:889)
+	... 8 common frames omitted

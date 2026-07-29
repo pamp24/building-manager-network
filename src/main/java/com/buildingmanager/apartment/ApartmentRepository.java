@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Repository
@@ -23,9 +24,6 @@ public interface ApartmentRepository extends JpaRepository<Apartment, Integer> {
     ORDER BY apartment.floor ASC, apartment.number ASC
     """)
     Page<Apartment> findAllByBuildingId(@Param("buildingId") Integer buildingId, Pageable pageable);
-
-    List<Apartment> findAllByBuilding_IdOrderByFloorAscNumberAsc(Integer buildingId);
-
 
     // Βρίσκει διαμέρισμα με βάση τον ένοικο
     List<Apartment> findByResident_Id(Integer residentId);
@@ -96,5 +94,65 @@ public interface ApartmentRepository extends JpaRepository<Apartment, Integer> {
             Integer buildingId
     );
 
+    boolean existsByBuilding_IdAndFloorIgnoreCaseAndNumberIgnoreCaseAndIdNotAndActiveTrue(
+            Integer buildingId,
+            String floor,
+            String number,
+            Integer apartmentId
+    );
+
+    boolean existsByBuilding_IdAndParkingSlotIgnoreCaseAndIdNotAndActiveTrue(
+            Integer buildingId,
+            String parkingSlot,
+            Integer apartmentId
+    );
+
+    boolean existsByBuilding_IdAndStorageSlotIgnoreCaseAndIdNotAndActiveTrue(
+            Integer buildingId,
+            String storageSlot,
+            Integer apartmentId
+    );
+
+    long countByBuilding_IdAndParkingSpaceTrueAndActiveTrue(
+            Integer buildingId
+    );
+
+    long countByBuilding_IdAndApStorageExistTrueAndActiveTrue(
+            Integer buildingId
+    );
+
+    boolean existsByBuilding_IdAndFloorIgnoreCaseAndNumberIgnoreCaseAndActiveTrue(
+            Integer buildingId,
+            String floor,
+            String number
+    );
+
+    boolean existsByBuilding_IdAndParkingSlotIgnoreCaseAndActiveTrue(
+            Integer buildingId,
+            String parkingSlot
+    );
+
+    boolean existsByBuilding_IdAndStorageSlotIgnoreCaseAndActiveTrue(
+            Integer buildingId,
+            String storageSlot
+    );
+
+    @Query("""
+    select a
+    from Apartment a
+    where a.building.id = :buildingId
+      and a.isManagerHouse = true
+      and (
+           a.owner.id = :userId
+           or a.resident.id = :userId
+      )
+""")
+    Optional<Apartment> findManagerApartmentByBuildingIdAndUserId(
+            @Param("buildingId") Integer buildingId,
+            @Param("userId") Integer userId
+    );
+    Optional<Apartment> findFirstByBuilding_IdAndIsManagerHouseTrue(
+            Integer buildingId
+    );
 }
 

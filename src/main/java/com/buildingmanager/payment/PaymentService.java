@@ -4,6 +4,8 @@ import com.buildingmanager.apartment.Apartment;
 import com.buildingmanager.apartment.ApartmentRepository;
 import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocation;
 import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocationRepository;
+import com.buildingmanager.audit.AuditAction;
+import com.buildingmanager.audit.Auditable;
 import com.buildingmanager.commonExpenseStatement.CommonExpenseStatement;
 import com.buildingmanager.commonExpenseStatement.CommonExpenseStatementRepository;
 import com.buildingmanager.commonExpenseStatement.StatementStatus;
@@ -11,6 +13,7 @@ import com.buildingmanager.user.User;
 import com.buildingmanager.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +34,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
@@ -40,8 +44,9 @@ public class PaymentService {
     private final ApartmentRepository apartmentRepository;
 
     @Transactional
+    @Auditable(action = AuditAction.PAYMENT)
     public PaymentDTO createPayment(PaymentRequest req) {
-        System.out.println("[DEBUG] Received PaymentRequest: " + req);
+        log.debug("Received PaymentRequest: {}", req);
 
         if (req.getStatementId() == null) {
             throw new IllegalArgumentException("StatementId is required");
@@ -117,7 +122,7 @@ public class PaymentService {
         if (existingPaymentOpt.isPresent()) {
             //Ενημέρωση υπάρχουσας πληρωμής
             payment = existingPaymentOpt.get();
-            System.out.println("Updating existing payment");
+            log.debug("Updating existing payment");
 
             BigDecimal current = Optional.ofNullable(payment.getAmount()).orElse(BigDecimal.ZERO);
             payment.setAmount(current.add(reqAmount).setScale(2, RoundingMode.HALF_UP));
@@ -128,7 +133,7 @@ public class PaymentService {
 
         } else {
             // Δημιουργία νέας πληρωμής
-            System.out.println("Creating new payment");
+            log.debug("Creating new payment");
 
             payment = Payment.builder()
                     .user(user)
@@ -275,7 +280,7 @@ public class PaymentService {
                 Long.valueOf(buildingId), startOfMonth, endOfMonth);
 
         if (payments.isEmpty()) {
-            System.out.println("Δεν βρέθηκαν πληρωμές για τον μήνα " + month + " και κτίριο " + buildingId);
+            log.info("Δεν βρέθηκαν πληρωμές για τον μήνα {} και κτίριο {}", month, buildingId);
             return Collections.emptyList();
         }
 

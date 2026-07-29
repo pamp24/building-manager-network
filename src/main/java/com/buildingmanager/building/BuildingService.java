@@ -3,6 +3,8 @@ package com.buildingmanager.building;
 
 import com.buildingmanager.apartment.Apartment;
 import com.buildingmanager.apartment.ApartmentRepository;
+import com.buildingmanager.audit.AuditAction;
+import com.buildingmanager.audit.Auditable;
 import com.buildingmanager.buildingMember.BuildingMember;
 import com.buildingmanager.buildingMember.BuildingMemberRepository;
 import com.buildingmanager.buildingMember.BuildingMemberStatus;
@@ -50,6 +52,7 @@ public class BuildingService {
     }
 
     @Transactional
+    @Auditable(action = AuditAction.CREATE)
     public Integer createSelfManaged(BuildingRequest request, Authentication connectedUser) {
         User currentUser = (User) connectedUser.getPrincipal();
 
@@ -83,6 +86,7 @@ public class BuildingService {
     }
 
     @Transactional
+    @Auditable(action = AuditAction.CREATE)
     public Integer createCompanyManaged(BuildingRequest request, Authentication auth) {
         User currentUser = freshUser(auth);
 
@@ -121,6 +125,7 @@ public class BuildingService {
 
 
     @Transactional
+    @Auditable(action = AuditAction.CREATE)
     public Integer save(BuildingRequest request, Authentication connectedUser) {
         User currentUser = (User) connectedUser.getPrincipal();
 
@@ -228,6 +233,7 @@ public class BuildingService {
     }
 
     @Transactional
+    @Auditable(action = AuditAction.DELETE)
     public void deleteBuilding(Integer buildingId, Authentication connectedUser) {
         User user = (User) connectedUser.getPrincipal();
 
@@ -286,6 +292,7 @@ public class BuildingService {
     }
 
     @Transactional
+    @Auditable(action = AuditAction.UPDATE)
     public BuildingDTO updateBuilding(Integer buildingId, BuildingDTO dto, Authentication connectedUser) {
         User user = (User) connectedUser.getPrincipal();
 

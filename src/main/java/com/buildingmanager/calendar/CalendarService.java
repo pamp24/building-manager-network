@@ -7,6 +7,7 @@ import com.buildingmanager.permission.UserBuildingPermissionRepository;
 import com.buildingmanager.user.User;
 import com.buildingmanager.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CalendarService {
 
     private final CalendarRepository repository;
@@ -43,9 +45,8 @@ public class CalendarService {
     public CalendarDTO create(CalendarDTO dto, User currentUser) {
         Integer buildingId = dto.getBuildingId();
 
-        System.out.println("CALENDAR CREATE USER ID = " + currentUser.getId());
-        System.out.println("CALENDAR CREATE ROLE = " + currentUser.getRole().getName());
-        System.out.println("CALENDAR CREATE BUILDING ID = " + buildingId);
+        log.debug("CALENDAR CREATE USER ID = {}, ROLE = {}, BUILDING ID = {}",
+                currentUser.getId(), currentUser.getRole().getName(), buildingId);
 
         if (!buildingPermissionService.canManageBuilding(currentUser, buildingId)) {
             throw new AccessDeniedException("Δεν έχεις δικαίωμα δημιουργίας event σε αυτή την πολυκατοικία");

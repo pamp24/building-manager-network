@@ -2,6 +2,8 @@ package com.buildingmanager.buildingMember;
 
 import com.buildingmanager.apartment.Apartment;
 import com.buildingmanager.apartment.ApartmentRepository;
+import com.buildingmanager.audit.AuditAction;
+import com.buildingmanager.audit.Auditable;
 import com.buildingmanager.building.Building;
 import com.buildingmanager.building.BuildingRepository;
 import com.buildingmanager.invite.Invite;
@@ -17,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -26,6 +29,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BuildingMemberService {
 
     private final ObjectMapper objectMapper;
@@ -40,6 +44,7 @@ public class BuildingMemberService {
 
 
 
+    @Auditable(action = AuditAction.CREATE, entityType = "BuildingMember")
     public BuildingMember addMember(Integer buildingId, Integer userId, Integer roleId, BuildingMemberStatus status) {
         var building = buildingRepository.findById(buildingId)
                 .orElseThrow(() -> new EntityNotFoundException("Building not found"));
@@ -59,16 +64,14 @@ public class BuildingMemberService {
     }
 
     public List<BuildingMemberDTO> getMembersByBuilding(Integer buildingId) {
-
         List<BuildingMember> memberships = buildingMemberRepository.findByBuildingId(buildingId);
         List<BuildingMemberDTO> result = new ArrayList<>();
 
         for (BuildingMember m : memberships) {
-
-            Apartment ap = m.getApartment(); // μπορεί να είναι null
+            Apartment ap = resolveApartmentForMember(m, buildingId);
 
             result.add(new BuildingMemberDTO(
-                    m.getId(), // memberId
+                    m.getId(),
                     m.getUser() != null ? m.getUser().getId() : null,
                     m.getUser() != null ? m.getUser().getFullName() : null,
                     m.getUser() != null ? m.getUser().getEmail() : null,
@@ -82,7 +85,7 @@ public class BuildingMemberService {
                     ap != null ? ap.getId() : null
             ));
         }
-        //Προσκλήσεις (invites) όπως πριν, χωρίς memberId
+
         List<Invite> invites = inviteRepository.findByApartment_Building_Id(buildingId);
 
         Set<String> addedEmails = result.stream()
@@ -102,8 +105,8 @@ public class BuildingMemberService {
             }
 
             result.add(new BuildingMemberDTO(
-                    null, // memberId
-                    null, // userId
+                    null,
+                    null,
                     fullName,
                     invite.getEmail(),
                     invite.getRole(),
@@ -120,10 +123,32 @@ public class BuildingMemberService {
         return result;
     }
 
+    private Apartment resolveApartmentForMember(
+            BuildingMember member,
+            Integer buildingId
+    ) {
+        if (member.getApartment() != null) {
+            return member.getApartment();
+        }
+
+        if (member.getRole() == null) {
+            return null;
+        }
+
+        if (!"BuildingManager".equals(member.getRole().getName())) {
+            return null;
+        }
+
+        return apartmentRepository
+                .findFirstByBuilding_IdAndIsManagerHouseTrue(buildingId)
+                .orElse(null);
+    }
+
     public List<BuildingMember> getMembersByUser(Integer userId) {
         return buildingMemberRepository.findByUserId(userId);
     }
 
+    @Auditable(action = AuditAction.DELETE, entityType = "BuildingMember")
     public void removeMember(Integer memberId) {
         buildingMemberRepository.deleteById(memberId);
     }
@@ -187,7 +212,7 @@ public class BuildingMemberService {
                     payloadJson
             );
         } else {
-            System.out.println("No BuildingManager found for buildingId=" + building.getId());
+            log.warn("No BuildingManager found for buildingId={}", building.getId());
         }
 
         return building.getId();
@@ -200,6 +225,7 @@ public class BuildingMemberService {
     }
 
     @Transactional
+    @Auditable(action = AuditAction.UPDATE, entityType = "ApartmentAssignment")
     public void assignApartment(
             Integer memberId,
             AssignApartmentRequest req,
@@ -579,6 +605,7 @@ public class BuildingMemberService {
     }
 
     @Transactional
+    @Auditable(action = AuditAction.DELETE, entityType = "BuildingMember")
     public void deleteMember(
             Integer memberId,
             Authentication auth

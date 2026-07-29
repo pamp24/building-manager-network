@@ -2,12 +2,15 @@ package com.buildingmanager.user;
 
 import com.buildingmanager.apartment.Apartment;
 import com.buildingmanager.apartment.ApartmentRepository;
+import com.buildingmanager.audit.AuditAction;
+import com.buildingmanager.audit.Auditable;
 import com.buildingmanager.email.EmailService;
 import com.buildingmanager.role.Role;
 import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,12 +25,14 @@ import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
     private final ApartmentRepository apartmentRepository;
     private final EmailService emailService;
 
+    @Auditable(action = AuditAction.PERMISSION_CHANGE)
     public boolean updateUserRole(Integer userId, Role newRole) {
         return userRepository.findById(userId).map(user -> {
             user.setRole(newRole);
@@ -113,7 +118,7 @@ public class UserService {
             Files.createDirectories(uploadDir);
             Path filePath = uploadDir.resolve(fileName);
 
-            System.out.println("Saving file to: " + filePath.toAbsolutePath());
+            log.debug("Saving file to: {}", filePath.toAbsolutePath());
 
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
@@ -122,7 +127,7 @@ public class UserService {
 
             String imageUrl = "/uploads/profile-images/" + fileName;
 
-            System.out.println("Returning imageUrl: " + imageUrl);
+            log.debug("Returning imageUrl: {}", imageUrl);
 
             user.setProfileImageUrl(imageUrl);
             userRepository.save(user);

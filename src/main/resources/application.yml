@@ -1,4 +1,6 @@
-sp  ring:
+spring:
+  application:
+    name: building-manager-network
   profiles:
     active: dev
   servlet:
@@ -7,10 +9,33 @@ sp  ring:
 springdoc:
   default-produces-media-type: application/json
 
-
 server:
-  servlet:
-    context-path: /api/v1/
   error:
     include-message: always
     include-binding-errors: always
+
+logging:
+  level:
+    com.buildingmanager: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    export:
+      prometheus:
+        enabled: true
+
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans

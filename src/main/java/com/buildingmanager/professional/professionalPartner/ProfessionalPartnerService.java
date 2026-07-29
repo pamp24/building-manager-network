@@ -10,6 +10,7 @@ import com.buildingmanager.professional.ProfessionalBusinessService;
 import com.buildingmanager.user.User;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProfessionalPartnerService {
 
     private final ProfessionalPartnerRepository partnerRepository;
@@ -66,14 +68,9 @@ public class ProfessionalPartnerService {
 
     public List<ProfessionalBusinessDTO> getPartners(Integer buildingId, User user) {
 
-        System.out.println("buildingId = " + buildingId);
-        System.out.println("userId = " + user.getId());
-        System.out.println("role = " + user.getRole().getName());
-
-        System.out.println(
-                "canView = " +
-                        buildingPermissionService.canViewBuilding(user, buildingId)
-        );
+        log.debug("getPartners: buildingId={}, userId={}, role={}, canView={}",
+                buildingId, user.getId(), user.getRole().getName(),
+                buildingPermissionService.canViewBuilding(user, buildingId));
 
         if (!buildingPermissionService.canViewBuilding(user, buildingId)) {
             throw new AccessDeniedException("Δεν έχετε πρόσβαση σε αυτή την πολυκατοικία.");
