@@ -4,12 +4,14 @@ import com.buildingmanager.buildingMember.BuildingMemberRepository;
 import com.buildingmanager.buildingMember.BuildingMemberStatus;
 import com.buildingmanager.user.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BuildingPermissionService {
 
     private final BuildingMemberRepository buildingMemberRepository;
@@ -19,24 +21,12 @@ public class BuildingPermissionService {
     public boolean canViewBuilding(User user, Integer buildingId) {
         String role = normalizeRole(user);
 
-        System.out.println("Checking building " + buildingId);
-        System.out.println("Role = " + role);
-        System.out.println(
-                "Joined = " +
-                        isJoinedMember(user, buildingId)
-        );
-        System.out.println(
-                "VIEW = " +
-                        hasPermission(user, buildingId, BuildingPermissionLevel.VIEW)
-        );
-        System.out.println(
-                "MANAGE = " +
-                        hasPermission(user, buildingId, BuildingPermissionLevel.MANAGE)
-        );
-        System.out.println(
-                "FULL = " +
-                        hasPermission(user, buildingId, BuildingPermissionLevel.FULL)
-        );
+        log.debug("Checking building {}: role={}, joined={}, VIEW={}, MANAGE={}, FULL={}",
+                buildingId, role,
+                isJoinedMember(user, buildingId),
+                hasPermission(user, buildingId, BuildingPermissionLevel.VIEW),
+                hasPermission(user, buildingId, BuildingPermissionLevel.MANAGE),
+                hasPermission(user, buildingId, BuildingPermissionLevel.FULL));
         if ("ADMIN".equals(role)) {
             return true;
         }

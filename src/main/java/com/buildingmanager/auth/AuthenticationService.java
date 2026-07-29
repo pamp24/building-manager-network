@@ -7,6 +7,7 @@ import com.buildingmanager.buildingMember.BuildingMemberStatus;
 import com.buildingmanager.email.EmailService;
 import com.buildingmanager.email.EmailTemplateActivateAccount;
 import com.buildingmanager.email.EmailTemplateForgotPassword;
+import com.buildingmanager.exceptions.ActivationTokenException;
 import com.buildingmanager.exceptions.UserNotFoundException;
 import com.buildingmanager.role.RoleRepository;
 import com.buildingmanager.security.JwtService;
@@ -151,14 +152,13 @@ public class AuthenticationService {
 
     public void activateAccount(String token) throws MessagingException {
         Token savedToken = tokenRepository.findByToken(token)
-                //todo exception has to be defined
-                .orElseThrow(() -> new RuntimeException("Invalid Token"));
+                .orElseThrow(() -> new ActivationTokenException("Invalid Token"));
         if(LocalDateTime.now().isAfter(savedToken.getExpiresAt())){
             sendValidationEmail(savedToken.getUser());
-            throw new RuntimeException("Activation Token has Expired. A new token has been send to the same email Address");
+            throw new ActivationTokenException("Activation Token has Expired. A new token has been send to the same email Address");
         }
         var user = userRepository.findById(savedToken.getUser().getId())
-                .orElseThrow(() -> new UsernameNotFoundException("User not Found"));
+                .orElseThrow(() -> new UserNotFoundException("User not Found"));
         user.setEnable(true);
         userRepository.save(user);
         savedToken.setValidatedAt(LocalDateTime.now());
@@ -190,10 +190,10 @@ public class AuthenticationService {
     }
     public void resetPassword(String token, String newPassword) {
         Token resetToken = tokenRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Δεν είναι έγκυρο!"));
+                .orElseThrow(() -> new ActivationTokenException("Δεν είναι έγκυρο!"));
 
         if (resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Ληξή");
+            throw new ActivationTokenException("Το token έχει λήξει");
         }
 
         User userEntity = resetToken.getUser();

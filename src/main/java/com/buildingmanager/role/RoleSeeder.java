@@ -1,5 +1,6 @@
 package com.buildingmanager.role;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
+@Slf4j
 public class RoleSeeder implements CommandLineRunner {
 
     @Autowired
@@ -30,7 +32,7 @@ public class RoleSeeder implements CommandLineRunner {
                 Role role = new Role();
                 role.setName(roleName);
                 roleRepository.save(role);
-                System.out.println("✔ Added role: " + roleName);
+                log.info("Added role: {}", roleName);
             }
         }
     }

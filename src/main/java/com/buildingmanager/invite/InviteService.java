@@ -8,18 +8,25 @@ import com.buildingmanager.buildingMember.BuildingMemberRepository;
 import com.buildingmanager.buildingMember.BuildingMemberStatus;
 import com.buildingmanager.company.Company;
 import com.buildingmanager.email.EmailService;
+import com.buildingmanager.audit.AuditAction;
+import com.buildingmanager.audit.Auditable;
+import com.buildingmanager.exceptions.BusinessValidationException;
+import com.buildingmanager.exceptions.OperationNotPermittedException;
 import com.buildingmanager.role.Role;
 import com.buildingmanager.role.RoleRepository;
 import com.buildingmanager.user.User;
 import com.buildingmanager.user.UserRepository;
 import jakarta.mail.MessagingException;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class InviteService {
 
     private final InviteRepository inviteRepository;
@@ -30,6 +37,7 @@ public class InviteService {
     private final BuildingMemberRepository buildingMemberRepository;
 
     // CREATE INVITE
+    @Auditable(action = AuditAction.INVITE)
     public Invite createInvite(String email, String role, Integer apartmentId, User inviter) {
 
         if ("AdminAgent".equalsIgnoreCase(role)) {
@@ -51,28 +59,28 @@ public class InviteService {
         }
 
         Apartment apartment = apartmentRepository.findById(apartmentId)
-                .orElseThrow(() -> new RuntimeException("Apartment not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Apartment not found"));
 
         // Owner validation
         if ("Owner".equals(role)) {
             if (apartment.getOwner() != null) {
-                throw new RuntimeException("Το διαμέρισμα έχει ήδη Ιδιοκτήτη");
+                throw new BusinessValidationException("Το διαμέρισμα έχει ήδη Ιδιοκτήτη");
             }
             if (inviteRepository.existsByApartmentIdAndRoleAndStatus(apartmentId, "Owner", InviteStatus.PENDING)) {
-                throw new RuntimeException("Υπάρχει ήδη ενεργή πρόσκληση για Owner");
+                throw new BusinessValidationException("Υπάρχει ήδη ενεργή πρόσκληση για Owner");
             }
         }
 
         // Resident validation
         if ("Resident".equals(role)) {
             if (apartment.getResident() != null) {
-                throw new RuntimeException("Το διαμέρισμα έχει ήδη Ένοικο");
+                throw new BusinessValidationException("Το διαμέρισμα έχει ήδη Ένοικο");
             }
             if (!Boolean.TRUE.equals(apartment.getIsRented())) {
-                throw new RuntimeException("Το διαμέρισμα δεν είναι προς ενοικίαση");
+                throw new BusinessValidationException("Το διαμέρισμα δεν είναι προς ενοικίαση");
             }
             if (inviteRepository.existsByApartmentIdAndRoleAndStatus(apartmentId, "Resident", InviteStatus.PENDING)) {
-                throw new RuntimeException("Υπάρχει ήδη ενεργή πρόσκληση για Resident");
+                throw new BusinessValidationException("Υπάρχει ήδη ενεργή πρόσκληση για Resident");
             }
         }
 
@@ -99,14 +107,13 @@ public class InviteService {
         Company company = inviter.getCompany();
 
         if ("ADMIN".equals(role)) {
-            // admin μπορεί να στείλει invite χωρίς εταιρία
             company = null;
         } else if ("PROPERTYMANAGER".equals(role)) {
             if (company == null) {
-                throw new RuntimeException("Ο inviter δεν ανήκει σε εταιρία");
+                throw new BusinessValidationException("Ο inviter δεν ανήκει σε εταιρία");
             }
         } else {
-            throw new RuntimeException("Δεν έχεις δικαίωμα να καλέσεις agent");
+            throw new OperationNotPermittedException("Δεν έχεις δικαίωμα να καλέσεις agent");
         }
 
         Invite invite = Invite.builder()
@@ -123,32 +130,32 @@ public class InviteService {
     }
 
     // ACCEPT INVITE
+    @Auditable(action = AuditAction.STATUS_CHANGE, description = "Invite accepted")
     public Invite acceptInvite(String token, String authenticatedEmail) {
 
         Invite invite = inviteRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invite not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Invite not found"));
 
         if (invite.getExpiresAt().isBefore(LocalDateTime.now())) {
             invite.setStatus(InviteStatus.EXPIRED);
             inviteRepository.save(invite);
-            throw new RuntimeException("Invite expired");
+            throw new BusinessValidationException("Invite expired");
         }
 
         String inviteEmail = invite.getEmail() != null ? invite.getEmail().trim() : null;
         String authEmail = authenticatedEmail != null ? authenticatedEmail.trim() : null;
 
-        System.out.println("INVITE EMAIL = [" + inviteEmail + "]");
-        System.out.println("AUTH EMAIL   = [" + authEmail + "]");
+        log.debug("INVITE EMAIL = [{}], AUTH EMAIL = [{}]", inviteEmail, authEmail);
 
         if (inviteEmail == null || authEmail == null || !inviteEmail.equalsIgnoreCase(authEmail)) {
-            throw new RuntimeException("Invite email does not match authenticated user");
+            throw new BusinessValidationException("Invite email does not match authenticated user");
         }
 
         User user = userRepository.findByEmail(inviteEmail)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + inviteEmail));
+                .orElseThrow(() -> new EntityNotFoundException("User not found with email: " + inviteEmail));
 
         Role role = roleRepository.findByName(invite.getRole())
-                .orElseThrow(() -> new RuntimeException("Role not found: " + invite.getRole()));
+                .orElseThrow(() -> new EntityNotFoundException("Role not found: " + invite.getRole()));
 
         user.setRole(role);
 
@@ -188,7 +195,7 @@ public class InviteService {
                 userRepository.save(user);
             }
 
-            default -> throw new RuntimeException("Unknown role");
+            default -> throw new OperationNotPermittedException("Unknown role");
         }
 
         invite.setStatus(InviteStatus.ACCEPTED);
@@ -253,7 +260,7 @@ public class InviteService {
                     contextName
             );
         } catch (MessagingException e) {
-            throw new RuntimeException("Αποτυχία αποστολής πρόσκλησης", e);
+            throw new IllegalStateException("Αποτυχία αποστολής πρόσκλησης", e);
         }
     }
 
@@ -262,11 +269,11 @@ public class InviteService {
         String inviterRole = inviter.getRole() != null ? inviter.getRole().getName() : null;
 
         if (inviterRole == null || !inviterRole.equalsIgnoreCase("Admin")) {
-            throw new RuntimeException("Μόνο Admin μπορεί να προσκαλέσει Admin Agent");
+            throw new OperationNotPermittedException("Μόνο Admin μπορεί να προσκαλέσει Admin Agent");
         }
 
         if (inviteRepository.existsByEmailAndRoleAndStatus(email, "AdminAgent", InviteStatus.PENDING)) {
-            throw new RuntimeException("Υπάρχει ήδη ενεργή πρόσκληση για Admin Agent");
+            throw new BusinessValidationException("Υπάρχει ήδη ενεργή πρόσκληση για Admin Agent");
         }
 
         Invite invite = Invite.builder()

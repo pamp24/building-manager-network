@@ -3,6 +3,7 @@ package com.buildingmanager.apartment;
 import com.buildingmanager.building.Building;
 import com.buildingmanager.building.BuildingRepository;
 import com.buildingmanager.common.PageResponse;
+import com.buildingmanager.exceptions.BusinessValidationException;
 import com.buildingmanager.invite.InviteRepository;
 import com.buildingmanager.permission.BuildingPermissionService;
 import com.buildingmanager.user.User;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+
 @Service
 @RequiredArgsConstructor
 public class ApartmentService {
@@ -31,33 +33,101 @@ public class ApartmentService {
     private final InviteRepository inviteRepository;
     private final BuildingPermissionService buildingPermissionService;
 
-    public Object save(ApartmentRequest request, Authentication connectedUser) {
-        Building building = buildingRepository.findById(request.buildingId())
-                .orElseThrow(() -> new EntityNotFoundException("No Building found with ID:: " + request.buildingId()));
-        User userEntity = (User) connectedUser.getPrincipal();
+    @Transactional
+    public Object save(
+            ApartmentRequest request,
+            Authentication connectedUser
+    ) {
 
-        if (!buildingPermissionService.canManageBuilding(userEntity, request.buildingId())) {
-            throw new AccessDeniedException("Δεν έχεις δικαίωμα δημιουργίας διαμερίσματος σε αυτή την πολυκατοικία");
+        Building building = buildingRepository
+                .findById(request.buildingId())
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "No Building found with ID:: "
+                                        + request.buildingId()
+                        )
+                );
+
+        User userEntity =
+                (User) connectedUser.getPrincipal();
+
+        if (!buildingPermissionService.canManageBuilding(
+                userEntity,
+                request.buildingId()
+        )) {
+            throw new AccessDeniedException(
+                    "Δεν έχεις δικαίωμα δημιουργίας διαμερίσματος "
+                            + "σε αυτή την πολυκατοικία"
+            );
         }
 
-        Apartment apartment = apartmentMapper.toApartment(request);
-        // Αν το διαμέρισμα είναι "Διαμέρισμα Διαχειριστή", θέλουμε να ορίσουμε τον ownerId ως τον χρήστη που το δημιουργεί
+        validateApartmentData(
+                building.getId(),
+                null,
+                false,
+                false,
+
+                request.ownerFirstName(),
+                request.ownerLastName(),
+                request.number(),
+                request.floor(),
+                request.sqMetersApart(),
+
+                request.commonPercent(),
+                request.elevatorPercent(),
+                request.heatingPercent(),
+
+                request.isRented(),
+                request.residentFirstName(),
+                request.residentLastName(),
+
+                request.parkingSpace(),
+                request.parkingSlot(),
+
+                request.apStorageExist(),
+                request.storageSlot(),
+
+                building.getParkingSpacesNum(),
+                building.getStorageNum()
+        );
+
+        Apartment apartment =
+                apartmentMapper.toApartment(request);
+
         if (request.isManagerHouse()) {
-            apartment.setOwner(userEntity); // Το ownerId γίνεται το userId του συνδεδεμένου χρήστη
+            apartment.setOwner(userEntity);
         }
-        // Εύρεση και ορισμός resident
+
         if (request.residentId() != null) {
-            User resident = userRepository.findById(request.residentId())
-                    .orElseThrow(() -> new EntityNotFoundException("Resident not found"));
+            User resident = userRepository
+                    .findById(request.residentId())
+                    .orElseThrow(() ->
+                            new EntityNotFoundException(
+                                    "Resident not found"
+                            )
+                    );
+
             apartment.setResident(resident);
         }
-        // Εύρεση και ορισμός owner αν δεν είναι διαμέρισμα διαχειριστή
-        if (!request.isManagerHouse() && request.ownerId() != null) {
-            User owner = userRepository.findById(request.ownerId())
-                    .orElseThrow(() -> new EntityNotFoundException("Owner not found"));
+
+        if (!request.isManagerHouse()
+                && request.ownerId() != null) {
+
+            User owner = userRepository
+                    .findById(request.ownerId())
+                    .orElseThrow(() ->
+                            new EntityNotFoundException(
+                                    "Owner not found"
+                            )
+                    );
+
             apartment.setOwner(owner);
         }
-        return apartmentRepository.save(apartment).getId();
+
+        Apartment savedApartment =
+                apartmentRepository.save(apartment);
+
+        return savedApartment.getId();
     }
 
 
@@ -87,19 +157,68 @@ public class ApartmentService {
     }
 
     @Transactional
-    public void saveAll(List<ApartmentRequest> requests, Authentication connectedUser) {
-        User userEntity = (User) connectedUser.getPrincipal();
+    public void saveAll(
+            List<ApartmentRequest> requests,
+            Authentication connectedUser
+    ) {
+
+        User userEntity =
+                (User) connectedUser.getPrincipal();
 
         for (ApartmentRequest request : requests) {
-            Building building = buildingRepository.findById(request.buildingId())
-                    .orElseThrow(() -> new EntityNotFoundException("No Building found with ID:: " + request.buildingId()));
 
+            Building building = buildingRepository
+                    .findById(request.buildingId())
+                    .orElseThrow(() ->
+                            new EntityNotFoundException(
+                                    "No Building found with ID:: "
+                                            + request.buildingId()
+                            )
+                    );
 
-            if (!buildingPermissionService.canManageBuilding(userEntity, request.buildingId())) {
-                throw new AccessDeniedException("Δεν έχεις δικαίωμα δημιουργίας διαμερισμάτων σε αυτή την πολυκατοικία");
+            if (!buildingPermissionService.canManageBuilding(
+                    userEntity,
+                    request.buildingId()
+            )) {
+                throw new AccessDeniedException(
+                        "Δεν έχεις δικαίωμα δημιουργίας διαμερισμάτων "
+                                + "σε αυτή την πολυκατοικία"
+                );
             }
 
-            Apartment apartment = apartmentMapper.toApartment(request);
+            validateApartmentData(
+                    building.getId(),
+                    null,
+                    false,
+                    false,
+
+                    request.ownerFirstName(),
+                    request.ownerLastName(),
+                    request.number(),
+                    request.floor(),
+                    request.sqMetersApart(),
+
+                    request.commonPercent(),
+                    request.elevatorPercent(),
+                    request.heatingPercent(),
+
+                    request.isRented(),
+                    request.residentFirstName(),
+                    request.residentLastName(),
+
+                    request.parkingSpace(),
+                    request.parkingSlot(),
+
+                    request.apStorageExist(),
+                    request.storageSlot(),
+
+                    building.getParkingSpacesNum(),
+                    building.getStorageNum()
+            );
+
+            Apartment apartment =
+                    apartmentMapper.toApartment(request);
+
             apartmentRepository.save(apartment);
         }
     }
@@ -166,101 +285,465 @@ public class ApartmentService {
     @Transactional
     public ApartmentResponse updateApartment(
             Integer apartmentId,
-            ApartmentDTO dto,
+            ApartmentUpdateRequest request,
             Authentication connectedUser
     ) {
         User user = (User) connectedUser.getPrincipal();
 
-        Apartment apartment = apartmentRepository.findById(apartmentId)
+        Apartment apartment = apartmentRepository
+                .findById(apartmentId)
                 .orElseThrow(() ->
                         new EntityNotFoundException(
                                 "Apartment not found with id " + apartmentId
                         )
                 );
 
-        Integer buildingId = apartment.getBuilding().getId();
+        Integer buildingId =
+                apartment.getBuilding().getId();
 
-        boolean isOwner =
-                apartment.getOwner() != null &&
-                        apartment.getOwner().getId().equals(user.getId());
-
-        boolean isResident =
-                apartment.getResident() != null &&
-                        apartment.getResident().getId().equals(user.getId());
-
-        boolean canManageBuilding =
-                buildingPermissionService.canManageBuilding(
-                        user,
-                        buildingId
-                );
-
-        if (!isOwner && !isResident && !canManageBuilding) {
+        if (!buildingPermissionService.canManageBuilding(
+                user,
+                buildingId
+        )) {
             throw new AccessDeniedException(
-                    "Δεν έχετε δικαίωμα να επεξεργαστείτε αυτό το διαμέρισμα"
+                    "Δεν έχετε δικαίωμα επεξεργασίας αυτού του διαμερίσματος"
             );
         }
 
-        apartment.setNumber(dto.getNumber());
-        apartment.setSqMetersApart(dto.getSqMetersApart());
-        apartment.setFloor(dto.getFloor());
+        validateApartmentData(
+                buildingId,
+                apartment.getId(),
+                apartment.getParkingSpace(),
+                apartment.getApStorageExist(),
+
+                request.getOwnerFirstName(),
+                request.getOwnerLastName(),
+                request.getNumber(),
+                request.getFloor(),
+                request.getSqMetersApart(),
+
+                request.getCommonPercent(),
+                request.getElevatorPercent(),
+                request.getHeatingPercent(),
+
+                request.getRented(),
+                request.getResidentFirstName(),
+                request.getResidentLastName(),
+
+                request.getParkingSpace(),
+                request.getParkingSlot(),
+
+                request.getStorageExist(),
+                request.getStorageSlot(),
+
+                apartment.getBuilding().getParkingSpacesNum(),
+                apartment.getBuilding().getStorageNum()
+        );
+
+
+        apartment.setOwnerFirstName(
+                normalize(request.getOwnerFirstName())
+        );
+
+        apartment.setOwnerLastName(
+                normalize(request.getOwnerLastName())
+        );
+
+        apartment.setNumber(
+                normalize(request.getNumber())
+        );
+
+        apartment.setFloor(
+                normalize(request.getFloor())
+        );
+
+        apartment.setSqMetersApart(
+                normalize(request.getSqMetersApart())
+        );
 
         apartment.setParkingSpace(
-                dto.getParkingSpace() != null
-                        ? dto.getParkingSpace()
-                        : false
+                Boolean.TRUE.equals(
+                        request.getParkingSpace()
+                )
         );
 
         apartment.setParkingSlot(
-                Boolean.TRUE.equals(dto.getParkingSpace())
-                        ? dto.getParkingSlot()
+                Boolean.TRUE.equals(request.getParkingSpace())
+                        ? normalize(request.getParkingSlot())
                         : null
         );
 
         apartment.setIsRented(
-                dto.getIsRented() != null
-                        ? dto.getIsRented()
-                        : false
+                Boolean.TRUE.equals(request.getRented())
+        );
+
+        if (Boolean.TRUE.equals(request.getRented())) {
+            apartment.setResidentFirstName(
+                    normalize(request.getResidentFirstName())
+            );
+
+            apartment.setResidentLastName(
+                    normalize(request.getResidentLastName())
+            );
+        } else {
+            apartment.setResidentFirstName(null);
+            apartment.setResidentLastName(null);
+        }
+
+        apartment.setCommonPercent(
+                request.getCommonPercent()
+        );
+
+        apartment.setElevatorPercent(
+                request.getElevatorPercent()
+        );
+
+        apartment.setHeatingPercent(
+                request.getHeatingPercent()
         );
 
         apartment.setApStorageExist(
-                dto.getApStorageExist() != null
-                        ? dto.getApStorageExist()
-                        : false
+                Boolean.TRUE.equals(
+                        request.getStorageExist()
+                )
         );
 
         apartment.setStorageSlot(
-                Boolean.TRUE.equals(dto.getApStorageExist())
-                        ? dto.getStorageSlot()
+                Boolean.TRUE.equals(request.getStorageExist())
+                        ? normalize(request.getStorageSlot())
                         : null
         );
 
-        apartment.setCommonPercent(dto.getCommonPercent());
-        apartment.setElevatorPercent(dto.getElevatorPercent());
-        apartment.setHeatingPercent(dto.getHeatingPercent());
-        apartment.setApDescription(dto.getApDescription());
-
-        /*
-         * Εφόσον ο πραγματικός user συνδέεται αργότερα,
-         * ενημερώνουμε και τα προσωρινά πεδία του apartment.
-         */
-        apartment.setOwnerFirstName(dto.getOwnerFirstName());
-        apartment.setOwnerLastName(dto.getOwnerLastName());
-
-        apartment.setResidentFirstName(
-                Boolean.TRUE.equals(dto.getIsRented())
-                        ? dto.getResidentFirstName()
-                        : null
+        apartment.setApDescription(
+                normalize(request.getDescription())
         );
 
-        apartment.setResidentLastName(
-                Boolean.TRUE.equals(dto.getIsRented())
-                        ? dto.getResidentLastName()
-                        : null
+        Apartment savedApartment =
+                apartmentRepository.save(apartment);
+
+        return apartmentMapper.toApartmentResponse(
+                savedApartment,
+                user.getId()
+        );
+    }
+
+    private String normalize(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String normalized = value.trim();
+
+        return normalized.isEmpty()
+                ? null
+                : normalized;
+    }
+
+    private void validateRequiredFields(
+            String ownerFirstName,
+            String ownerLastName,
+            String number,
+            String floor,
+            String squareMeters
+    ) {
+
+        if (normalize(ownerFirstName) == null) {
+            throw new BusinessValidationException(
+                    "Το όνομα ιδιοκτήτη είναι υποχρεωτικό."
+            );
+        }
+
+        if (normalize(ownerLastName) == null) {
+            throw new BusinessValidationException(
+                    "Το επώνυμο ιδιοκτήτη είναι υποχρεωτικό."
+            );
+        }
+
+        if (normalize(number) == null) {
+            throw new BusinessValidationException(
+                    "Ο αριθμός διαμερίσματος είναι υποχρεωτικός."
+            );
+        }
+
+        if (normalize(floor) == null) {
+            throw new BusinessValidationException(
+                    "Ο όροφος είναι υποχρεωτικός."
+            );
+        }
+
+        if (normalize(squareMeters) == null) {
+            throw new BusinessValidationException(
+                    "Τα τετραγωνικά μέτρα είναι υποχρεωτικά."
+            );
+        }
+    }
+
+
+    private void validateDuplicateApartment(
+            Integer buildingId,
+            String floor,
+            String number,
+            Integer apartmentId
+    ) {
+
+        boolean exists;
+
+        if (apartmentId == null) {
+            exists = apartmentRepository
+                    .existsByBuilding_IdAndFloorIgnoreCaseAndNumberIgnoreCaseAndActiveTrue(
+                            buildingId,
+                            normalize(floor),
+                            normalize(number)
+                    );
+        } else {
+            exists = apartmentRepository
+                    .existsByBuilding_IdAndFloorIgnoreCaseAndNumberIgnoreCaseAndIdNotAndActiveTrue(
+                            buildingId,
+                            normalize(floor),
+                            normalize(number),
+                            apartmentId
+                    );
+        }
+
+        if (exists) {
+            throw new BusinessValidationException(
+                    "Υπάρχει ήδη διαμέρισμα με τον ίδιο αριθμό στον συγκεκριμένο όροφο."
+            );
+        }
+    }
+
+    private void validateParking(
+            Integer buildingId,
+            Integer apartmentId,
+            Boolean hadParking,
+            Boolean wantsParking,
+            String parkingSlot,
+            Integer totalParkingSpaces
+    ) {
+
+        if (!Boolean.TRUE.equals(wantsParking)) {
+            return;
+        }
+
+        String normalizedParkingSlot =
+                normalize(parkingSlot);
+
+        if (normalizedParkingSlot == null) {
+            throw new BusinessValidationException(
+                    "Η θέση parking είναι υποχρεωτική."
+            );
+        }
+
+        boolean parkingExists;
+
+        if (apartmentId == null) {
+            parkingExists = apartmentRepository
+                    .existsByBuilding_IdAndParkingSlotIgnoreCaseAndActiveTrue(
+                            buildingId,
+                            normalizedParkingSlot
+                    );
+        } else {
+            parkingExists = apartmentRepository
+                    .existsByBuilding_IdAndParkingSlotIgnoreCaseAndIdNotAndActiveTrue(
+                            buildingId,
+                            normalizedParkingSlot,
+                            apartmentId
+                    );
+        }
+
+        if (parkingExists) {
+            throw new BusinessValidationException(
+                    "Η θέση parking χρησιμοποιείται ήδη."
+            );
+        }
+
+        if (!Boolean.TRUE.equals(hadParking)) {
+
+            long usedParkingSpaces =
+                    apartmentRepository
+                            .countByBuilding_IdAndParkingSpaceTrueAndActiveTrue(
+                                    buildingId
+                            );
+
+            if (totalParkingSpaces != null &&
+                    usedParkingSpaces >= totalParkingSpaces) {
+
+                throw new BusinessValidationException(
+                        "Δεν υπάρχουν διαθέσιμες θέσεις parking."
+                );
+            }
+        }
+    }
+
+    private void validateStorage(
+            Integer buildingId,
+            Integer apartmentId,
+            Boolean hadStorage,
+            Boolean wantsStorage,
+            String storageSlot,
+            Integer totalStorageSpaces
+    ) {
+
+        if (!Boolean.TRUE.equals(wantsStorage)) {
+            return;
+        }
+
+        String normalizedStorageSlot =
+                normalize(storageSlot);
+
+        if (normalizedStorageSlot == null) {
+            throw new BusinessValidationException(
+                    "Η θέση αποθήκης είναι υποχρεωτική."
+            );
+        }
+
+        boolean storageExists;
+
+        if (apartmentId == null) {
+            storageExists = apartmentRepository
+                    .existsByBuilding_IdAndStorageSlotIgnoreCaseAndActiveTrue(
+                            buildingId,
+                            normalizedStorageSlot
+                    );
+        } else {
+            storageExists = apartmentRepository
+                    .existsByBuilding_IdAndStorageSlotIgnoreCaseAndIdNotAndActiveTrue(
+                            buildingId,
+                            normalizedStorageSlot,
+                            apartmentId
+                    );
+        }
+
+        if (storageExists) {
+            throw new BusinessValidationException(
+                    "Η θέση αποθήκης χρησιμοποιείται ήδη."
+            );
+        }
+
+        if (!Boolean.TRUE.equals(hadStorage)) {
+
+            long usedStorageSpaces =
+                    apartmentRepository
+                            .countByBuilding_IdAndApStorageExistTrueAndActiveTrue(
+                                    buildingId
+                            );
+
+            if (totalStorageSpaces != null &&
+                    usedStorageSpaces >= totalStorageSpaces) {
+
+                throw new BusinessValidationException(
+                        "Δεν υπάρχουν διαθέσιμες αποθήκες."
+                );
+            }
+        }
+    }
+
+    private void validateSquareMeters(
+            String squareMetersValue
+    ) {
+
+        String normalizedSquareMeters =
+                normalize(squareMetersValue);
+
+        if (normalizedSquareMeters == null) {
+            throw new BusinessValidationException(
+                    "Τα τετραγωνικά μέτρα είναι υποχρεωτικά."
+            );
+        }
+
+        try {
+            double squareMeters =
+                    Double.parseDouble(
+                            normalizedSquareMeters.replace(",", ".")
+                    );
+
+            if (!Double.isFinite(squareMeters)) {
+                throw new BusinessValidationException(
+                        "Τα τετραγωνικά δεν είναι έγκυρος αριθμός."
+                );
+            }
+
+            if (squareMeters <= 0) {
+                throw new BusinessValidationException(
+                        "Τα τετραγωνικά πρέπει να είναι μεγαλύτερα από το μηδέν."
+                );
+            }
+
+        } catch (NumberFormatException exception) {
+            throw new BusinessValidationException(
+                    "Τα τετραγωνικά δεν είναι έγκυρος αριθμός."
+            );
+        }
+    }
+
+    private void validatePercentages(
+            Double commonPercent,
+            Double elevatorPercent,
+            Double heatingPercent
+    ) {
+
+        validatePercentage(
+                commonPercent,
+                "Κοινόχρηστα"
         );
 
-        Apartment saved = apartmentRepository.save(apartment);
+        validatePercentage(
+                elevatorPercent,
+                "Ασανσέρ"
+        );
 
-        return apartmentMapper.toApartmentResponse(saved);
+        validatePercentage(
+                heatingPercent,
+                "Θέρμανση"
+        );
+    }
+
+    private void validatePercentage(
+            Double value,
+            String field
+    ) {
+
+        if (value == null) {
+            throw new BusinessValidationException(
+                    field + " είναι υποχρεωτικό."
+            );
+        }
+
+        if (value < 0) {
+            throw new BusinessValidationException(
+                    field + " δεν μπορεί να είναι αρνητικό."
+            );
+        }
+
+        if (value > 1000) {
+            throw new BusinessValidationException(
+                    field + " δεν μπορεί να είναι μεγαλύτερο από 1000."
+            );
+        }
+
+    }
+
+    private void validateResident(
+            Boolean rented,
+            String residentFirstName,
+            String residentLastName
+    ) {
+
+        if (!Boolean.TRUE.equals(rented)) {
+            return;
+        }
+
+        if (normalize(residentFirstName) == null) {
+            throw new BusinessValidationException(
+                    "Το όνομα ενοικιαστή είναι υποχρεωτικό."
+            );
+        }
+
+        if (normalize(residentLastName) == null) {
+            throw new BusinessValidationException(
+                    "Το επώνυμο ενοικιαστή είναι υποχρεωτικό."
+            );
+        }
     }
 
     @Transactional
@@ -315,6 +798,78 @@ public class ApartmentService {
                         )
                 )
                 .toList();
+    }
+
+    private void validateApartmentData(
+            Integer buildingId,
+            Integer apartmentId,
+            Boolean hadParking,
+            Boolean hadStorage,
+            String ownerFirstName,
+            String ownerLastName,
+            String number,
+            String floor,
+            String squareMeters,
+            Double commonPercent,
+            Double elevatorPercent,
+            Double heatingPercent,
+            Boolean rented,
+            String residentFirstName,
+            String residentLastName,
+            Boolean parkingSpace,
+            String parkingSlot,
+            Boolean storageExist,
+            String storageSlot,
+            Integer totalParkingSpaces,
+            Integer totalStorageSpaces
+    ) {
+
+        validateRequiredFields(
+                ownerFirstName,
+                ownerLastName,
+                number,
+                floor,
+                squareMeters
+        );
+
+        validateSquareMeters(squareMeters);
+
+        validatePercentages(
+                commonPercent,
+                elevatorPercent,
+                heatingPercent
+        );
+
+        validateResident(
+                rented,
+                residentFirstName,
+                residentLastName
+        );
+
+        validateDuplicateApartment(
+                buildingId,
+                floor,
+                number,
+                apartmentId
+        );
+
+        validateParking(
+                buildingId,
+                apartmentId,
+                hadParking,
+                parkingSpace,
+                parkingSlot,
+                totalParkingSpaces
+        );
+
+        validateStorage(
+                buildingId,
+                apartmentId,
+                hadStorage,
+                storageExist,
+                storageSlot,
+                totalStorageSpaces
+        );
     }
 
 

@@ -118,15 +118,4 @@ public interface BuildingMemberRepository
             @Param("buildingId") Integer buildingId
     );
 
-    @Transactional
-    @Modifying
-    @Query("""
-        update BuildingMember bm
-           set bm.status = :status
-         where bm.building.id = :buildingId
-    """)
-    int updateStatusByBuildingId(
-            @Param("buildingId") Integer buildingId,
-            @Param("status") BuildingMemberStatus status
-    );
 }

@@ -52,12 +52,12 @@ public class SecurityConfig {
 
                         // Public endpoints
                         .requestMatchers(
-                                "/auth/register",
-                                "/auth/authenticate",
-                                "/auth/activate-account",
-                                "/auth/forgot-password",
-                                "/auth/reset-password",
-                                "/api/invite/**",
+                                "/api/v1/auth/register",
+                                "/api/v1/auth/authenticate",
+                                "/api/v1/auth/activate-account",
+                                "/api/v1/auth/forgot-password",
+                                "/api/v1/auth/reset-password",
+                                "/api/v1/invites/**",
                                 "/v2/api-docs",
                                 "/v3/api-docs",
                                 "/v3/api-docs/**",
@@ -68,10 +68,13 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/webjars/**",
                                 "/swagger-ui.html",
-                                "/uploads/**"
+                                "/uploads/**",
+                                "/api/v1/uploads/**",
+                                "/actuator/health",
+                                "/actuator/info"
                         ).permitAll()
 
-                        // Προστατευμένα endpoints
+                        // Protected endpoints
                         .requestMatchers("/api/v1/buildings/**").authenticated()
                         .requestMatchers("/api/v1/users/*/role").authenticated()
                         .requestMatchers("/api/v1/building-members/**").authenticated()

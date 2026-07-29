@@ -1,25 +1,30 @@
 package com.buildingmanager.user;
 
+import com.buildingmanager.audit.AuditAction;
+import com.buildingmanager.audit.Auditable;
+import com.buildingmanager.exceptions.UserNotFoundException;
 import com.buildingmanager.role.Role;
 import com.buildingmanager.role.RoleDTO;
 import com.buildingmanager.role.RoleRepository;
 import com.buildingmanager.role.RoleService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 
 
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
+@Slf4j
 public class UserController {
 
     private final UserService userService;
@@ -28,70 +33,67 @@ public class UserController {
     private final RoleService roleService;
 
     @PutMapping("/{userId}/role")
+    @Auditable(action = AuditAction.PERMISSION_CHANGE)
     public ResponseEntity<?> updateUserRole(
             @PathVariable Integer userId,
             @RequestParam String roleName) {
 
-        Optional<Role> roleOpt = roleRepository.findByName(roleName);
-        if (roleOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body("Δεν βρέθηκε ο Ρόλος");
-        }
+        Role role = roleRepository.findByName(roleName)
+                .orElseThrow(() -> new EntityNotFoundException("Role not found: " + roleName));
 
-        return userRepository.findById(userId)
-                .map(user -> {
-                    user.setRole(roleOpt.get());
-                    userRepository.save(user);
-                    return ResponseEntity.ok("Ο ρόλος ενημερώθηκε επιτυχώς");
-                })
-                .orElse(ResponseEntity.badRequest().body("Δεν βρέθηκε ο χρήστης"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User with id '" + userId + "' not found"));
+
+        user.setRole(role);
+        userRepository.save(user);
+        return ResponseEntity.ok("Ο ρόλος ενημερώθηκε επιτυχώς");
     }
 
     @GetMapping("/{userId}/role")
     public ResponseEntity<RoleDTO> getUserRole(@PathVariable Integer userId) {
-        Optional<User> userOpt = userService.findById(userId);
-        if (userOpt.isEmpty() || userOpt.get().getRole() == null) {
-            return ResponseEntity.notFound().build();
+        User user = userService.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User with id '" + userId + "' not found"));
+
+        if (user.getRole() == null) {
+            throw new EntityNotFoundException("User has no role assigned");
         }
 
-        Role role = userOpt.get().getRole();
-        return ResponseEntity.ok(new RoleDTO(role.getName()));
+        return ResponseEntity.ok(new RoleDTO(user.getRole().getName()));
     }
 
     @PutMapping("/update")
     public ResponseEntity<?> updateUser(@RequestBody com.buildingmanager.user.UserUpdateDTO dto, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new AccessDeniedException("User is not authenticated");
         }
 
         String email = authentication.getName();
-        return userRepository.findByEmail(email)
-                .map(user -> {
-                    // Ενημέρωση πεδίων
-                    user.setFirstName(dto.getFirstName());
-                    user.setLastName(dto.getLastName());
-                    user.setDateOfBirth(dto.getDateOfBirth());
-                    user.setPhoneNumber(dto.getPhoneNumber());
-                    user.setProfileImageUrl(dto.getProfileImageUrl());
-                    user.setAddress1(dto.getAddress1());
-                    user.setAddressNumber1(dto.getAddressNumber1());
-                    user.setAddress2(dto.getAddress2());
-                    user.setAddressNumber2(dto.getAddressNumber2());
-                    user.setCountry(dto.getCountry());
-                    user.setState(dto.getState());
-                    user.setCity(dto.getCity());
-                    user.setRegion(dto.getRegion());
-                    user.setPostalCode(dto.getPostalCode());
-                    user.setDateOfBirth(dto.getDateOfBirth());
-                    userRepository.save(user);
-                    return ResponseEntity.ok().build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User with email '" + email + "' not found"));
+
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setDateOfBirth(dto.getDateOfBirth());
+        user.setPhoneNumber(dto.getPhoneNumber());
+        user.setProfileImageUrl(dto.getProfileImageUrl());
+        user.setAddress1(dto.getAddress1());
+        user.setAddressNumber1(dto.getAddressNumber1());
+        user.setAddress2(dto.getAddress2());
+        user.setAddressNumber2(dto.getAddressNumber2());
+        user.setCountry(dto.getCountry());
+        user.setState(dto.getState());
+        user.setCity(dto.getCity());
+        user.setRegion(dto.getRegion());
+        user.setPostalCode(dto.getPostalCode());
+        user.setDateOfBirth(dto.getDateOfBirth());
+        userRepository.save(user);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/me/profile-image")
     public ResponseEntity<Map<String,String>> upload(@RequestParam("file") MultipartFile file,
                                                      Authentication auth) {
-        System.out.println(">>> HIT /me/profile-image, file=" + file.getOriginalFilename() + ", size=" + file.getSize());
+        log.debug("Upload profile-image: file={}, size={}", file.getOriginalFilename(), file.getSize());
         User user = (User) auth.getPrincipal();
         String url = userService.uploadProfileImage(file, user.getId());
         return ResponseEntity.ok(Map.of("imageUrl", url));
@@ -102,17 +104,15 @@ public class UserController {
             @PathVariable Integer userId,
             @RequestParam String roleName) {
 
-        Optional<Role> roleOpt = roleService.findByName(roleName);
-        if (roleOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body("Ο ρόλος δεν βρέθηκε");
+        Role role = roleService.findByName(roleName)
+                .orElseThrow(() -> new EntityNotFoundException("Role not found: " + roleName));
+
+        boolean updated = userService.updateUserRole(userId, role);
+        if (!updated) {
+            throw new UserNotFoundException("User with id '" + userId + "' not found");
         }
 
-        boolean updated = userService.updateUserRole(userId, roleOpt.get());
-        if (updated) {
-            return ResponseEntity.ok("Ο ρόλος ανατέθηκε επιτυχώς");
-        } else {
-            return ResponseEntity.badRequest().body("Ο χρήστης δεν βρέθηκε");
-        }
+        return ResponseEntity.ok("Ο ρόλος ανατέθηκε επιτυχώς");
     }
 
     @GetMapping("/same-building")

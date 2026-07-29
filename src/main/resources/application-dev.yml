@@ -28,7 +28,7 @@
 
     mail:
       host: localhost
-      port: 1025
+      port: 1080
       username: username
       password: password
       properties:

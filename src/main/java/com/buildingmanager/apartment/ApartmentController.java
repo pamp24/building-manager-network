@@ -49,7 +49,7 @@ public class ApartmentController {
             @Valid @RequestBody List<ApartmentRequest> requests,
             Authentication connectedUser
     ) {
-        requests.forEach(r -> System.out.println("Received: " + r));
+        requests.forEach(r -> log.debug("Received: {}", r));
         apartmentService.saveAll(requests, connectedUser);
         return ResponseEntity.ok().build();
     }
@@ -102,16 +102,18 @@ public class ApartmentController {
         return ResponseEntity.ok(apartmentService.getAvailableApartments(buildingId, role, authentication));
     }
 
-    @PutMapping("/update/myApartment/{apartmentId}")
+    @PutMapping("/{apartmentId}")
     public ResponseEntity<ApartmentResponse> updateApartment(
             @PathVariable Integer apartmentId,
-            @RequestBody ApartmentDTO dto,
+            @RequestBody ApartmentUpdateRequest request,
             Authentication authentication
     ) {
-        dto.setId(apartmentId);
-
         return ResponseEntity.ok(
-                apartmentService.updateApartment(apartmentId, dto, authentication)
+                apartmentService.updateApartment(
+                        apartmentId,
+                        request,
+                        authentication
+                )
         );
     }
 

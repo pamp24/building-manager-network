@@ -3,6 +3,7 @@ package com.buildingmanager.professional;
 import com.buildingmanager.user.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -13,6 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/professionals")
 @RequiredArgsConstructor
+@Slf4j
 public class ProfessionalBusinessController {
 
     private final ProfessionalBusinessService service;
@@ -91,7 +93,7 @@ public class ProfessionalBusinessController {
 
     @GetMapping("/admin/stats")
     public ResponseEntity<ProfessionalAdminStatsDTO> getAdminStats(Authentication authentication) {
-        System.out.println("AUTH = " + authentication.getAuthorities());
+        log.debug("AUTH authorities = {}", authentication.getAuthorities());
 
         return ResponseEntity.ok(service.getAdminStats());
     }

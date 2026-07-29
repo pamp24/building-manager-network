@@ -8,11 +8,14 @@ import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocation;
 import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocationRepository;
 import com.buildingmanager.commonExpenseItem.CommonExpenseItem;
 import com.buildingmanager.commonExpenseItem.ExpenseCategory;
+import com.buildingmanager.audit.AuditAction;
+import com.buildingmanager.audit.Auditable;
 import com.buildingmanager.notification.NotificationService;
 import com.buildingmanager.user.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -27,6 +30,7 @@ import java.math.RoundingMode;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CommonExpenseStatementService {
 
     private final CommonExpenseStatementRepository commonExpenseStatementRepository;
@@ -58,6 +62,7 @@ public class CommonExpenseStatementService {
 
 
     @Transactional
+    @Auditable(action = AuditAction.CREATE)
     public CommonExpenseStatement createAndSend(CommonExpenseStatement statement) {
 
         // 1) buildingId
@@ -185,6 +190,7 @@ public class CommonExpenseStatementService {
 
 
     @Transactional
+    @Auditable(action = AuditAction.CREATE, description = "Saved draft statement")
     public CommonExpenseStatement saveDraft(CommonExpenseStatement statement) {
         Integer buildingId = statement.getBuilding().getId();
 
@@ -274,6 +280,7 @@ public class CommonExpenseStatementService {
     }
 
     @Transactional
+    @Auditable(action = AuditAction.DELETE)
     public void delete(Integer id) {
         if (commonExpenseAllocationRepository.hasAnyPaymentForStatement(id)) {
             throw new IllegalStateException("Δεν επιτρέπεται επεξεργασία/διαγραφή μετά από πληρωμή.");
@@ -287,11 +294,10 @@ public class CommonExpenseStatementService {
 
         if (statement.getStatus() == StatementStatus.DRAFT && !hasAllocations) {
             commonExpenseStatementRepository.delete(statement);
-            System.out.println("Hard delete statement id=" + id);
+            log.info("Hard delete statement id={}", id);
         } else {
-            // Hibernate θα κάνει soft delete μόνο του
             commonExpenseStatementRepository.delete(statement);
-            System.out.println("Soft delete (SQLDelete) statement id=" + id);
+            log.info("Soft delete statement id={}", id);
         }
     }
 
@@ -315,6 +321,7 @@ public class CommonExpenseStatementService {
         return String.format("%s-%s-%s", datePart, buildingPart, seqPart);
     }
 
+    @Auditable(action = AuditAction.UPDATE)
     public CommonExpenseStatementDTO updateStatement(Integer id, CommonExpenseStatementDTO dto) {
         if (commonExpenseAllocationRepository.hasAnyPaymentForStatement(id)) {
             throw new IllegalStateException("Δεν επιτρέπεται επεξεργασία/διαγραφή μετά από πληρωμή.");
