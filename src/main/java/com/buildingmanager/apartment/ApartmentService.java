@@ -18,6 +18,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -798,6 +800,89 @@ public class ApartmentService {
                         )
                 )
                 .toList();
+    }
+
+    @Transactional
+    public BigDecimal getCommonPercentSum(Integer buildingId, Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        if (!buildingPermissionService.canViewBuilding(user, buildingId)) {
+            throw new AccessDeniedException(
+                    "Δεν έχεις πρόσβαση στα διαμερίσματα αυτής της πολυκατοικίας"
+            );
+        }
+        return apartmentRepository
+                .findAllByBuilding_IdAndActiveTrueAndEnableTrueOrderByFloorAscNumberAsc(buildingId)
+                .stream()
+                .map(a -> a.getCommonPercent() == null
+                        ? BigDecimal.ZERO
+                        : BigDecimal.valueOf(a.getCommonPercent()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    @Transactional
+    public void redistributeCommonPercent(
+            Integer buildingId,
+            Authentication authentication
+    ) {
+        User user = (User) authentication.getPrincipal();
+        if (!buildingPermissionService.canManageBuilding(user, buildingId)) {
+            throw new AccessDeniedException(
+                    "Δεν έχεις δικαίωμα αλλαγής των χιλιοστών αυτής της πολυκατοικίας"
+            );
+        }
+
+        List<Apartment> apartments = apartmentRepository
+                .findAllByBuilding_IdAndActiveTrueAndEnableTrueOrderByFloorAscNumberAsc(buildingId);
+
+        if (apartments.isEmpty()) {
+            throw new BusinessValidationException(
+                    "Δεν υπάρχουν διαμερίσματα σε αυτή την πολυκατοικία."
+            );
+        }
+
+        int size = apartments.size();
+
+        BigDecimal currentSum = apartments.stream()
+                .map(a -> a.getCommonPercent() == null
+                        ? BigDecimal.ZERO
+                        : BigDecimal.valueOf(a.getCommonPercent()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal remainder = BigDecimal.valueOf(1000).subtract(currentSum);
+
+        if (remainder.compareTo(BigDecimal.ZERO) == 0) {
+            return;
+        }
+
+        BigDecimal base = remainder.divide(
+                BigDecimal.valueOf(size),
+                2,
+                RoundingMode.DOWN
+        );
+
+        BigDecimal baseTotal = base.multiply(BigDecimal.valueOf(size));
+        BigDecimal leftover = remainder.subtract(baseTotal);
+        int extraCents = leftover.movePointRight(2).intValue();
+
+        for (int i = 0; i < size; i++) {
+            Apartment apartment = apartments.get(i);
+
+            double current = apartment.getCommonPercent() == null
+                    ? 0.0
+                    : apartment.getCommonPercent();
+
+            BigDecimal newValue = BigDecimal.valueOf(current).add(base);
+
+            if (i < extraCents) {
+                newValue = newValue.add(BigDecimal.valueOf(0.01));
+            }
+
+            apartment.setCommonPercent(
+                    newValue.setScale(2, RoundingMode.HALF_UP).doubleValue()
+            );
+
+            apartmentRepository.save(apartment);
+        }
     }
 
     private void validateApartmentData(

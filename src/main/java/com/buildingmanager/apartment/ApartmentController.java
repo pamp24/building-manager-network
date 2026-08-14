@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
@@ -91,6 +92,25 @@ public class ApartmentController {
             Authentication authentication
     ) {
         return ResponseEntity.ok(apartmentService.getApartmentsByBuildingList(buildingId, authentication));
+    }
+
+    @GetMapping("/building/{buildingId}/common-percent-sum")
+    public ResponseEntity<BigDecimal> getCommonPercentSum(
+            @PathVariable Integer buildingId,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                apartmentService.getCommonPercentSum(buildingId, authentication)
+        );
+    }
+
+    @PostMapping("/building/{buildingId}/redistribute-common-percent")
+    public ResponseEntity<Void> redistributeCommonPercent(
+            @PathVariable Integer buildingId,
+            Authentication authentication
+    ) {
+        apartmentService.redistributeCommonPercent(buildingId, authentication);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{buildingId}/available")

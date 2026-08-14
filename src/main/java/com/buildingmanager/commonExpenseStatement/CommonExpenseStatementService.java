@@ -60,6 +60,17 @@ public class CommonExpenseStatementService {
         return bd(v).setScale(2, RoundingMode.HALF_UP);
     }
 
+    // Δείκτης του διαμερίσματος με το μεγαλύτερο κλασματικό υπόλοιπο
+    private static int indexOfLargestFraction(BigDecimal[] fractions) {
+        int idx = 0;
+        for (int i = 1; i < fractions.length; i++) {
+            if (fractions[i].compareTo(fractions[idx]) > 0) {
+                idx = i;
+            }
+        }
+        return idx;
+    }
+
 
     @Transactional
     @Auditable(action = AuditAction.CREATE)
@@ -100,34 +111,74 @@ public class CommonExpenseStatementService {
         // 7) apartments
         List<Apartment> apartments = apartmentRepository.findAllByBuilding_Id(buildingId);
 
+        // 7b) Έλεγχος χιλιοστών: το άθροισμα των commonPercent πρέπει να είναι 1000
+        BigDecimal sumCommonPercent = apartments.stream()
+                .map(a -> a.getCommonPercent() == null ? BigDecimal.ZERO : BigDecimal.valueOf(a.getCommonPercent()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (sumCommonPercent.compareTo(new BigDecimal("1000")) != 0) {
+            throw new IllegalStateException(
+                    "Τα χιλιοστά της πολυκατοικίας δεν είναι σωστά μοιρασμένα "
+                            + "(άθροισμα: " + sumCommonPercent.stripTrailingZeros().toPlainString() + " / 1000). "
+                            + "Μοιράστε ισόποσα τα υπόλοιπα χιλιοστά και δοκιμάστε ξανά."
+            );
+        }
+
         // 8) allocations
         for (CommonExpenseItem item : saved.getItems()) {
             BigDecimal itemTotal = bd(item.getPrice());
             int n = apartments.size();
 
-            // Για EQUAL / OTHER / SPECIAL / OWNERS / BOILER: μοιράζουμε ακριβώς μέχρι cent
-            BigDecimal baseEqual = itemTotal.divide(BigDecimal.valueOf(n), 2, RoundingMode.DOWN);
-            BigDecimal remainder = itemTotal.subtract(baseEqual.multiply(BigDecimal.valueOf(n)));
-            int extraCents = remainder.movePointRight(2).intValue(); // πόσα +0.01
+            boolean proportional = switch (item.getCategory()) {
+                case COMMON, ELEVATOR, HEATING -> true;
+                default -> false;
+            };
 
-            for (int idx = 0; idx < apartments.size(); idx++) {
+            // Ακριβείς μερίδες (πριν τη στρογγυλοποίηση)
+            BigDecimal[] exactShares = new BigDecimal[n];
+            // Μερίδες κλειδωμένες στα 2 δεκαδικά (προς τα κάτω)
+            BigDecimal[] shares = new BigDecimal[n];
+            // Κλασματικά υπόλοιπα για τη μέθοδο μεγαλύτερου υπολοίπου
+            BigDecimal[] fractions = new BigDecimal[n];
+
+            BigDecimal flooredSum = BigDecimal.ZERO;
+
+            for (int idx = 0; idx < n; idx++) {
                 Apartment apt = apartments.get(idx);
 
-                BigDecimal share;
-
-                switch (item.getCategory()) {
-                    case COMMON -> share = itemTotal.multiply(milli(apt.getCommonPercent()));
-                    case ELEVATOR -> share = itemTotal.multiply(milli(apt.getElevatorPercent()));
-                    case HEATING -> share = itemTotal.multiply(milli(apt.getHeatingPercent()));
-                    case EQUAL, OTHER, SPECIAL, OWNERS, BOILER -> {
-                        share = baseEqual;
-                        if (idx < extraCents) share = share.add(BigDecimal.valueOf(0.01));
-                    }
-                    default -> share = BigDecimal.ZERO;
+                BigDecimal exact;
+                if (proportional) {
+                    BigDecimal mills = switch (item.getCategory()) {
+                        case COMMON -> milli(apt.getCommonPercent());
+                        case ELEVATOR -> milli(apt.getElevatorPercent());
+                        default -> milli(apt.getHeatingPercent());
+                    };
+                    exact = itemTotal.multiply(mills);
+                } else {
+                    // EQUAL / OTHER / SPECIAL / OWNERS / BOILER
+                    exact = itemTotal.divide(BigDecimal.valueOf(n), 10, RoundingMode.HALF_UP);
                 }
 
-                // Κλειδώνουμε 2 δεκαδικά
-                share = s2(share);
+                exactShares[idx] = exact;
+                shares[idx] = exact.setScale(2, RoundingMode.DOWN);
+                fractions[idx] = exact.subtract(shares[idx]);
+                flooredSum = flooredSum.add(shares[idx]);
+            }
+
+            // Υπόλοιπο: ό,τι λείπει ώστε το άθροισμα να ισούται ακριβώς με το itemTotal
+            BigDecimal leftover = itemTotal.subtract(flooredSum);
+            int extraCents = leftover.movePointRight(2).intValue(); // πόσα +0.01
+
+            // Δίνουμε +0.01 στα διαμερίσματα με το μεγαλύτερο κλασματικό υπόλοιπο
+            for (int c = 0; c < extraCents; c++) {
+                int target = indexOfLargestFraction(fractions);
+                shares[target] = shares[target].add(BigDecimal.valueOf(0.01));
+                fractions[target] = BigDecimal.ZERO; // δεν το ξαναπαίρνουμε
+            }
+
+            for (int idx = 0; idx < n; idx++) {
+                Apartment apt = apartments.get(idx);
+                BigDecimal share = shares[idx];
 
                 CommonExpenseAllocation allocation = CommonExpenseAllocation.builder()
                         .statement(saved)

@@ -508,3 +508,245 @@ java.lang.IllegalStateException: Αυτό το διαμέρισμα έχει ή�
 2026-08-14 11:58:03.869 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6a7ed89bc52e058f0eb409706499e55d,a43263ec7d13efca] - Last statement = 8 (2026-06)
 2026-08-14 11:58:03.873 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6a7ed89bc52e058f0eb409706499e55d,a43263ec7d13efca] - Found 3 allocations for apartment 1
 2026-08-14 11:58:03.873 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6a7ed89bc52e058f0eb409706499e55d,a43263ec7d13efca] - Final amount due: 0
+2026-08-14 12:27:33.702 [background-preinit] INFO  o.h.validator.internal.util.Version [,] - HV000001: Hibernate Validator 8.0.1.Final
+2026-08-14 12:27:33.725 [main] INFO  c.b.BuildingManagerNetworkApiApplicationTests [,] - Starting BuildingManagerNetworkApiApplicationTests using Java 21.0.5 with PID 10592 (started by FotisPamp in C:\Users\FotisPamp\Documents\GitHub\building-manager-network)
+2026-08-14 12:27:33.725 [main] INFO  c.b.BuildingManagerNetworkApiApplicationTests [,] - The following 1 profile is active: "dev"
+2026-08-14 12:27:36.484 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [,] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-14 12:27:36.593 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [,] - Finished Spring Data repository scanning in 105 ms. Found 28 JPA repository interfaces.
+2026-08-14 12:27:38.075 [main] INFO  o.h.jpa.internal.util.LogHelper [,] - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-08-14 12:27:38.280 [main] INFO  org.hibernate.Version [,] - HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-08-14 12:27:38.317 [main] INFO  o.h.c.i.RegionFactoryInitiator [,] - HHH000026: Second-level cache disabled
+2026-08-14 12:27:38.419 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo [,] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-14 12:27:38.433 [main] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Starting...
+2026-08-14 12:27:38.642 [main] INFO  com.zaxxer.hikari.pool.HikariPool [,] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@20e4e27f
+2026-08-14 12:27:38.650 [main] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Start completed.
+2026-08-14 12:27:38.675 [main] WARN  org.hibernate.orm.deprecation [,] - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-08-14 12:27:40.033 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator [,] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-08-14 12:27:40.375 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [,] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-14 12:27:40.825 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory [,] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-08-14 12:27:44.003 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration [,] - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-08-14 12:27:44.625 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver [,] - Exposing 3 endpoint(s) beneath base path '/actuator'
+2026-08-14 12:27:44.675 [main] INFO  o.s.s.web.DefaultSecurityFilterChain [,] - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@4ec368c1, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@de161d5, org.springframework.security.web.context.SecurityContextHolderFilter@5ec643dd, org.springframework.security.web.header.HeaderWriterFilter@17fc295a, org.springframework.web.filter.CorsFilter@39eaf81c, org.springframework.security.web.authentication.logout.LogoutFilter@65fe8b4c, com.buildingmanager.security.JwtFilter@6dd79871, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@3dfad83d, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@7dc02e85, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@3756fc15, org.springframework.security.web.session.SessionManagementFilter@1d261a35, org.springframework.security.web.access.ExceptionTranslationFilter@2eb94918, org.springframework.security.web.access.intercept.AuthorizationFilter@6f9a31a3]
+2026-08-14 12:27:45.303 [main] INFO  c.b.BuildingManagerNetworkApiApplicationTests [,] - Started BuildingManagerNetworkApiApplicationTests in 11.936 seconds (process running for 14.708)
+2026-08-14 12:27:45.867 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:27:45.867 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:27:45.867 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:27:45.944 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:27:45.944 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:27:45.944 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:27:46.073 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:27:46.073 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:27:46.073 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:27:46.099 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:27:46.099 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:27:46.099 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:27:46.117 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:27:46.117 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:27:46.117 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:27:46.125 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:27:46.125 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:27:46.125 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:27:46.142 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:27:46.142 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:27:46.142 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:27:46.158 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:27:46.158 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:27:46.158 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:27:46.167 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:27:46.167 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:27:46.167 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:27:46.192 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:27:46.192 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:27:46.192 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:27:46.208 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:27:46.208 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:27:46.208 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:27:47.675 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [,] - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-08-14 12:27:47.675 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Shutdown initiated...
+2026-08-14 12:27:47.675 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Shutdown completed.
+2026-08-14 12:30:23.225 [http-nio-8080-exec-6] INFO  c.b.u.UserDashboardService [6a7ee02fbdba7f06d4327bcaed0a307b,307e28ca687112eb] -   Loading dashboard for user 1
+2026-08-14 12:30:23.233 [http-nio-8080-exec-5] INFO  c.b.u.UserDashboardService [6a7ee02f418352c3ee13bf05ba43c234,38b512540f2d7965] - Loading dashboard history for user 1
+2026-08-14 12:30:23.238 [http-nio-8080-exec-6] INFO  c.b.u.UserDashboardService [6a7ee02fbdba7f06d4327bcaed0a307b,307e28ca687112eb] - Selected OWNER apartment 1
+2026-08-14 12:30:23.239 [http-nio-8080-exec-6] INFO  c.b.u.UserDashboardService [6a7ee02fbdba7f06d4327bcaed0a307b,307e28ca687112eb] - Last statement = 8 (2026-06)
+2026-08-14 12:30:23.256 [http-nio-8080-exec-6] INFO  c.b.u.UserDashboardService [6a7ee02fbdba7f06d4327bcaed0a307b,307e28ca687112eb] - Found 3 allocations for apartment 1
+2026-08-14 12:30:23.256 [http-nio-8080-exec-6] INFO  c.b.u.UserDashboardService [6a7ee02fbdba7f06d4327bcaed0a307b,307e28ca687112eb] - Final amount due: 0
+2026-08-14 12:30:23.262 [http-nio-8080-exec-3] INFO  c.b.u.UserDashboardService [6a7ee02fc60a3977b57e62cad9dcc441,31b9f36d311ecf06] -   Loading dashboard for user 1
+2026-08-14 12:30:23.266 [http-nio-8080-exec-3] INFO  c.b.u.UserDashboardService [6a7ee02fc60a3977b57e62cad9dcc441,31b9f36d311ecf06] - Selected OWNER apartment 1
+2026-08-14 12:30:23.267 [http-nio-8080-exec-3] INFO  c.b.u.UserDashboardService [6a7ee02fc60a3977b57e62cad9dcc441,31b9f36d311ecf06] - Last statement = 8 (2026-06)
+2026-08-14 12:30:23.275 [http-nio-8080-exec-3] INFO  c.b.u.UserDashboardService [6a7ee02fc60a3977b57e62cad9dcc441,31b9f36d311ecf06] - Found 3 allocations for apartment 1
+2026-08-14 12:30:23.275 [http-nio-8080-exec-3] INFO  c.b.u.UserDashboardService [6a7ee02fc60a3977b57e62cad9dcc441,31b9f36d311ecf06] - Final amount due: 0
+2026-08-14 12:34:33.973 [background-preinit] INFO  o.h.validator.internal.util.Version [,] - HV000001: Hibernate Validator 8.0.1.Final
+2026-08-14 12:34:33.996 [main] INFO  c.b.BuildingManagerNetworkApiApplicationTests [,] - Starting BuildingManagerNetworkApiApplicationTests using Java 21.0.5 with PID 38644 (started by FotisPamp in C:\Users\FotisPamp\Documents\GitHub\building-manager-network)
+2026-08-14 12:34:33.996 [main] INFO  c.b.BuildingManagerNetworkApiApplicationTests [,] - The following 1 profile is active: "dev"
+2026-08-14 12:34:36.019 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [,] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-14 12:34:36.127 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [,] - Finished Spring Data repository scanning in 107 ms. Found 28 JPA repository interfaces.
+2026-08-14 12:34:37.786 [main] INFO  o.h.jpa.internal.util.LogHelper [,] - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-08-14 12:34:37.977 [main] INFO  org.hibernate.Version [,] - HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-08-14 12:34:38.052 [main] INFO  o.h.c.i.RegionFactoryInitiator [,] - HHH000026: Second-level cache disabled
+2026-08-14 12:34:38.168 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo [,] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-14 12:34:38.185 [main] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Starting...
+2026-08-14 12:34:38.302 [main] INFO  com.zaxxer.hikari.pool.HikariPool [,] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@162c89ac
+2026-08-14 12:34:38.302 [main] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Start completed.
+2026-08-14 12:34:38.344 [main] WARN  org.hibernate.orm.deprecation [,] - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-08-14 12:34:39.665 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator [,] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-08-14 12:34:40.018 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [,] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-14 12:34:40.536 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory [,] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-08-14 12:34:43.518 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration [,] - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-08-14 12:34:44.085 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver [,] - Exposing 3 endpoint(s) beneath base path '/actuator'
+2026-08-14 12:34:44.159 [main] INFO  o.s.s.web.DefaultSecurityFilterChain [,] - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@51e6ac82, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@4467e3b4, org.springframework.security.web.context.SecurityContextHolderFilter@42f03674, org.springframework.security.web.header.HeaderWriterFilter@29e07117, org.springframework.web.filter.CorsFilter@382f4b42, org.springframework.security.web.authentication.logout.LogoutFilter@59694552, com.buildingmanager.security.JwtFilter@1a8f492, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@4f00c7ac, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@e8ba78c, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@2262d2da, org.springframework.security.web.session.SessionManagementFilter@18ce8b66, org.springframework.security.web.access.ExceptionTranslationFilter@4950c344, org.springframework.security.web.access.intercept.AuthorizationFilter@729e9aa4]
+2026-08-14 12:34:44.810 [main] INFO  c.b.BuildingManagerNetworkApiApplicationTests [,] - Started BuildingManagerNetworkApiApplicationTests in 11.183 seconds (process running for 14.122)
+2026-08-14 12:34:45.252 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:34:45.252 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:34:45.252 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:34:45.302 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:34:45.302 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:34:45.302 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:34:45.427 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:34:45.427 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:34:45.427 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:34:45.449 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:34:45.449 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:34:45.449 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:34:45.460 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:34:45.460 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:34:45.460 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:34:45.469 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:34:45.469 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:34:45.469 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:34:45.485 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:34:45.485 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:34:45.485 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:34:45.495 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:34:45.495 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:34:45.495 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:34:45.510 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:34:45.510 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:34:45.510 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:34:45.527 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:34:45.527 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:34:45.527 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:34:45.545 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:34:45.546 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:34:45.546 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:34:46.827 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [,] - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-08-14 12:34:46.827 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Shutdown initiated...
+2026-08-14 12:34:46.827 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Shutdown completed.
+2026-08-14 12:36:22.246 [http-nio-8080-exec-10] INFO  c.b.u.UserDashboardService [6a7ee1965cb04bf40860f6f830767326,7876da87e12ec8bc] -   Loading dashboard for user 18
+2026-08-14 12:36:22.247 [http-nio-8080-exec-1] INFO  c.b.u.UserDashboardService [6a7ee196d0b95db71d2b9a40dff5fbf6,c1d880c8ee397262] - Loading dashboard history for user 18
+2026-08-14 12:36:22.250 [http-nio-8080-exec-10] INFO  c.b.u.UserDashboardService [6a7ee1965cb04bf40860f6f830767326,7876da87e12ec8bc] - Selected OWNER apartment 52
+2026-08-14 12:36:22.251 [http-nio-8080-exec-10] WARN  c.b.u.UserDashboardService [6a7ee1965cb04bf40860f6f830767326,7876da87e12ec8bc] - No statements found for building 12
+2026-08-14 12:36:22.263 [http-nio-8080-exec-7] INFO  c.b.u.UserDashboardService [6a7ee196fdd3cc37c9ab5d489cdbe684,3eb106a17aa3d504] -   Loading dashboard for user 18
+2026-08-14 12:36:22.268 [http-nio-8080-exec-7] INFO  c.b.u.UserDashboardService [6a7ee196fdd3cc37c9ab5d489cdbe684,3eb106a17aa3d504] - Selected OWNER apartment 52
+2026-08-14 12:36:22.269 [http-nio-8080-exec-7] WARN  c.b.u.UserDashboardService [6a7ee196fdd3cc37c9ab5d489cdbe684,3eb106a17aa3d504] - No statements found for building 12
+2026-08-14 12:42:06.372 [background-preinit] INFO  o.h.validator.internal.util.Version [,] - HV000001: Hibernate Validator 8.0.1.Final
+2026-08-14 12:42:06.389 [main] INFO  c.b.BuildingManagerNetworkApiApplicationTests [,] - Starting BuildingManagerNetworkApiApplicationTests using Java 21.0.5 with PID 40336 (started by FotisPamp in C:\Users\FotisPamp\Documents\GitHub\building-manager-network)
+2026-08-14 12:42:06.389 [main] INFO  c.b.BuildingManagerNetworkApiApplicationTests [,] - The following 1 profile is active: "dev"
+2026-08-14 12:42:08.481 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [,] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-14 12:42:08.577 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [,] - Finished Spring Data repository scanning in 99 ms. Found 28 JPA repository interfaces.
+2026-08-14 12:42:10.056 [main] INFO  o.h.jpa.internal.util.LogHelper [,] - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-08-14 12:42:10.160 [main] INFO  org.hibernate.Version [,] - HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-08-14 12:42:10.204 [main] INFO  o.h.c.i.RegionFactoryInitiator [,] - HHH000026: Second-level cache disabled
+2026-08-14 12:42:10.320 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo [,] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-14 12:42:10.345 [main] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Starting...
+2026-08-14 12:42:10.456 [main] INFO  com.zaxxer.hikari.pool.HikariPool [,] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@6d398b6c
+2026-08-14 12:42:10.458 [main] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Start completed.
+2026-08-14 12:42:10.486 [main] WARN  org.hibernate.orm.deprecation [,] - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-08-14 12:42:11.845 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator [,] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-08-14 12:42:12.202 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [,] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-14 12:42:12.694 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory [,] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-08-14 12:42:15.706 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration [,] - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-08-14 12:42:16.321 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver [,] - Exposing 3 endpoint(s) beneath base path '/actuator'
+2026-08-14 12:42:16.385 [main] INFO  o.s.s.web.DefaultSecurityFilterChain [,] - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@29e07117, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@7148b853, org.springframework.security.web.context.SecurityContextHolderFilter@7a7a8bb7, org.springframework.security.web.header.HeaderWriterFilter@44c223a4, org.springframework.web.filter.CorsFilter@57712354, org.springframework.security.web.authentication.logout.LogoutFilter@6d734187, com.buildingmanager.security.JwtFilter@7acf757f, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@6248ef4, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@41aa7994, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@21cc6565, org.springframework.security.web.session.SessionManagementFilter@7d20c97f, org.springframework.security.web.access.ExceptionTranslationFilter@6cb2fab2, org.springframework.security.web.access.intercept.AuthorizationFilter@3a31c9e]
+2026-08-14 12:42:16.994 [main] INFO  c.b.BuildingManagerNetworkApiApplicationTests [,] - Started BuildingManagerNetworkApiApplicationTests in 10.96 seconds (process running for 13.961)
+2026-08-14 12:42:17.524 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:42:17.524 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:42:17.524 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:42:17.583 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:42:17.583 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:42:17.583 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:42:17.708 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:42:17.709 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:42:17.709 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:42:17.729 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:42:17.729 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:42:17.729 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:42:17.743 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:42:17.743 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:42:17.743 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:42:17.743 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:42:17.743 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:42:17.743 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:42:17.763 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:42:17.763 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:42:17.763 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:42:17.781 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:42:17.781 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:42:17.781 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:42:17.787 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:42:17.787 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:42:17.787 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:42:17.817 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:42:17.817 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:42:17.817 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:42:17.830 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:42:17.830 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:42:17.830 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:42:19.138 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [,] - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-08-14 12:42:19.138 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Shutdown initiated...
+2026-08-14 12:42:19.138 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Shutdown completed.
+2026-08-14 12:43:17.901 [background-preinit] INFO  o.h.validator.internal.util.Version [,] - HV000001: Hibernate Validator 8.0.1.Final
+2026-08-14 12:43:17.919 [main] INFO  c.b.BuildingManagerNetworkApiApplicationTests [,] - Starting BuildingManagerNetworkApiApplicationTests using Java 21.0.5 with PID 20680 (started by FotisPamp in C:\Users\FotisPamp\Documents\GitHub\building-manager-network)
+2026-08-14 12:43:17.919 [main] INFO  c.b.BuildingManagerNetworkApiApplicationTests [,] - The following 1 profile is active: "dev"
+2026-08-14 12:43:19.803 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [,] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-14 12:43:19.907 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [,] - Finished Spring Data repository scanning in 98 ms. Found 28 JPA repository interfaces.
+2026-08-14 12:43:21.341 [main] INFO  o.h.jpa.internal.util.LogHelper [,] - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-08-14 12:43:21.482 [main] INFO  org.hibernate.Version [,] - HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-08-14 12:43:21.542 [main] INFO  o.h.c.i.RegionFactoryInitiator [,] - HHH000026: Second-level cache disabled
+2026-08-14 12:43:21.659 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo [,] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-14 12:43:21.681 [main] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Starting...
+2026-08-14 12:43:21.796 [main] INFO  com.zaxxer.hikari.pool.HikariPool [,] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@26c349fc
+2026-08-14 12:43:21.798 [main] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Start completed.
+2026-08-14 12:43:21.835 [main] WARN  org.hibernate.orm.deprecation [,] - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-08-14 12:43:23.233 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator [,] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-08-14 12:43:23.596 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [,] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-14 12:43:24.232 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory [,] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-08-14 12:43:27.381 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration [,] - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-08-14 12:43:28.095 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver [,] - Exposing 3 endpoint(s) beneath base path '/actuator'
+2026-08-14 12:43:28.162 [main] INFO  o.s.s.web.DefaultSecurityFilterChain [,] - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@44fc251d, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@1c6e51e8, org.springframework.security.web.context.SecurityContextHolderFilter@7bfab2d8, org.springframework.security.web.header.HeaderWriterFilter@3d06a6ac, org.springframework.web.filter.CorsFilter@4ae8e94a, org.springframework.security.web.authentication.logout.LogoutFilter@575d8bd1, com.buildingmanager.security.JwtFilter@737ff143, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@19b456ac, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@49cc2730, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@3bf3c47b, org.springframework.security.web.session.SessionManagementFilter@5fa0d0cb, org.springframework.security.web.access.ExceptionTranslationFilter@25f0643f, org.springframework.security.web.access.intercept.AuthorizationFilter@591cea95]
+2026-08-14 12:43:28.886 [main] INFO  c.b.BuildingManagerNetworkApiApplicationTests [,] - Started BuildingManagerNetworkApiApplicationTests in 11.36 seconds (process running for 14.365)
+2026-08-14 12:43:29.403 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:43:29.403 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:43:29.403 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:43:29.469 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:43:29.469 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:43:29.469 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:43:29.594 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:43:29.594 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:43:29.594 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:43:29.618 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:43:29.618 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:43:29.618 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:43:29.636 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:43:29.636 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:43:29.636 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:43:29.645 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:43:29.645 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:43:29.645 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:43:29.653 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:43:29.659 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:43:29.659 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:43:29.675 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:43:29.675 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:43:29.675 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:43:29.700 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:43:29.700 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:43:29.700 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:43:29.716 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:43:29.717 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:43:29.717 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:43:29.732 [main] INFO  o.s.mock.web.MockServletContext [,] - Initializing Spring TestDispatcherServlet ''
+2026-08-14 12:43:29.732 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Initializing Servlet ''
+2026-08-14 12:43:29.732 [main] INFO  o.s.t.w.s.TestDispatcherServlet [,] - Completed initialization in 0 ms
+2026-08-14 12:43:31.071 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [,] - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-08-14 12:43:31.075 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Shutdown initiated...
+2026-08-14 12:43:31.075 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Shutdown completed.

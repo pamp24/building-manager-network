@@ -203,6 +203,56 @@ class CommonExpenseStatementServiceTest {
     }
 
     @Test
+    void createAndSend_roundsProportionalSharesAndDistributesRemainderToLargestFraction() {
+        apt1.setCommonPercent(333.0);
+        apt2.setCommonPercent(333.0);
+        Apartment apt3 = Apartment.builder()
+                .id(3)
+                .building(building)
+                .number("3")
+                .floor("3")
+                .commonPercent(334.0)
+                .elevatorPercent(334.0)
+                .heatingPercent(334.0)
+                .owner(owner1)
+                .build();
+
+        List<CommonExpenseItem> items = List.of(
+                CommonExpenseItem.builder().category(ExpenseCategory.COMMON).price(BigDecimal.valueOf(10.01)).descriptionItem("Common").build()
+        );
+        CommonExpenseStatement statement = createStatementWithItems(items);
+
+        when(commonExpenseStatementRepository.findMaxSequenceByBuilding(1)).thenReturn(0);
+        when(commonExpenseStatementRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(apartmentRepository.findAllByBuilding_Id(1)).thenReturn(List.of(apt1, apt2, apt3));
+        when(buildingRepository.findById(1)).thenReturn(Optional.of(building));
+
+        service.createAndSend(statement);
+
+        verify(commonExpenseAllocationRepository, times(3)).save(allocationCaptor.capture());
+        List<CommonExpenseAllocation> allocations = allocationCaptor.getAllValues();
+
+        BigDecimal total = allocations.stream()
+                .map(CommonExpenseAllocation::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Το άθροισμα πρέπει να ισούται ακριβώς με το itemTotal
+        assertThat(total).isEqualByComparingTo(BigDecimal.valueOf(10.01));
+
+        // Το +0.01 πάει στο διαμέρισμα με το μεγαλύτερο κλασματικό υπόλοιπο (apt3 με 334 χιλιοστά)
+        CommonExpenseAllocation allocApt3 = allocations.stream()
+                .filter(a -> a.getApartment().getId().equals(3))
+                .findFirst().orElseThrow();
+        assertThat(allocApt3.getAmount()).isEqualByComparingTo(BigDecimal.valueOf(3.35));
+        assertThat(allocations.stream()
+                .filter(a -> a.getApartment().getId().equals(1))
+                .findFirst().orElseThrow().getAmount()).isEqualByComparingTo(BigDecimal.valueOf(3.33));
+        assertThat(allocations.stream()
+                .filter(a -> a.getApartment().getId().equals(2))
+                .findFirst().orElseThrow().getAmount()).isEqualByComparingTo(BigDecimal.valueOf(3.33));
+    }
+
+    @Test
     void createAndSend_allocatesEqualExpenseEqually() {
         List<CommonExpenseItem> items = List.of(
                 CommonExpenseItem.builder().category(ExpenseCategory.EQUAL).price(BigDecimal.valueOf(101)).descriptionItem("Equal share").build()
@@ -299,6 +349,8 @@ class CommonExpenseStatementServiceTest {
 
     @Test
     void createAndSend_incrementsSequenceNumber() {
+        apt1.setCommonPercent(1000.0);
+
         List<CommonExpenseItem> items = List.of(
                 CommonExpenseItem.builder().category(ExpenseCategory.COMMON).price(BigDecimal.valueOf(100)).descriptionItem("Test").build()
         );
@@ -439,7 +491,7 @@ class CommonExpenseStatementServiceTest {
                 .allocations(List.of())
                 .build();
 
-        when(commonExpenseStatementRepository.findByBuildingId(1)).thenReturn(List.of(expiredStatement));
+        when(commonExpenseStatementRepository.findByBuildingIdOrderByStartDateDesc(1)).thenReturn(List.of(expiredStatement));
         when(commonExpenseStatementRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(commonExpenseAllocationRepository.hasAnyPaymentForStatement(1)).thenReturn(false);
 
@@ -462,7 +514,7 @@ class CommonExpenseStatementServiceTest {
                 .allocations(List.of())
                 .build();
 
-        when(commonExpenseStatementRepository.findByBuildingId(1)).thenReturn(List.of(paidStatement));
+        when(commonExpenseStatementRepository.findByBuildingIdOrderByStartDateDesc(1)).thenReturn(List.of(paidStatement));
         when(commonExpenseStatementRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(commonExpenseAllocationRepository.hasAnyPaymentForStatement(2)).thenReturn(true);
 
