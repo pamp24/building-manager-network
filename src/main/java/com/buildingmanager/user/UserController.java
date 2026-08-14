@@ -16,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -59,6 +60,67 @@ public class UserController {
         }
 
         return ResponseEntity.ok(new RoleDTO(user.getRole().getName()));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        List<UserDTO> users = userRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(User::getId))
+                .map(user -> UserDTO.builder()
+                        .id(user.getId())
+                        .firstName(user.getFirstName())
+                        .lastName(user.getLastName())
+                        .fullName(user.fullName())
+                        .email(user.getEmail())
+                        .phoneNumber(user.getPhoneNumber())
+                        .profileImageUrl(user.getProfileImageUrl())
+                        .city(user.getCity())
+                        .region(user.getRegion())
+                        .createdDate(user.getCreatedDate())
+                        .lastLoginDate(user.getLastLoginDate())
+                        .enabled(user.isEnabled())
+                        .accountLocked(!user.isAccountNonLocked())
+                        .role(user.getRole() != null ? user.getRole().getName() : null)
+                        .build())
+                .toList();
+        return ResponseEntity.ok(users);
+    }
+
+    @PutMapping("/{userId}/enable")
+    public ResponseEntity<UserDTO> setUserEnabled(
+            @PathVariable Integer userId,
+            @RequestParam boolean enabled,
+            Authentication authentication) {
+
+        if (authentication != null && authentication.getPrincipal() instanceof User currentUser
+                && currentUser.getId().equals(userId) && !enabled) {
+            throw new AccessDeniedException("Δεν μπορείτε να απενεργοποιήσετε τον λογαριασμό σας");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User with id '" + userId + "' not found"));
+
+        user.setEnable(enabled);
+        userRepository.save(user);
+
+        UserDTO dto = UserDTO.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .fullName(user.fullName())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .profileImageUrl(user.getProfileImageUrl())
+                .city(user.getCity())
+                .region(user.getRegion())
+                .createdDate(user.getCreatedDate())
+                .lastLoginDate(user.getLastLoginDate())
+                .enabled(user.isEnabled())
+                .accountLocked(!user.isAccountNonLocked())
+                .role(user.getRole() != null ? user.getRole().getName() : null)
+                .build();
+        return ResponseEntity.ok(dto);
     }
 
     @PutMapping("/update")

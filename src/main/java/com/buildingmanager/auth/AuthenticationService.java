@@ -115,6 +115,9 @@ public class AuthenticationService {
 
         var user = ((User) auth.getPrincipal());
 
+        user.setLastLoginDate(LocalDateTime.now());
+        userRepository.save(user);
+
         var claims = new HashMap<String, Object>();
         claims.put("fullName", user.fullName());
 

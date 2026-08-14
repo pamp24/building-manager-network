@@ -32,6 +32,8 @@ public class UserService {
     private final ApartmentRepository apartmentRepository;
     private final EmailService emailService;
 
+    private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp");
+
     @Auditable(action = AuditAction.PERMISSION_CHANGE)
     public boolean updateUserRole(Integer userId, Role newRole) {
         return userRepository.findById(userId).map(user -> {
@@ -104,28 +106,30 @@ public class UserService {
 
     @Transactional
     public String uploadProfileImage(MultipartFile file, Integer userId) {
-        if (file.isEmpty()) {
+        if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("Empty file");
         }
 
         String originalFilename = Objects.requireNonNull(file.getOriginalFilename());
-        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        String fileName = UUID.randomUUID() + extension;
+        String extension = extractImageExtension(originalFilename);
 
-        Path uploadDir = Paths.get("uploads/profile-images");
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String fileName = UUID.randomUUID() + extension;
+        Path userImageDir = Paths.get("uploads", "profile-images", String.valueOf(userId));
 
         try {
-            Files.createDirectories(uploadDir);
-            Path filePath = uploadDir.resolve(fileName);
+            Files.createDirectories(userImageDir);
 
+            deleteOldProfileImage(user);
+
+            Path filePath = userImageDir.resolve(fileName);
             log.debug("Saving file to: {}", filePath.toAbsolutePath());
 
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
-            String imageUrl = "/uploads/profile-images/" + fileName;
+            String imageUrl = "/uploads/profile-images/" + userId + "/" + fileName;
 
             log.debug("Returning imageUrl: {}", imageUrl);
 
@@ -139,6 +143,42 @@ public class UserService {
             throw new RuntimeException("Failed to upload image", e);
         }
 
+    }
+
+    private String extractImageExtension(String fileName) {
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex < 0 || dotIndex == fileName.length() - 1) {
+            throw new IllegalArgumentException("Το αρχείο δεν έχει έγκυρη επέκταση.");
+        }
+
+        String extension = fileName.substring(dotIndex + 1).toLowerCase(Locale.ROOT);
+
+        if (!ALLOWED_IMAGE_EXTENSIONS.contains(extension)) {
+            throw new IllegalArgumentException("Ο τύπος αρχείου ." + extension + " δεν υποστηρίζεται.");
+        }
+
+        return "." + extension;
+    }
+
+    private void deleteOldProfileImage(User user) {
+        String currentUrl = user.getProfileImageUrl();
+        if (currentUrl == null || currentUrl.isBlank() || !currentUrl.startsWith("/uploads/profile-images/")) {
+            return;
+        }
+
+        String relativePath = currentUrl.substring("/uploads/".length());
+        Path root = Paths.get("uploads").toAbsolutePath().normalize();
+        Path filePath = root.resolve(relativePath).normalize();
+
+        if (!filePath.startsWith(root)) {
+            return;
+        }
+
+        try {
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            log.warn("Δεν ήταν δυνατή η διαγραφή της παλιάς φωτογραφίας: {}", filePath);
+        }
     }
 
     @Transactional
