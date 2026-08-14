@@ -18,6 +18,7 @@ import com.buildingmanager.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,15 +26,26 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BuildingService {
 
     private final BuildingRepository buildingRepository;
@@ -44,6 +56,8 @@ public class BuildingService {
     private final RoleRepository roleRepository;
     private final BuildingPermissionService buildingPermissionService;
     private final UserBuildingPermissionRepository userBuildingPermissionRepository;
+
+    private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp");
 
     private User freshUser(Authentication auth) {
         User principal = (User) auth.getPrincipal();
@@ -244,7 +258,26 @@ public class BuildingService {
             throw new AccessDeniedException("Δεν έχεις πλήρη δικαιώματα διαχείρισης αυτής της πολυκατοικίας");
         }
 
-        buildingRepository.delete(building);
+        // soft-delete: keep the record but mark it inactive/disabled
+        building.setActive(false);
+        building.setEnable(false);
+        buildingRepository.save(building);
+    }
+
+    @Transactional
+    public void setBuildingActive(Integer buildingId, boolean active, Authentication connectedUser) {
+        User user = (User) connectedUser.getPrincipal();
+
+        Building building = buildingRepository.findById(buildingId)
+                .orElseThrow(() -> new EntityNotFoundException("Building not found"));
+
+        if (!buildingPermissionService.canFullManageBuilding(user, buildingId)) {
+            throw new AccessDeniedException("Δεν έχεις πλήρη δικαιώματα διαχείρισης αυτής της πολυκατοικίας");
+        }
+
+        building.setActive(active);
+        building.setEnable(active);
+        buildingRepository.save(building);
     }
 
     @Transactional
@@ -419,6 +452,83 @@ public class BuildingService {
                 .stream()
                 .map(buildingMapper::toDTO)
                 .toList();
+    }
+
+    public Map<String, String> uploadBuildingImage(Integer buildingId, MultipartFile file, Authentication auth) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Empty file");
+        }
+
+        String originalFilename = Objects.requireNonNull(file.getOriginalFilename());
+        String extension = extractImageExtension(originalFilename);
+
+        User user = freshUser(auth);
+
+        Building building = buildingRepository.findById(buildingId)
+                .orElseThrow(() -> new EntityNotFoundException("Building not found"));
+
+        if (!buildingPermissionService.canManageBuilding(user, buildingId)) {
+            throw new AccessDeniedException("Δεν έχεις δικαίωμα αλλαγής της φωτογραφίας αυτής της πολυκατοικίας");
+        }
+
+        String fileName = UUID.randomUUID() + extension;
+        Path buildingImageDir = Paths.get("uploads", "buildings", String.valueOf(buildingId), "profile-image");
+
+        try {
+            Files.createDirectories(buildingImageDir);
+
+            deleteOldBuildingImage(building);
+
+            Path filePath = buildingImageDir.resolve(fileName);
+            log.debug("Saving building image to: {}", filePath.toAbsolutePath());
+
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            String imageUrl = "/uploads/buildings/" + buildingId + "/profile-image/" + fileName;
+
+            building.setProfileImageUrl(imageUrl);
+            buildingRepository.save(building);
+
+            return Map.of("imageUrl", imageUrl);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to upload building image", e);
+        }
+    }
+
+    private String extractImageExtension(String fileName) {
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex < 0 || dotIndex == fileName.length() - 1) {
+            throw new IllegalArgumentException("Το αρχείο δεν έχει έγκυρη επέκταση.");
+        }
+
+        String extension = fileName.substring(dotIndex + 1).toLowerCase(Locale.ROOT);
+
+        if (!ALLOWED_IMAGE_EXTENSIONS.contains(extension)) {
+            throw new IllegalArgumentException("Ο τύπος αρχείου ." + extension + " δεν υποστηρίζεται.");
+        }
+
+        return "." + extension;
+    }
+
+    private void deleteOldBuildingImage(Building building) {
+        String currentUrl = building.getProfileImageUrl();
+        if (currentUrl == null || currentUrl.isBlank() || !currentUrl.startsWith("/uploads/buildings/")) {
+            return;
+        }
+
+        String relativePath = currentUrl.substring("/uploads/".length());
+        Path root = Paths.get("uploads").toAbsolutePath().normalize();
+        Path filePath = root.resolve(relativePath).normalize();
+
+        if (!filePath.startsWith(root)) {
+            return;
+        }
+
+        try {
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            log.warn("Δεν ήταν δυνατή η διαγραφή της παλιάς φωτογραφίας πολυκατοικίας: {}", filePath);
+        }
     }
 
 }

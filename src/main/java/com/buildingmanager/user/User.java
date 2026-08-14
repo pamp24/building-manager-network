@@ -54,6 +54,7 @@ public class User extends BaseEntity implements UserDetails {
     private String postalCode;
     private boolean accountLocked;
     private boolean enable;
+    private boolean deleted;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id")

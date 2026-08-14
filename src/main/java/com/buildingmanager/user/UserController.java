@@ -81,6 +81,7 @@ public class UserController {
                         .lastLoginDate(user.getLastLoginDate())
                         .enabled(user.isEnabled())
                         .accountLocked(!user.isAccountNonLocked())
+                        .deleted(user.isDeleted())
                         .role(user.getRole() != null ? user.getRole().getName() : null)
                         .build())
                 .toList();
@@ -118,9 +119,30 @@ public class UserController {
                 .lastLoginDate(user.getLastLoginDate())
                 .enabled(user.isEnabled())
                 .accountLocked(!user.isAccountNonLocked())
+                .deleted(user.isDeleted())
                 .role(user.getRole() != null ? user.getRole().getName() : null)
                 .build();
         return ResponseEntity.ok(dto);
+    }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> softDeleteUser(
+            @PathVariable Integer userId,
+            Authentication authentication) {
+
+        if (authentication != null && authentication.getPrincipal() instanceof User currentUser
+                && currentUser.getId().equals(userId)) {
+            throw new AccessDeniedException("Δεν μπορείτε να διαγράψετε τον λογαριασμό σας");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User with id '" + userId + "' not found"));
+
+        user.setDeleted(true);
+        user.setEnable(false);
+        userRepository.save(user);
+
+        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/update")
