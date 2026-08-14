@@ -242,7 +242,7 @@ public class CommonExpenseStatementService {
     }
 
     public List<CommonExpenseStatementDTO> getStatementsByBuilding(Integer buildingId) {
-        List<CommonExpenseStatement> statements = commonExpenseStatementRepository.findByBuildingId(buildingId);
+        List<CommonExpenseStatement> statements = commonExpenseStatementRepository.findByBuildingIdOrderByStartDateDesc(buildingId);
         LocalDateTime now = LocalDateTime.now();
 
         return statements.stream().map(s -> {

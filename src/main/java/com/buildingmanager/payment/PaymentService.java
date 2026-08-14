@@ -86,10 +86,17 @@ public class PaymentService {
             }
         }
 
-        //Εύρεση υπαρχουσών κατανομών
-        List<CommonExpenseAllocation> allocations = (user != null)
-                ? commonExpenseAllocationRepository.findByStatementIdAndUserId(req.getStatementId(), req.getUserId())
-                : commonExpenseAllocationRepository.findByStatementIdAndApartmentId(req.getStatementId(), req.getApartmentId());
+        //Εύρεση υπαρχουσών κατανομών — αν δίνεται apartmentId, σκοπεύουμε μόνο σε αυτό το διαμέρισμα
+        List<CommonExpenseAllocation> allocations;
+        if (apartment != null) {
+            allocations = commonExpenseAllocationRepository.findByStatementIdAndApartmentId(
+                    req.getStatementId(), req.getApartmentId());
+        } else if (user != null) {
+            allocations = commonExpenseAllocationRepository.findByStatementIdAndUserId(
+                    req.getStatementId(), req.getUserId());
+        } else {
+            throw new IllegalArgumentException("ApartmentId or UserId is required");
+        }
 
         if (allocations.isEmpty()) {
             throw new IllegalArgumentException("No allocations found for this user/apartment/statement");
@@ -114,17 +121,17 @@ public class PaymentService {
             throw new IllegalStateException("Το ποσό υπερβαίνει το οφειλόμενο υπόλοιπο.");
         }
 
-        //Εύρεση υπάρχουσας πληρωμής
+        //Εύρεση υπάρχουσας πληρωμής — προτίμησε το apartmentId για σωστή αντιστοίχιση πολυκατοικιών
         Optional<Payment> existingPaymentOpt = Optional.empty();
 
-        if (user != null) {
+        if (apartment != null) {
+            existingPaymentOpt = paymentRepository.findTopByApartment_IdAndStatement_IdOrderByPaymentDateDesc(
+                    apartment.getId(), statement.getId());
+        } else if (user != null) {
             existingPaymentOpt = Optional.ofNullable(
                     paymentRepository.findTopByUser_IdAndStatement_IdOrderByPaymentDateDesc(
                             user.getId(), statement.getId())
             );
-        } else if (apartment != null) {
-            existingPaymentOpt = paymentRepository.findTopByApartment_IdAndStatement_IdOrderByPaymentDateDesc(
-                    apartment.getId(), statement.getId());
         }
 
         Payment payment;
