@@ -1,6 +1,5 @@
 package com.buildingmanager.payment;
 
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import jakarta.validation.constraints.NotNull;
@@ -15,7 +14,11 @@ public class PaymentRequest {
     @NotNull
     private Double amount;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
-    private LocalDateTime paymentDate; // αν κενό, θα βάλουμε now()
+    private LocalDateTime paymentDate;
     private String paymentMethod;
     private String referenceNumber;
+    private String gateway;
+    private String gatewayPaymentMethodId;
+    private String returnUrl;
+    private String cancelUrl;
 }

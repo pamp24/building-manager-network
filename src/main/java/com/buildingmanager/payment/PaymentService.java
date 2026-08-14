@@ -77,6 +77,15 @@ public class PaymentService {
             method = PaymentMethod.CASH;
         }
 
+        PaymentGateway gateway = null;
+        if (req.getGateway() != null) {
+            try {
+                gateway = PaymentGateway.valueOf(req.getGateway().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                log.warn("Unknown payment gateway: {}", req.getGateway());
+            }
+        }
+
         //Εύρεση υπαρχουσών κατανομών
         List<CommonExpenseAllocation> allocations = (user != null)
                 ? commonExpenseAllocationRepository.findByStatementIdAndUserId(req.getStatementId(), req.getUserId())
@@ -130,6 +139,7 @@ public class PaymentService {
             payment.setPaymentDate(LocalDateTime.now());
             payment.setPaymentMethod(method);
             payment.setReferenceNumber(req.getReferenceNumber());
+            if (gateway != null) payment.setGateway(gateway);
 
         } else {
             // Δημιουργία νέας πληρωμής
@@ -143,6 +153,7 @@ public class PaymentService {
                     .paymentDate(LocalDateTime.now())
                     .paymentMethod(method)
                     .referenceNumber(req.getReferenceNumber())
+                    .gateway(gateway)
                     .build();
         }
 
@@ -213,6 +224,9 @@ public class PaymentService {
         dto.setUserId(user != null ? user.getId() : null);
         dto.setUserFullName(fullName);
         dto.setStatementId(statement.getId());
+        dto.setGateway(payment.getGateway());
+        dto.setGatewayTransactionId(payment.getGatewayTransactionId());
+        dto.setGatewayStatus(payment.getGatewayStatus());
 
         return dto;
     }
