@@ -14,6 +14,16 @@ server:
     include-message: always
     include-binding-errors: always
 
+payment:
+  gateway:
+    default: stripe
+    stripe:
+      secret-key: ${STRIPE_SECRET_KEY:sk_test_placeholder}
+      webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_placeholder}
+    viva:
+      merchant-id: ${VIVA_MERCHANT_ID:placeholder}
+      api-key: ${VIVA_API_KEY:placeholder}
+
 logging:
   level:
     com.buildingmanager: INFO

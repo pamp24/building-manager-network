@@ -26,6 +26,10 @@
         frontend:
           activation-url: "http://localhost:4200/code-verify"
 
+    payment:
+      gateway:
+        default: stripe
+
     mail:
       host: localhost
       port: 1080
@@ -39,7 +43,6 @@
           starttls:
             enable: true
           connectiontimeout: 5000
-          timeout: 3000
+          timeout: 5000
           writetimeout: 5000
-
 

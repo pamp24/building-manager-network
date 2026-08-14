@@ -1,6 +1,5 @@
 package com.buildingmanager.payment;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -15,11 +14,29 @@ import java.util.List;
 public class PaymentController {
 
     private final PaymentService paymentService;
+    private final StripePaymentService stripePaymentService;
+    private final VivaPaymentService vivaPaymentService;
 
     @PostMapping
     public ResponseEntity<PaymentDTO> createPayment(@Validated @RequestBody PaymentRequest req) {
         PaymentDTO dto = paymentService.createPayment(req);
         return ResponseEntity.ok(dto);
+    }
+
+    @PostMapping("/create-intent")
+    public ResponseEntity<PaymentIntentResponse> createPaymentIntent(
+            @Validated @RequestBody PaymentIntentRequest req
+    ) {
+        PaymentIntentResponse response = switch (req.getGateway().toUpperCase()) {
+            case "STRIPE" -> stripePaymentService.createPaymentIntent(
+                    req.getStatementId(), req.getUserId(), req.getApartmentId(),
+                    req.getAmount(), req.getReturnUrl(), req.getCancelUrl());
+            case "VIVA_WALLET" -> vivaPaymentService.createCheckoutOrder(
+                    req.getStatementId(), req.getUserId(), req.getApartmentId(),
+                    req.getAmount(), req.getReturnUrl());
+            default -> throw new IllegalArgumentException("Unsupported gateway: " + req.getGateway());
+        };
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/statement/{statementId}")

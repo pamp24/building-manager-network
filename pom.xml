@@ -143,6 +143,13 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!-- Stripe SDK -->
+		<dependency>
+			<groupId>com.stripe</groupId>
+			<artifactId>stripe-java</artifactId>
+			<version>28.0.0</version>
+		</dependency>
+
 		<!-- JAXB API -->
 		<dependency>
 			<groupId>jakarta.xml.bind</groupId>

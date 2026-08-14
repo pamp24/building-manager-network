@@ -113,6 +113,8 @@ public interface ApartmentRepository extends JpaRepository<Apartment, Integer> {
             Integer apartmentId
     );
 
+    long countByBuilding_Id(Integer buildingId);
+
     long countByBuilding_IdAndParkingSpaceTrueAndActiveTrue(
             Integer buildingId
     );

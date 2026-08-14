@@ -26,9 +26,19 @@ public class Payment extends BaseEntity {
     private LocalDateTime paymentDate;
 
     @Enumerated(EnumType.STRING)
-    private PaymentMethod paymentMethod; // 'CASH','BANK_TRANSFER','CARD',...
+    private PaymentMethod paymentMethod;
 
     private String referenceNumber;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentGateway gateway;
+
+    private String gatewayTransactionId;
+
+    private String gatewayStatus;
+
+    @Column(columnDefinition = "TEXT")
+    private String gatewayRawResponse;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "statement_id")
