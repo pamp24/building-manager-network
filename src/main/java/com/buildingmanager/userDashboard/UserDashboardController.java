@@ -63,6 +63,21 @@ public class UserDashboardController {
         return userDashboardService.getStatementMiniChart(user.getId());
     }
 
+    @GetMapping("/heating-chart")
+    public ResponseEntity<HeatingChartDTO> getHeatingChart(
+            Authentication auth,
+            @RequestParam(required = false) Integer buildingId
+    ) {
+        User user = (User) auth.getPrincipal();
+        return ResponseEntity.ok(userDashboardService.getHeatingChartData(user.getId(), buildingId));
+    }
+
+    @GetMapping("/owner-occupancy")
+    public ResponseEntity<List<OwnerResidentPaymentDTO>> getOwnerOccupancy(Authentication auth) {
+        User user = (User) auth.getPrincipal();
+        return ResponseEntity.ok(userDashboardService.getOwnerResidentPayments(user.getId()));
+    }
+
     @GetMapping("/unpaid")
     public ResponseEntity<BigDecimal> getUnpaid(Authentication auth) {
         User user = (User) auth.getPrincipal();

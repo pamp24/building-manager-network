@@ -1,6 +1,7 @@
 package com.buildingmanager.commonExpenseAllocation;
 
 import com.buildingmanager.apartment.Apartment;
+import com.buildingmanager.commonExpenseItem.ExpenseCategory;
 import com.buildingmanager.commonExpenseStatement.CommonExpenseStatement;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -70,6 +71,23 @@ where a.statement.id = :statementId
 """)
     BigDecimal sumApartmentExpensesByMonthYear(
             @Param("apartmentId") Integer apartmentId,
+            @Param("month") int month,
+            @Param("year") int year
+    );
+
+    @Query("""
+    SELECT COALESCE(SUM(a.amount), 0)
+    FROM CommonExpenseAllocation a
+    JOIN a.item i
+    JOIN i.statement s
+    WHERE a.apartment.id = :apartmentId
+      AND i.category = :category
+      AND EXTRACT(MONTH FROM s.startDate) = :month
+      AND EXTRACT(YEAR FROM s.startDate) = :year
+""")
+    BigDecimal sumApartmentExpensesByCategoryMonthYear(
+            @Param("apartmentId") Integer apartmentId,
+            @Param("category") ExpenseCategory category,
             @Param("month") int month,
             @Param("year") int year
     );

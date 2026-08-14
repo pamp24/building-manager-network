@@ -22,7 +22,6 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -289,6 +288,122 @@ public class UserDashboardService {
         }
 
         return null;
+    }
+
+    public HeatingChartDTO getHeatingChartData(Integer userId, Integer requestedBuildingId) {
+        Integer buildingId = requestedBuildingId;
+        Apartment apartment = findApartmentForUser(userId);
+
+        if (buildingId == null && apartment != null) {
+            buildingId = apartment.getBuilding().getId();
+        }
+        if (buildingId == null) {
+            return HeatingChartDTO.builder()
+                    .labels(List.of())
+                    .buildingValues(List.of())
+                    .apartmentValues(List.of())
+                    .buildingTotal(BigDecimal.ZERO)
+                    .apartmentTotal(BigDecimal.ZERO)
+                    .build();
+        }
+
+        List<String> labels = new ArrayList<>();
+        List<Double> buildingValues = new ArrayList<>();
+        List<Double> apartmentValues = new ArrayList<>();
+
+        LocalDateTime maxStart = statementRepository.findMaxStatementStartDate(buildingId);
+        YearMonth anchor = (maxStart != null) ? YearMonth.from(maxStart) : YearMonth.now();
+        YearMonth start = anchor.minusMonths(11);
+
+        BigDecimal buildingTotal = BigDecimal.ZERO;
+        BigDecimal apartmentTotal = BigDecimal.ZERO;
+
+        Integer apartmentId = (apartment != null) ? apartment.getId() : null;
+
+        for (int i = 0; i < 12; i++) {
+            YearMonth ym = start.plusMonths(i);
+            int year = ym.getYear();
+            int month = ym.getMonthValue();
+
+            labels.add(ym.toString());
+
+            BigDecimal b = statementRepository.sumBuildingExpensesByCategoryMonthYear(buildingId, ExpenseCategory.HEATING, month, year);
+            double bd = b != null ? b.doubleValue() : 0.0;
+            buildingValues.add(bd);
+            buildingTotal = buildingTotal.add(BigDecimal.valueOf(bd));
+
+            if (apartmentId != null) {
+                BigDecimal a = allocationRepository.sumApartmentExpensesByCategoryMonthYear(apartmentId, ExpenseCategory.HEATING, month, year);
+                double ad = a != null ? a.doubleValue() : 0.0;
+                apartmentValues.add(ad);
+                apartmentTotal = apartmentTotal.add(BigDecimal.valueOf(ad));
+            } else {
+                apartmentValues.add(0.0);
+            }
+        }
+
+        return HeatingChartDTO.builder()
+                .labels(labels)
+                .buildingValues(buildingValues)
+                .apartmentValues(apartmentValues)
+                .buildingTotal(buildingTotal)
+                .apartmentTotal(apartmentTotal)
+                .build();
+    }
+
+    public List<OwnerResidentPaymentDTO> getOwnerResidentPayments(Integer userId) {
+        Apartment apartment = apartmentRepository.findByOwner_Id(userId).stream()
+                .filter(a -> a.getResident() != null)
+                .findFirst()
+                .orElse(null);
+
+        if (apartment == null) return List.of();
+
+        Integer buildingId = apartment.getBuilding().getId();
+        List<CommonExpenseStatement> statements =
+                statementRepository.findByBuildingIdOrderByStartDateDesc(buildingId);
+
+        if (statements.isEmpty()) return List.of();
+
+        User resident = apartment.getResident();
+        String residentName = (resident.getFirstName() != null ? resident.getFirstName() : "")
+                + " " + (resident.getLastName() != null ? resident.getLastName() : "");
+
+        List<OwnerResidentPaymentDTO> result = new ArrayList<>();
+
+        for (CommonExpenseStatement s : statements.stream().limit(12).toList()) {
+            BigDecimal billed = BigDecimal.ZERO;
+            BigDecimal paid = BigDecimal.ZERO;
+
+            List<CommonExpenseAllocation> allocations =
+                    allocationRepository.findByStatementAndApartment(s, apartment);
+
+            for (CommonExpenseAllocation alloc : allocations) {
+                // Ο ένοικος δεν επιβαρύνεται με τις κατηγορίες που αφορούν μόνο ιδιοκτήτες
+                if (alloc.getItem().getCategory() == ExpenseCategory.OWNERS) continue;
+
+                BigDecimal amount = alloc.getAmount() == null ? BigDecimal.ZERO : alloc.getAmount();
+                BigDecimal paidAmount = alloc.getPaidAmount() == null ? BigDecimal.ZERO : alloc.getPaidAmount();
+
+                billed = billed.add(amount);
+                paid = paid.add(paidAmount);
+            }
+
+            BigDecimal remaining = billed.subtract(paid);
+
+            result.add(OwnerResidentPaymentDTO.builder()
+                    .statementId(s.getId())
+                    .month(s.getMonth())
+                    .residentName(residentName.trim())
+                    .apartmentNumber(apartment.getNumber())
+                    .billed(billed.doubleValue())
+                    .paid(paid.doubleValue())
+                    .remaining(remaining.doubleValue())
+                    .isPaid(remaining.compareTo(BigDecimal.ZERO) <= 0)
+                    .build());
+        }
+
+        return result;
     }
 
     public ChartResponseDTO getChartData(Integer userId, String type, String period) {
