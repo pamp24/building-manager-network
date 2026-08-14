@@ -41,6 +41,7 @@ public class Building extends BaseEntity {
     private boolean parkingExist;
     private Integer parkingSpacesNum;
     private String buildingDescription;
+    private String profileImageUrl;
     private boolean hasCentralHeating;
 
     @Enumerated(EnumType.STRING)

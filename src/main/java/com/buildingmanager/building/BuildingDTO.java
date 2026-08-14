@@ -30,12 +30,16 @@ public class BuildingDTO {
     private boolean parkingExist;
     private Integer parkingSpacesNum;
     private String buildingDescription;
+    private String profileImageUrl;
 
     private boolean hasCentralHeating;
     private String heatingType;
     private Double heatingCapacityLitres;
 
     private String buildingCode;
+
+    private boolean active;
+    private boolean enable;
 
     private boolean undergroundFloorExist;
     private boolean halfFloorExist;

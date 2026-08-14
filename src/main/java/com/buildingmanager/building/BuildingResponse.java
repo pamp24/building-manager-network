@@ -30,6 +30,7 @@ public class BuildingResponse {
     private boolean parkingExist;
     private int parkingSpacesNum;
     private String buildingDescription;
+    private String profileImageUrl;
     private boolean hasCentralHeating;
     private String heatingType;
     private Double heatingCapacityLitres;

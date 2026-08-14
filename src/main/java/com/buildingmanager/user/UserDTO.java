@@ -1,13 +1,10 @@
 package com.buildingmanager.user;
 
-import com.buildingmanager.role.Role;
 import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -38,6 +35,7 @@ public class UserDTO {
 
     private boolean enabled;
     private boolean accountLocked;
+    private boolean deleted;
 
 
     public static UserDTO fromUser(User user) {
@@ -65,6 +63,7 @@ public class UserDTO {
 
                 .enabled(user.isEnabled())
                 .accountLocked(user.isAccountNonLocked() == false)
+                .deleted(user.isDeleted())
 
                 .role(user.getRole().getName())
 

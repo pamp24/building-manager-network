@@ -14,8 +14,10 @@ import org.springframework.security.core.Authentication;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -127,6 +129,25 @@ public class    BuildingController {
     public ResponseEntity<List<BuildingDTO>> getAllBuildingsForAdmin(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok(buildingService.getAllBuildingsForAdmin(user));
+    }
+
+    @PostMapping("/{buildingId}/image")
+    public ResponseEntity<Map<String, String>> uploadBuildingImage(
+            @PathVariable Integer buildingId,
+            @RequestParam("file") MultipartFile file,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(buildingService.uploadBuildingImage(buildingId, file, authentication));
+    }
+
+    @PutMapping("/{buildingId}/active")
+    public ResponseEntity<Void> setBuildingActive(
+            @PathVariable Integer buildingId,
+            @RequestParam boolean active,
+            Authentication authentication
+    ) {
+        buildingService.setBuildingActive(buildingId, active, authentication);
+        return ResponseEntity.ok().build();
     }
 
 }
