@@ -237,10 +237,13 @@ public class PollService {
     public PollDTO voteAndReturnPoll(Integer userId, Integer pollId, Integer optionId) {
         vote(userId, pollId, optionId);
 
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
         Poll updated = pollRepository.findByIdWithOptionsOrdered(pollId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Poll not found"));
 
-        return pollMapper.toDTO(updated);
+        return toDTOWithPermissions(updated, user);
     }
 
     /**
@@ -335,6 +338,12 @@ public class PollService {
 
         dto.setCanView(buildingPermissionService.canViewBuilding(user, buildingId));
         dto.setCanManage(buildingPermissionService.canManageBuilding(user, buildingId));
+
+        dto.setVotedOptionIds(
+                voteRepository.findByPollAndUser(poll, user).stream()
+                        .map(vote -> vote.getOption().getId())
+                        .toList()
+        );
 
         return dto;
     }
