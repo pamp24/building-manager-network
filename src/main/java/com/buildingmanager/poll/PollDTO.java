@@ -26,4 +26,6 @@ public class PollDTO {
 
     private String leadingOption;
 
+    private List<Integer> votedOptionIds;
+
 }

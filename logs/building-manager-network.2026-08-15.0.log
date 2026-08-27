@@ -1,0 +1,71 @@
+2026-08-15 05:01:23.262 [http-nio-8080-exec-5] INFO  c.b.u.UserDashboardService [6a7fc873d6612e785685ffd730704af3,80da4b6024825f34] -   Loading dashboard for user 1
+2026-08-15 05:01:23.273 [http-nio-8080-exec-9] INFO  c.b.u.UserDashboardService [6a7fc873b3c5d187695442eef8ea4d12,db6a73b17cdf1dd6] - Loading dashboard history for user 1
+2026-08-15 05:01:23.322 [http-nio-8080-exec-5] INFO  c.b.u.UserDashboardService [6a7fc873d6612e785685ffd730704af3,80da4b6024825f34] - Selected OWNER apartment 1
+2026-08-15 05:01:23.326 [http-nio-8080-exec-5] INFO  c.b.u.UserDashboardService [6a7fc873d6612e785685ffd730704af3,80da4b6024825f34] - Last statement = 14 (2026-07)
+2026-08-15 05:01:23.344 [http-nio-8080-exec-5] INFO  c.b.u.UserDashboardService [6a7fc873d6612e785685ffd730704af3,80da4b6024825f34] - Found 2 allocations for apartment 1
+2026-08-15 05:01:23.344 [http-nio-8080-exec-5] INFO  c.b.u.UserDashboardService [6a7fc873d6612e785685ffd730704af3,80da4b6024825f34] - Final amount due: 7.35
+2026-08-15 05:01:23.354 [http-nio-8080-exec-7] INFO  c.b.u.UserDashboardService [6a7fc873898aefd8648025d5da013a5e,0dc54b3338529a39] -   Loading dashboard for user 1
+2026-08-15 05:01:23.359 [http-nio-8080-exec-7] INFO  c.b.u.UserDashboardService [6a7fc873898aefd8648025d5da013a5e,0dc54b3338529a39] - Selected OWNER apartment 1
+2026-08-15 05:01:23.361 [http-nio-8080-exec-7] INFO  c.b.u.UserDashboardService [6a7fc873898aefd8648025d5da013a5e,0dc54b3338529a39] - Last statement = 14 (2026-07)
+2026-08-15 05:01:23.368 [http-nio-8080-exec-7] INFO  c.b.u.UserDashboardService [6a7fc873898aefd8648025d5da013a5e,0dc54b3338529a39] - Found 2 allocations for apartment 1
+2026-08-15 05:01:23.368 [http-nio-8080-exec-7] INFO  c.b.u.UserDashboardService [6a7fc873898aefd8648025d5da013a5e,0dc54b3338529a39] - Final amount due: 7.35
+2026-08-15 05:01:23.391 [http-nio-8080-exec-3] INFO  c.b.u.UserDashboardService [6a7fc8735e099f06f4a032f7894e35d7,f9c12dca8b832458] - Loading dashboard history for user 1
+2026-08-15 05:01:34.408 [http-nio-8080-exec-4] INFO  c.b.u.UserDashboardService [6a7fc87e05fb94c5dc25b76f011e54e5,b01e5c9377500a00] - Loading dashboard history for user 1
+2026-08-15 05:01:34.408 [http-nio-8080-exec-5] INFO  c.b.u.UserDashboardService [6a7fc87e8b87792df56cec780832bab3,e2664e45d4b0d17e] -   Loading dashboard for user 1
+2026-08-15 05:01:34.412 [http-nio-8080-exec-5] INFO  c.b.u.UserDashboardService [6a7fc87e8b87792df56cec780832bab3,e2664e45d4b0d17e] - Selected OWNER apartment 1
+2026-08-15 05:01:34.412 [http-nio-8080-exec-5] INFO  c.b.u.UserDashboardService [6a7fc87e8b87792df56cec780832bab3,e2664e45d4b0d17e] - Last statement = 14 (2026-07)
+2026-08-15 05:01:34.421 [http-nio-8080-exec-5] INFO  c.b.u.UserDashboardService [6a7fc87e8b87792df56cec780832bab3,e2664e45d4b0d17e] - Found 2 allocations for apartment 1
+2026-08-15 05:01:34.421 [http-nio-8080-exec-5] INFO  c.b.u.UserDashboardService [6a7fc87e8b87792df56cec780832bab3,e2664e45d4b0d17e] - Final amount due: 7.35
+2026-08-15 05:01:34.426 [http-nio-8080-exec-10] INFO  c.b.u.UserDashboardService [6a7fc87e85ed9e1f400ed87eb03625ab,b5ef963f87882761] -   Loading dashboard for user 1
+2026-08-15 05:01:34.430 [http-nio-8080-exec-10] INFO  c.b.u.UserDashboardService [6a7fc87e85ed9e1f400ed87eb03625ab,b5ef963f87882761] - Selected OWNER apartment 1
+2026-08-15 05:01:34.432 [http-nio-8080-exec-10] INFO  c.b.u.UserDashboardService [6a7fc87e85ed9e1f400ed87eb03625ab,b5ef963f87882761] - Last statement = 14 (2026-07)
+2026-08-15 05:01:34.438 [http-nio-8080-exec-10] INFO  c.b.u.UserDashboardService [6a7fc87e85ed9e1f400ed87eb03625ab,b5ef963f87882761] - Found 2 allocations for apartment 1
+2026-08-15 05:01:34.438 [http-nio-8080-exec-9] INFO  c.b.u.UserDashboardService [6a7fc87ee755466163fa1e273977e17a,fd8fae3478536118] - Loading dashboard history for user 1
+2026-08-15 05:01:34.438 [http-nio-8080-exec-10] INFO  c.b.u.UserDashboardService [6a7fc87e85ed9e1f400ed87eb03625ab,b5ef963f87882761] - Final amount due: 7.35
+2026-08-15 05:02:17.696 [http-nio-8080-exec-5] INFO  c.b.u.UserDashboardService [6a7fc8a920565672cb9f17fcb80976a5,9bbfd46c32990623] -   Loading dashboard for user 1
+2026-08-15 05:02:17.697 [http-nio-8080-exec-7] INFO  c.b.u.UserDashboardService [6a7fc8a9cb2205a399a984dbea3893e4,0ffacb7576bef747] - Loading dashboard history for user 1
+2026-08-15 05:02:17.700 [http-nio-8080-exec-5] INFO  c.b.u.UserDashboardService [6a7fc8a920565672cb9f17fcb80976a5,9bbfd46c32990623] - Selected OWNER apartment 1
+2026-08-15 05:02:17.701 [http-nio-8080-exec-5] INFO  c.b.u.UserDashboardService [6a7fc8a920565672cb9f17fcb80976a5,9bbfd46c32990623] - Last statement = 14 (2026-07)
+2026-08-15 05:02:17.708 [http-nio-8080-exec-5] INFO  c.b.u.UserDashboardService [6a7fc8a920565672cb9f17fcb80976a5,9bbfd46c32990623] - Found 2 allocations for apartment 1
+2026-08-15 05:02:17.708 [http-nio-8080-exec-5] INFO  c.b.u.UserDashboardService [6a7fc8a920565672cb9f17fcb80976a5,9bbfd46c32990623] - Final amount due: 7.35
+2026-08-15 05:02:17.710 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6a7fc8a9a48526e22e118c101ca1d046,660e3e809a1d3f89] -   Loading dashboard for user 1
+2026-08-15 05:02:17.710 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6a7fc8a9a48526e22e118c101ca1d046,660e3e809a1d3f89] - Selected OWNER apartment 1
+2026-08-15 05:02:17.710 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6a7fc8a9a48526e22e118c101ca1d046,660e3e809a1d3f89] - Last statement = 14 (2026-07)
+2026-08-15 05:02:17.710 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6a7fc8a9a48526e22e118c101ca1d046,660e3e809a1d3f89] - Found 2 allocations for apartment 1
+2026-08-15 05:02:17.710 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6a7fc8a9a48526e22e118c101ca1d046,660e3e809a1d3f89] - Final amount due: 7.35
+2026-08-15 05:02:17.728 [http-nio-8080-exec-8] INFO  c.b.u.UserDashboardService [6a7fc8a9e19fe609033a7903cd667b7f,60d80f05d8cfb6a9] - Loading dashboard history for user 1
+2026-08-15 05:03:09.487 [http-nio-8080-exec-4] INFO  c.b.u.UserDashboardService [6a7fc8dd57f4cc5fa76da0af57e73d92,8559098597a65e0c] -   Loading dashboard for user 1
+2026-08-15 05:03:09.489 [http-nio-8080-exec-9] INFO  c.b.u.UserDashboardService [6a7fc8dd5f7aad0c4a24c5ce3887c57d,f5e96e2b7d891f03] - Loading dashboard history for user 1
+2026-08-15 05:03:09.492 [http-nio-8080-exec-4] INFO  c.b.u.UserDashboardService [6a7fc8dd57f4cc5fa76da0af57e73d92,8559098597a65e0c] - Selected OWNER apartment 1
+2026-08-15 05:03:09.493 [http-nio-8080-exec-4] INFO  c.b.u.UserDashboardService [6a7fc8dd57f4cc5fa76da0af57e73d92,8559098597a65e0c] - Last statement = 14 (2026-07)
+2026-08-15 05:03:09.494 [http-nio-8080-exec-4] INFO  c.b.u.UserDashboardService [6a7fc8dd57f4cc5fa76da0af57e73d92,8559098597a65e0c] - Found 2 allocations for apartment 1
+2026-08-15 05:03:09.494 [http-nio-8080-exec-4] INFO  c.b.u.UserDashboardService [6a7fc8dd57f4cc5fa76da0af57e73d92,8559098597a65e0c] - Final amount due: 7.35
+2026-08-15 05:03:09.500 [http-nio-8080-exec-8] INFO  c.b.u.UserDashboardService [6a7fc8ddb5968f53760a6bd86259a937,30fd0361064a8383] -   Loading dashboard for user 1
+2026-08-15 05:03:09.511 [http-nio-8080-exec-8] INFO  c.b.u.UserDashboardService [6a7fc8ddb5968f53760a6bd86259a937,30fd0361064a8383] - Selected OWNER apartment 1
+2026-08-15 05:03:09.513 [http-nio-8080-exec-8] INFO  c.b.u.UserDashboardService [6a7fc8ddb5968f53760a6bd86259a937,30fd0361064a8383] - Last statement = 14 (2026-07)
+2026-08-15 05:03:09.516 [http-nio-8080-exec-8] INFO  c.b.u.UserDashboardService [6a7fc8ddb5968f53760a6bd86259a937,30fd0361064a8383] - Found 2 allocations for apartment 1
+2026-08-15 05:03:09.516 [http-nio-8080-exec-8] INFO  c.b.u.UserDashboardService [6a7fc8ddb5968f53760a6bd86259a937,30fd0361064a8383] - Final amount due: 7.35
+2026-08-15 05:03:09.516 [http-nio-8080-exec-1] INFO  c.b.u.UserDashboardService [6a7fc8dd196faa34c91d1d7dd9fdee0e,078e110a4475676f] - Loading dashboard history for user 1
+2026-08-15 05:05:22.025 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6a7fc9622114301b1b36bda69700596e,148b7860b4e6fe77] -   Loading dashboard for user 1
+2026-08-15 05:05:22.027 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6a7fc9622114301b1b36bda69700596e,148b7860b4e6fe77] - Selected OWNER apartment 1
+2026-08-15 05:05:22.028 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6a7fc9622114301b1b36bda69700596e,148b7860b4e6fe77] - Last statement = 14 (2026-07)
+2026-08-15 05:05:22.029 [http-nio-8080-exec-1] INFO  c.b.u.UserDashboardService [6a7fc962bb80d68dded7e486e9a7a864,107efb434ebd1127] - Loading dashboard history for user 1
+2026-08-15 05:05:22.030 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6a7fc9622114301b1b36bda69700596e,148b7860b4e6fe77] - Found 2 allocations for apartment 1
+2026-08-15 05:05:22.030 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6a7fc9622114301b1b36bda69700596e,148b7860b4e6fe77] - Final amount due: 7.35
+2026-08-15 05:05:22.034 [http-nio-8080-exec-8] INFO  c.b.u.UserDashboardService [6a7fc962f982ebe524eb70d9252983e7,583b5a78827a2791] -   Loading dashboard for user 1
+2026-08-15 05:05:22.034 [http-nio-8080-exec-8] INFO  c.b.u.UserDashboardService [6a7fc962f982ebe524eb70d9252983e7,583b5a78827a2791] - Selected OWNER apartment 1
+2026-08-15 05:05:22.034 [http-nio-8080-exec-8] INFO  c.b.u.UserDashboardService [6a7fc962f982ebe524eb70d9252983e7,583b5a78827a2791] - Last statement = 14 (2026-07)
+2026-08-15 05:05:22.034 [http-nio-8080-exec-8] INFO  c.b.u.UserDashboardService [6a7fc962f982ebe524eb70d9252983e7,583b5a78827a2791] - Found 2 allocations for apartment 1
+2026-08-15 05:05:22.034 [http-nio-8080-exec-8] INFO  c.b.u.UserDashboardService [6a7fc962f982ebe524eb70d9252983e7,583b5a78827a2791] - Final amount due: 7.35
+2026-08-15 05:05:22.048 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6a7fc96219419d68a0701caa89263ac7,e6660ee172a85891] - Loading dashboard history for user 1
+2026-08-15 05:05:27.083 [http-nio-8080-exec-8] INFO  c.b.u.UserDashboardService [6a7fc9678ceadfe6c42d69ccaf7f4304,ad9f40917b9a09a9] -   Loading dashboard for user 16
+2026-08-15 05:05:27.091 [http-nio-8080-exec-8] WARN  c.b.u.UserDashboardService [6a7fc9678ceadfe6c42d69ccaf7f4304,ad9f40917b9a09a9] - User 16 has no apartment
+2026-08-15 05:05:27.097 [http-nio-8080-exec-1] INFO  c.b.u.UserDashboardService [6a7fc9677efb49c6a95c10a4040e8dbc,20993cfc7491d4a9] - Loading dashboard history for user 16
+2026-08-15 05:05:27.097 [http-nio-8080-exec-5] INFO  c.b.u.UserDashboardService [6a7fc96700fc212c216c5064d5b005e6,c169eb1e20ec8245] -   Loading dashboard for user 16
+2026-08-15 05:05:27.099 [http-nio-8080-exec-5] WARN  c.b.u.UserDashboardService [6a7fc96700fc212c216c5064d5b005e6,c169eb1e20ec8245] - User 16 has no apartment
+2026-08-15 05:05:27.099 [http-nio-8080-exec-1] WARN  c.b.u.UserDashboardService [6a7fc9677efb49c6a95c10a4040e8dbc,20993cfc7491d4a9] - User 16 has no apartment -> empty history
+2026-08-15 05:05:27.112 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6a7fc967161c16c34370ab25e70220ad,b966d00cf2a73307] - Loading dashboard history for user 16
+2026-08-15 05:05:27.115 [http-nio-8080-exec-2] WARN  c.b.u.UserDashboardService [6a7fc967161c16c34370ab25e70220ad,b966d00cf2a73307] - User 16 has no apartment -> empty history
+2026-08-15 06:00:16.071 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [,] - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-08-15 06:00:16.073 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Shutdown initiated...
+2026-08-15 06:00:16.074 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Shutdown completed.

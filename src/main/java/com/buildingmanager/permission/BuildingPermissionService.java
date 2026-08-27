@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -111,9 +112,23 @@ public class BuildingPermissionService {
             return List.of();
         }
 
-        return permissionRepository.findByUserId(user.getId())
+        List<Integer> ids = new ArrayList<>();
+
+        permissionRepository.findByUserId(user.getId())
+                .forEach(permission -> ids.add(permission.getBuilding().getId()));
+
+        // Οι διαχειριστές αλλά και τα μέλη που έχουν κάνει join
+        // βρίσκονται στο building_members. Χωρίς αυτό, οι ψηφοφορίες
+        // τους δεν εμφανίζονται (π.χ. στο /polls).
+        buildingMemberRepository.findByUser_Id(user.getId())
                 .stream()
-                .map(permission -> permission.getBuilding().getId())
-                .toList();
+                .filter(member -> member.getStatus() == BuildingMemberStatus.JOINED)
+                .forEach(member -> {
+                    if (member.getBuilding() != null) {
+                        ids.add(member.getBuilding().getId());
+                    }
+                });
+
+        return ids.stream().distinct().toList();
     }
 }

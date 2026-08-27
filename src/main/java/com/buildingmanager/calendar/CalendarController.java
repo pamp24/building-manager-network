@@ -16,9 +16,12 @@ public class CalendarController {
     private final CalendarService calendarService;
 
     @GetMapping("/building/{buildingId}")
-    public List<CalendarDTO> getByBuilding(@PathVariable Integer buildingId, Authentication auth) {
+    public List<CalendarDTO> getByBuilding(
+            @PathVariable Integer buildingId,
+            @RequestParam(defaultValue = "false") boolean includeInactive,
+            Authentication auth) {
         User user = (User) auth.getPrincipal();
-        return calendarService.getByBuilding(buildingId, user.getId());
+        return calendarService.getByBuilding(buildingId, user.getId(), includeInactive);
     }
 
     @PostMapping
