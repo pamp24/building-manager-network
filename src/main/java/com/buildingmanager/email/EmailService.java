@@ -104,4 +104,29 @@ public class EmailService {
                 null
         );
     }
+
+    /**
+     * Γενική ειδοποίηση (νέα ψηφοφορία / ανακοίνωση / κοινόχρηστα) μέσω email.
+     */
+    @Async
+    public void sendNotificationEmail(String to, String username, String subject, String message) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, MULTIPART_MODE_MIXED, UTF_8.name());
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("username", username);
+        properties.put("message", message);
+
+        Context context = new Context();
+        context.setVariables(properties);
+
+        helper.setFrom("fwtispa123@gmail.com");
+        helper.setTo(to);
+        helper.setSubject(subject);
+
+        String template = templateEngine.process("notification-email", context);
+        helper.setText(template, true);
+
+        mailSender.send(mimeMessage);
+    }
 }

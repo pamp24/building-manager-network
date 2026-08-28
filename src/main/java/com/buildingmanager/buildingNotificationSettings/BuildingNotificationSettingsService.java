@@ -24,19 +24,15 @@ public class BuildingNotificationSettingsService {
         BuildingNotificationSettings settings = settingsRepository.findByBuilding_Id(buildingId)
                 .orElseGet(() -> createDefaultSettings(buildingId));
 
-        settings.setEmailForStatementIssued(dto.getEmailForStatementIssued());
-        settings.setEmailForNewPoll(dto.getEmailForNewPoll());
-        settings.setEmailForNewAnnouncement(dto.getEmailForNewAnnouncement());
+        settings.setManagerAppForApartmentChanges(booleanOrDefault(dto.getManagerAppForApartmentChanges(), settings.getManagerAppForApartmentChanges()));
+        settings.setManagerEmailForApartmentChanges(booleanOrDefault(dto.getManagerEmailForApartmentChanges(), settings.getManagerEmailForApartmentChanges()));
+        settings.setManagerAppForMemberLeave(booleanOrDefault(dto.getManagerAppForMemberLeave(), settings.getManagerAppForMemberLeave()));
+        settings.setManagerEmailForMemberLeave(booleanOrDefault(dto.getManagerEmailForMemberLeave(), settings.getManagerEmailForMemberLeave()));
+        settings.setManagerAppForAddedToBuilding(booleanOrDefault(dto.getManagerAppForAddedToBuilding(), settings.getManagerAppForAddedToBuilding()));
+        settings.setManagerEmailForAddedToBuilding(booleanOrDefault(dto.getManagerEmailForAddedToBuilding(), settings.getManagerEmailForAddedToBuilding()));
 
-        settings.setAppForJoinRequest(dto.getAppForJoinRequest());
-        settings.setAppForMemberLeave(dto.getAppForMemberLeave());
-        settings.setAppForPaymentCompleted(dto.getAppForPaymentCompleted());
-        settings.setAppForNewPoll(dto.getAppForNewPoll());
-        settings.setAppForNewAnnouncement(dto.getAppForNewAnnouncement());
-
-        settings.setManagerEmailForApartmentChanges(dto.getManagerEmailForApartmentChanges());
-        settings.setManagerEmailForDirectMessage(dto.getManagerEmailForDirectMessage());
-        settings.setManagerEmailForAddedToBuilding(dto.getManagerEmailForAddedToBuilding());
+        settings.setMembersCanCreateAnnouncement(booleanOrDefault(dto.getMembersCanCreateAnnouncement(), settings.getMembersCanCreateAnnouncement()));
+        settings.setMembersCanCreatePoll(booleanOrDefault(dto.getMembersCanCreatePoll(), settings.getMembersCanCreatePoll()));
 
         settingsRepository.save(settings);
         return mapToDto(settings);
@@ -56,17 +52,18 @@ public class BuildingNotificationSettingsService {
     private BuildingNotificationSettingsDTO mapToDto(BuildingNotificationSettings s) {
         return BuildingNotificationSettingsDTO.builder()
                 .buildingId(s.getBuilding().getId())
-                .emailForStatementIssued(s.getEmailForStatementIssued())
-                .emailForNewPoll(s.getEmailForNewPoll())
-                .emailForNewAnnouncement(s.getEmailForNewAnnouncement())
-                .appForJoinRequest(s.getAppForJoinRequest())
-                .appForMemberLeave(s.getAppForMemberLeave())
-                .appForPaymentCompleted(s.getAppForPaymentCompleted())
-                .appForNewPoll(s.getAppForNewPoll())
-                .appForNewAnnouncement(s.getAppForNewAnnouncement())
+                .managerAppForApartmentChanges(s.getManagerAppForApartmentChanges())
                 .managerEmailForApartmentChanges(s.getManagerEmailForApartmentChanges())
-                .managerEmailForDirectMessage(s.getManagerEmailForDirectMessage())
+                .managerAppForMemberLeave(s.getManagerAppForMemberLeave())
+                .managerEmailForMemberLeave(s.getManagerEmailForMemberLeave())
+                .managerAppForAddedToBuilding(s.getManagerAppForAddedToBuilding())
                 .managerEmailForAddedToBuilding(s.getManagerEmailForAddedToBuilding())
+                .membersCanCreateAnnouncement(s.getMembersCanCreateAnnouncement())
+                .membersCanCreatePoll(s.getMembersCanCreatePoll())
                 .build();
+    }
+
+    private Boolean booleanOrDefault(Boolean value, Boolean current) {
+        return value != null ? value : current;
     }
 }

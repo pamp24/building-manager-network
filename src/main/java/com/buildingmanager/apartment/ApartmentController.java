@@ -137,6 +137,19 @@ public class ApartmentController {
         );
     }
 
+    @PutMapping("/update/myApartment")
+    public ResponseEntity<ApartmentResponse> updateMyApartment(
+            @RequestBody MyApartmentUpdateRequest request,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                apartmentService.updateMyApartment(
+                        request,
+                        authentication
+                )
+        );
+    }
+
     @DeleteMapping("/delete/{apartmentId}")
     public ResponseEntity<Void> deleteApartment(
             @PathVariable Integer apartmentId,

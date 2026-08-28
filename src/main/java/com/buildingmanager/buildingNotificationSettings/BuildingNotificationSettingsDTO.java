@@ -11,17 +11,13 @@ public class BuildingNotificationSettingsDTO {
 
     private Integer buildingId;
 
-    private Boolean emailForStatementIssued;
-    private Boolean emailForNewPoll;
-    private Boolean emailForNewAnnouncement;
-
-    private Boolean appForJoinRequest;
-    private Boolean appForMemberLeave;
-    private Boolean appForPaymentCompleted;
-    private Boolean appForNewPoll;
-    private Boolean appForNewAnnouncement;
-
+    private Boolean managerAppForApartmentChanges;
     private Boolean managerEmailForApartmentChanges;
-    private Boolean managerEmailForDirectMessage;
+    private Boolean managerAppForMemberLeave;
+    private Boolean managerEmailForMemberLeave;
+    private Boolean managerAppForAddedToBuilding;
     private Boolean managerEmailForAddedToBuilding;
+
+    private Boolean membersCanCreateAnnouncement;
+    private Boolean membersCanCreatePoll;
 }

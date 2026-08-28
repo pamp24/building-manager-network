@@ -19,6 +19,7 @@ public class CalendarMapper {
                 .buildingId(entity.getBuilding() != null ? entity.getBuilding().getId() : null)
                 .active(entity.isActive())
                 .pinned(entity.isPinned())
+                .createdDate(entity.getCreatedDate())
                 .build();
     }
 

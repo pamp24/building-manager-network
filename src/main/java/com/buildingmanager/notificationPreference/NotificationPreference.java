@@ -1,25 +1,25 @@
-package com.buildingmanager.buildingNotificationSettings;
+package com.buildingmanager.notificationPreference;
 
-import com.buildingmanager.building.Building;
+import com.buildingmanager.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "building_notification_settings")
+@Table(name = "user_notification_preferences")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BuildingNotificationSettings {
+public class NotificationPreference {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "building_id", nullable = false, unique = true)
-    private Building building;
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
 
     private Boolean emailForStatementIssued = true;
     private Boolean emailForNewPoll = false;
@@ -38,14 +38,4 @@ public class BuildingNotificationSettings {
     private Boolean smsForNewPoll = false;
     private Boolean smsForNewAnnouncement = false;
     private Boolean smsForAddedToBuilding = false;
-
-    private Boolean managerAppForApartmentChanges = true;
-    private Boolean managerEmailForApartmentChanges = true;
-    private Boolean managerAppForMemberLeave = true;
-    private Boolean managerEmailForMemberLeave = true;
-    private Boolean managerAppForAddedToBuilding = true;
-    private Boolean managerEmailForAddedToBuilding = true;
-
-    private Boolean membersCanCreateAnnouncement = false;
-    private Boolean membersCanCreatePoll = false;
 }

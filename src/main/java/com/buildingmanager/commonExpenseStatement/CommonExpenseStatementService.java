@@ -10,9 +10,12 @@ import com.buildingmanager.commonExpenseItem.CommonExpenseItem;
 import com.buildingmanager.commonExpenseItem.ExpenseCategory;
 import com.buildingmanager.audit.AuditAction;
 import com.buildingmanager.audit.Auditable;
+import com.buildingmanager.email.EmailService;
 import com.buildingmanager.notification.NotificationService;
+import com.buildingmanager.notificationPreference.NotificationPreferenceService;
 import com.buildingmanager.user.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +42,8 @@ public class CommonExpenseStatementService {
     private final NotificationService notificationService;
     private final BuildingRepository buildingRepository;
     private final ObjectMapper objectMapper;
+    private final NotificationPreferenceService notificationPreferenceService;
+    private final EmailService emailService;
 
     private static BigDecimal bd(BigDecimal v) {
         return v == null ? BigDecimal.ZERO : v;
@@ -232,7 +237,24 @@ public class CommonExpenseStatementService {
         String message = "Εκδόθηκε νέο παραστατικό: " + saved.getCode() + " (" + saved.getMonth() + ")";
 
         for (User user : receivers) {
-            notificationService.create(user, "NEW_STATEMENT", message, payload);
+            var prefs = notificationPreferenceService.getPreferencesForUser(user.getId());
+
+            if (Boolean.TRUE.equals(prefs.getAppForStatementIssued())) {
+                notificationService.create(user, "NEW_STATEMENT", message, payload);
+            }
+
+            if (Boolean.TRUE.equals(prefs.getEmailForStatementIssued()) && user.getEmail() != null) {
+                try {
+                    emailService.sendNotificationEmail(
+                            user.getEmail(),
+                            user.getFullName(),
+                            "Νέο παραστατικό κοινοχρήστων",
+                            message
+                    );
+                } catch (MessagingException e) {
+                    log.warn("Αποτυχία αποστολής email για το νέο παραστατικό: {}", user.getEmail());
+                }
+            }
         }
 
         return saved;

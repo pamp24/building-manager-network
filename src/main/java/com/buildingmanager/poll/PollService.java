@@ -4,12 +4,16 @@ package com.buildingmanager.poll;
 import com.buildingmanager.building.Building;
 import com.buildingmanager.building.BuildingRepository;
 import com.buildingmanager.buildingMember.BuildingMemberRepository;
+import com.buildingmanager.email.EmailService;
+import com.buildingmanager.email.SmsService;
 import com.buildingmanager.notification.NotificationService;
+import com.buildingmanager.notificationPreference.NotificationPreferenceService;
 import com.buildingmanager.permission.BuildingPermissionService;
 import com.buildingmanager.permission.UserBuildingPermission;
 import com.buildingmanager.permission.UserBuildingPermissionRepository;
 import com.buildingmanager.user.User;
 import com.buildingmanager.user.UserRepository;
+import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -35,6 +39,9 @@ public class PollService {
     private final UserBuildingPermissionRepository userBuildingPermissionRepository;
     private final NotificationService notificationService;
     private final BuildingMemberRepository buildingMemberRepository;
+    private final NotificationPreferenceService notificationPreferenceService;
+    private final EmailService emailService;
+    private final SmsService smsService;
 
     public List<PollDTO> getAllByBuilding(Integer buildingId, Integer userId) {
 
@@ -89,7 +96,7 @@ public class PollService {
         var user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!buildingPermissionService.canManageBuilding(user, dto.getBuildingId())) {
+        if (!buildingPermissionService.canCreatePoll(user, dto.getBuildingId())) {
             throw new AccessDeniedException("Δεν έχεις δικαίωμα δημιουργίας ψηφοφορίας σε αυτή την πολυκατοικία.");
         }
 
@@ -155,16 +162,42 @@ public class PollService {
             }
             """.formatted(poll.getId(), buildingId);
 
-        receivers.stream()
+        List<User> targets = receivers.stream()
                 .filter(receiver -> !receiver.getId().equals(creatorUserId))
-                .forEach(receiver ->
-                        notificationService.create(
-                                receiver,
-                                "POLL_CREATED",
-                                message,
-                                payload
-                        )
+                .toList();
+
+        targets.forEach(receiver -> {
+            var prefs = notificationPreferenceService.getPreferencesForUser(receiver.getId());
+
+            // In-app ειδοποίηση (μόνο αν είναι ενεργοποιημένη για τον συγκεκριμένο χρήστη)
+            if (Boolean.TRUE.equals(prefs.getAppForNewPoll())) {
+                notificationService.create(
+                        receiver,
+                        "POLL_CREATED",
+                        message,
+                        payload
                 );
+            }
+
+            // Email (μόνο αν είναι ενεργοποιημένη για τον συγκεκριμένο χρήστη)
+            if (Boolean.TRUE.equals(prefs.getEmailForNewPoll()) && receiver.getEmail() != null) {
+                try {
+                    emailService.sendNotificationEmail(
+                            receiver.getEmail(),
+                            receiver.getFullName(),
+                            "Νέα ψηφοφορία στην πολυκατοικία",
+                            message
+                    );
+                } catch (MessagingException e) {
+                    // Μην αποτυγχάνει η δημιουργία ψηφοφορίας αν αποτύχει ένα email
+                }
+            }
+
+            // SMS (stub — καταγράφεται στο log, χρειάζεται provider για πραγματική αποστολή)
+            if (Boolean.TRUE.equals(prefs.getSmsForNewPoll()) && receiver.getPhoneNumber() != null) {
+                smsService.sendSms(receiver.getPhoneNumber(), receiver.getFullName(), message);
+            }
+        });
     }
 
 

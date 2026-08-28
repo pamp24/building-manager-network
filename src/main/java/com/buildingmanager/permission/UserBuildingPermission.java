@@ -34,4 +34,10 @@ public class UserBuildingPermission {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BuildingPermissionLevel permissionLevel;
+
+    @Column(nullable = false)
+    private Boolean canCreateAnnouncement = false;
+
+    @Column(nullable = false)
+    private Boolean canCreatePoll = false;
 }

@@ -429,6 +429,67 @@ public class ApartmentService {
         );
     }
 
+    @Transactional
+    public ApartmentResponse updateMyApartment(
+            MyApartmentUpdateRequest request,
+            Authentication connectedUser
+    ) {
+        User user = (User) connectedUser.getPrincipal();
+
+        if (request.getId() == null) {
+            throw new BusinessValidationException(
+                    "Δεν προσδιορίστηκε το διαμέρισμα."
+            );
+        }
+
+        Apartment apartment = apartmentRepository
+                .findById(request.getId())
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "Apartment not found with id " + request.getId()
+                        )
+                );
+
+        boolean isOwner = apartment.getOwner() != null
+                && apartment.getOwner().getId().equals(user.getId());
+        boolean isResident = apartment.getResident() != null
+                && apartment.getResident().getId().equals(user.getId());
+
+        if (!isOwner && !isResident) {
+            throw new AccessDeniedException(
+                    "Δεν έχετε δικαίωμα επεξεργασίας αυτού του διαμερίσματος"
+            );
+        }
+
+        apartment.setOwnerFirstName(
+                normalize(request.getOwnerFirstName())
+        );
+
+        apartment.setOwnerLastName(
+                normalize(request.getOwnerLastName())
+        );
+
+        apartment.setResidentFirstName(
+                normalize(request.getResidentFirstName())
+        );
+
+        apartment.setResidentLastName(
+                normalize(request.getResidentLastName())
+        );
+
+        apartment.setApDescription(
+                normalize(request.getDescription())
+        );
+
+        Apartment savedApartment =
+                apartmentRepository.save(apartment);
+
+        return apartmentMapper.toApartmentResponse(
+                savedApartment,
+                user.getId()
+        );
+    }
+
     private String normalize(String value) {
         if (value == null) {
             return null;

@@ -22,7 +22,7 @@ public interface CalendarRepository extends JpaRepository<Calendar, Integer> {
         FROM CalendarEntity c
         WHERE c.building.id = :buildingId
           AND c.active = true
-        ORDER BY c.pinned DESC, c.startDate DESC
+        ORDER BY c.createdDate DESC
     """)
     List<Calendar> findByBuildingPinnedFirst(@Param("buildingId") Integer buildingId);
 
@@ -30,7 +30,7 @@ public interface CalendarRepository extends JpaRepository<Calendar, Integer> {
         SELECT c
         FROM CalendarEntity c
         WHERE c.building.id = :buildingId
-        ORDER BY c.pinned DESC, c.startDate DESC
+        ORDER BY c.createdDate DESC
     """)
     List<Calendar> findByBuildingAllPinnedFirst(@Param("buildingId") Integer buildingId);
 
