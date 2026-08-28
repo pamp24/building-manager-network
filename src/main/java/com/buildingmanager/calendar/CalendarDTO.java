@@ -20,5 +20,7 @@ public class CalendarDTO {
     private Integer createdById;
     private boolean active;
 
+    private LocalDateTime createdDate;
+
     private boolean pinned;
 }

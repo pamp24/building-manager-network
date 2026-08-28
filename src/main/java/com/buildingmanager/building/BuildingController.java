@@ -3,6 +3,8 @@ package com.buildingmanager.building;
 
 import com.buildingmanager.buildingMember.BuildingMemberService;
 import com.buildingmanager.common.PageResponse;
+import com.buildingmanager.permission.BuildingPermissionService;
+import com.buildingmanager.permission.MemberPermissionDTO;
 import com.buildingmanager.user.User;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -28,6 +30,7 @@ public class    BuildingController {
 
     private final BuildingService buildingService;
     private final BuildingMemberService buildingMemberService;
+    private final BuildingPermissionService buildingPermissionService;
 
     @PostMapping
     public ResponseEntity<Integer> saveBuilding(
@@ -148,6 +151,35 @@ public class    BuildingController {
     ) {
         buildingService.setBuildingActive(buildingId, active, authentication);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{buildingId}/member-permissions")
+    public ResponseEntity<List<MemberPermissionDTO>> getMemberPermissions(
+            @PathVariable Integer buildingId,
+            Authentication authentication
+    ) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(buildingPermissionService.listMemberPermissions(buildingId, user));
+    }
+
+    @GetMapping("/{buildingId}/my-permissions")
+    public ResponseEntity<MemberPermissionDTO> getMyPermissions(
+            @PathVariable Integer buildingId,
+            Authentication authentication
+    ) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(buildingPermissionService.myPermissions(buildingId, user));
+    }
+
+    @PutMapping("/{buildingId}/member-permissions/{userId}")
+    public ResponseEntity<MemberPermissionDTO> updateMemberPermission(
+            @PathVariable Integer buildingId,
+            @PathVariable Integer userId,
+            @RequestBody MemberPermissionDTO dto,
+            Authentication authentication
+    ) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(buildingPermissionService.updateMemberPermission(buildingId, userId, dto, user));
     }
 
 }

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="el" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Building Manager - Ειδοποίηση</title>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px 0;">
+    <tr>
+        <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; padding: 30px; border-radius: 6px; box-shadow: 0 0 10px rgba(0,0,0,0.05);">
+                <tr>
+                    <td>
+                        <h1 style="text-align: center; color: #333;">Building Manager</h1>
+                        <p style="font-size: 16px; color: #555;" th:text="'Γεια σας ' + ${username} + ','">Γεια σας,</p>
+                        <p style="font-size: 16px; color: #555;" th:text="${message}">Μήνυμα ειδοποίησης</p>
+                        <p style="font-size: 14px; color: #999; margin-top: 40px; text-align: center;">
+                            Ομάδα Building Manager
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

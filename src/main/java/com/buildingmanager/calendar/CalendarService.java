@@ -1,11 +1,15 @@
 package com.buildingmanager.calendar;
 
 import com.buildingmanager.buildingMember.BuildingMemberRepository;
+import com.buildingmanager.email.EmailService;
+import com.buildingmanager.email.SmsService;
 import com.buildingmanager.notification.NotificationService;
+import com.buildingmanager.notificationPreference.NotificationPreferenceService;
 import com.buildingmanager.permission.BuildingPermissionService;
 import com.buildingmanager.permission.UserBuildingPermissionRepository;
 import com.buildingmanager.user.User;
 import com.buildingmanager.user.UserRepository;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
@@ -30,6 +34,9 @@ public class CalendarService {
     private final NotificationService notificationService;
     private final UserBuildingPermissionRepository userBuildingPermissionRepository;
     private final BuildingMemberRepository buildingMemberRepository;
+    private final NotificationPreferenceService notificationPreferenceService;
+    private final EmailService emailService;
+    private final SmsService smsService;
 
     public List<CalendarDTO> getByBuilding(Integer buildingId, Integer userId, boolean includeInactive) {
         User user = userRepository.findById(userId)
@@ -77,8 +84,8 @@ public class CalendarService {
         log.debug("CALENDAR CREATE USER ID = {}, ROLE = {}, BUILDING ID = {}",
                 currentUser.getId(), currentUser.getRole().getName(), buildingId);
 
-        if (!buildingPermissionService.canManageBuilding(currentUser, buildingId)) {
-            throw new AccessDeniedException("Δεν έχεις δικαίωμα δημιουργίας event σε αυτή την πολυκατοικία");
+        if (!buildingPermissionService.canCreateAnnouncement(currentUser, buildingId)) {
+            throw new AccessDeniedException("Δεν έχεις δικαίωμα δημιουργίας ανακοίνωσης σε αυτή την πολυκατοικία");
         }
 
         Calendar entity = mapper.toEntity(dto);
@@ -185,15 +192,41 @@ public class CalendarService {
                 buildingId
         );
 
-        receivers.stream()
+        List<User> targets = receivers.stream()
                 .filter(user -> !user.getId().equals(creatorUserId))
-                .forEach(user ->
-                        notificationService.create(
-                                user,
-                                "CALENDAR_EVENT_CREATED",
-                                message,
-                                payload
-                        )
+                .toList();
+
+        targets.forEach(user -> {
+            var prefs = notificationPreferenceService.getPreferencesForUser(user.getId());
+
+            // In-app ειδοποίηση (μόνο αν είναι ενεργοποιημένη για τον συγκεκριμένο χρήστη)
+            if (Boolean.TRUE.equals(prefs.getAppForNewAnnouncement())) {
+                notificationService.create(
+                        user,
+                        "CALENDAR_EVENT_CREATED",
+                        message,
+                        payload
                 );
+            }
+
+            // Email (μόνο αν είναι ενεργοποιημένη για τον συγκεκριμένο χρήστη)
+            if (Boolean.TRUE.equals(prefs.getEmailForNewAnnouncement()) && user.getEmail() != null) {
+                try {
+                    emailService.sendNotificationEmail(
+                            user.getEmail(),
+                            user.getFullName(),
+                            "Νέα ανακοίνωση στην πολυκατοικία",
+                            message
+                    );
+                } catch (MessagingException e) {
+                    // Μην αποτυγχάνει η δημιουργία ανακοίνωσης αν αποτύχει ένα email
+                }
+            }
+
+            // SMS (stub — καταγράφεται στο log, χρειάζεται provider για πραγματική αποστολή)
+            if (Boolean.TRUE.equals(prefs.getSmsForNewAnnouncement()) && user.getPhoneNumber() != null) {
+                smsService.sendSms(user.getPhoneNumber(), user.getFullName(), message);
+            }
+        });
     }
 }

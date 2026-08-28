@@ -32,7 +32,7 @@
 
     mail:
       host: localhost
-      port: 1080
+      port: 1025
       username: username
       password: password
       properties:
