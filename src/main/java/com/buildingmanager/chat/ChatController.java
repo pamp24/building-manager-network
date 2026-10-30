@@ -45,6 +45,24 @@ public class ChatController {
         return ResponseEntity.ok(chatService.listMessages(conversationId, auth));
     }
 
+    @DeleteMapping("/{conversationId}")
+    public ResponseEntity<Void> hideConversation(@PathVariable Integer conversationId, Authentication auth) {
+        chatService.hideConversation(conversationId, auth);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{conversationId}/messages/{messageId}")
+    public ResponseEntity<ChatMessageDTO> editMessage(@PathVariable Integer conversationId,
+            @PathVariable Integer messageId, @Valid @RequestBody EditMessageRequest request, Authentication auth) {
+        return ResponseEntity.ok(chatService.editMessage(conversationId, messageId, request, auth));
+    }
+
+    @DeleteMapping("/{conversationId}/messages/{messageId}")
+    public ResponseEntity<ChatMessageDTO> deleteMessage(@PathVariable Integer conversationId,
+            @PathVariable Integer messageId, Authentication auth) {
+        return ResponseEntity.ok(chatService.deleteMessage(conversationId, messageId, auth));
+    }
+
     @PostMapping("/{conversationId}/messages")
     public ResponseEntity<ChatMessageDTO> sendMessage(
             @PathVariable Integer conversationId,

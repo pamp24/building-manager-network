@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.Authentication;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -94,6 +95,14 @@ public class    BuildingController {
         return ResponseEntity.ok(buildingService.getManagerDTO(buildingId));
     }
 
+    @PutMapping("/{buildingId}/manager/{memberId}")
+    public ResponseEntity<Void> assignManager(@PathVariable Integer buildingId,
+                                              @PathVariable Integer memberId,
+                                              Authentication authentication) {
+        buildingMemberService.assignBuildingManager(buildingId, memberId, authentication);
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping("update/{id}")
     public ResponseEntity<BuildingDTO> updateBuilding(
             @PathVariable Integer id,
@@ -121,6 +130,22 @@ public class    BuildingController {
     @PostMapping("/company")
     public ResponseEntity<Integer> createCompany(@Valid @RequestBody BuildingRequest request, Authentication auth) {
         return ResponseEntity.ok(buildingService.createCompanyManaged(request, auth));
+    }
+
+    @PostMapping("/company/bulk")
+    public ResponseEntity<List<Integer>> createCompanyBulk(@RequestBody List<BuildingRequest> requests, Authentication auth) {
+        return ResponseEntity.ok(buildingService.createCompanyBulk(requests, auth));
+    }
+
+    @ExceptionHandler(BulkBuildingValidationException.class)
+    public ResponseEntity<Map<String, Object>> handleBulkValidation(BulkBuildingValidationException ex) {
+        return ResponseEntity.badRequest().body(Map.of("errors", ex.getErrors()));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidBody(HttpMessageNotReadableException ex) {
+        return ResponseEntity.badRequest().body(Map.of("errors", List.of(
+                new BulkBuildingValidationException.Error(0, "body", "Invalid JSON or field type"))));
     }
 
     @GetMapping("/pm/my-company-buildings")

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="el" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        @page { size: A4 landscape; margin: 8mm; }
+        body { font-family: AppSans, Arial, sans-serif; color: #243447; font-size: 11px; margin: 0; }
+        .brand { display: table; width: 100%; border: 1px solid #d8e2ee; background: #eef6ff; margin-bottom: 12px; }
+        .brand-cell { display: table-cell; padding: 10px 12px; vertical-align: middle; }
+        .brand-logo-cell { width: 140px; }
+        .brand-logo { width: 117px; height: auto; display: block; }
+        .brand-name { font-size: 18px; font-weight: 700; color: #16324f; }
+        .brand-subtitle { font-size: 12px; color: #5f748a; }
+        .top { width: 100%; border-collapse: collapse; }
+        .top > tbody > tr > td { vertical-align: top; }
+        .left-col { width: 29%; padding-right: 12px; }
+        .issuer-panel, .meta-table, .announcement, .expense-box, .allocations-table { width: 100%; border-collapse: collapse; }
+        .issuer-panel { border: 1px solid #cfd8e3; background: #fbfdff; margin-bottom: 0; }
+        .issuer-panel td { padding: 8px; }
+        .issuer-title { font-size: 16px; font-weight: 500; padding-bottom: 6px; }
+        .line { padding-bottom: 8px; }
+        .meta-table th, .meta-table td, .announcement td, .announcement th, .expense-box th, .expense-box td, .allocations-table th, .allocations-table td {
+            border: 1px solid #cfd8e3; padding: 3px 4px;
+        }
+        .meta-table th, .announcement th, .expense-box th, .allocations-table th { background: #e6f3f7; color: #16384a; font-weight: 700; }
+        .announcement-label { width: 24px; writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; }
+        .announcement-body { min-height: 90px; white-space: pre-line; background: #fff; }
+        .expense-grid { width: 100%; border-collapse: collapse; }
+        .expense-grid td { vertical-align: top; width: 33.33%; }
+        .expense-box .amount-col { width: 88px; }
+        .expense-box td { height: 20px; background: #fff; }
+        .expense-total td:first-child, .grand-label { background: #f6fbfd; font-weight: 700; }
+        .expense-box td:last-child, .expense-box th:last-child, .expense-total td:last-child, .grand-total, .allocations-table tfoot th, .allocations-table tfoot td { background: #fff1b8; }
+        .grand-total-box { width: 240px; margin-left: auto; margin-top: 8px; border-collapse: collapse; }
+        .grand-total-box td { border: 1px solid #cfd8e3; padding: 6px 8px; }
+        .grand-total { text-align: right; font-size: 22px; font-weight: 700; color: #3d2f05; }
+        .allocations-table { margin-top: 10px; font-size: 9px; }
+        .allocations-table th { text-align: center; white-space: nowrap; }
+        .allocations-table td { text-align: right; white-space: nowrap; background: #fff; }
+        .allocations-table .text-left { text-align: left; }
+        .footer-note { margin-top: 8px; font-size: 11px; }
+    </style>
+</head>
+<body>
+<table class="brand">
+    <tr>
+        <td class="brand-cell brand-logo-cell">
+            <img class="brand-logo" th:src="${logoDataUri}" alt="Oikio" />
+        </td>
+        <td class="brand-cell">
+            <div class="brand-name" th:text="${appName}"></div>
+            <div class="brand-subtitle" th:text="${appSubtitle}"></div>
+        </td>
+    </tr>
+</table>
+
+<table class="top">
+    <tr>
+        <td class="left-col">
+            <table class="issuer-panel">
+                <tr><td>
+                    <div class="issuer-title" th:text="${issuerName}"></div>
+                    <div class="line" th:text="${issuerAddress}"></div>
+                    <div class="line" th:text="${issuerCity}"></div>
+                    <div class="line" th:text="${issuerPhone}"></div>
+                </td></tr>
+            </table>
+
+            <table class="meta-table">
+                <tr><th>ΚΩΔΙΚΟΣ</th><td th:text="${statementCode}"></td><th>ΗΜ/ΝΙΑ</th><td th:text="${statementDate}"></td></tr>
+                <tr><th>ΜΗΝΑΣ</th><td colspan="3" th:text="${statementMonth}"></td></tr>
+                <tr><th>ΔΙΑΧΕΙΡΙΣΤΗΣ</th><td colspan="3" th:text="${managerName}"></td></tr>
+                <tr><th>ΔΙΕΥΘΥΝΣΗ</th><td colspan="3" th:text="${buildingAddress}"></td></tr>
+                <tr><th>ΠΕΡΙΟΧΗ</th><td colspan="3" th:text="${buildingCity}"></td></tr>
+            </table>
+
+            <table class="announcement">
+                <tr>
+                    <th class="announcement-label">ΑΝΑΚΟΙΝΩΣΗ</th>
+                    <td class="announcement-body" th:text="${description}"></td>
+                </tr>
+            </table>
+        </td>
+        <td>
+            <table class="expense-grid">
+                <tr>
+                    <td th:each="section, iter : ${categorySections}" th:if="${iter.index < 3}">
+                        <table class="expense-box">
+                            <colgroup><col /><col class="amount-col" /></colgroup>
+                            <tr><th th:text="${section.label}"></th><th>ΠΟΣΟ</th></tr>
+                            <tr th:each="item : ${section.items}"><td th:text="${item.description}"></td><td th:text="${item.amount}"></td></tr>
+                            <tr th:each="i : ${#numbers.sequence(1, section.emptyRows)}"><td>&#160;</td><td>&#160;</td></tr>
+                            <tr class="expense-total"><td>ΣΥΝΟΛΟ</td><td th:text="${section.total}"></td></tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td th:each="section, iter : ${categorySections}" th:if="${iter.index >= 3 and iter.index < 6}">
+                        <table class="expense-box">
+                            <colgroup><col /><col class="amount-col" /></colgroup>
+                            <tr><th th:text="${section.label}"></th><th>ΠΟΣΟ</th></tr>
+                            <tr th:each="item : ${section.items}"><td th:text="${item.description}"></td><td th:text="${item.amount}"></td></tr>
+                            <tr th:each="i : ${#numbers.sequence(1, section.emptyRows)}"><td>&#160;</td><td>&#160;</td></tr>
+                            <tr class="expense-total"><td>ΣΥΝΟΛΟ</td><td th:text="${section.total}"></td></tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td th:each="section, iter : ${categorySections}" th:if="${iter.index >= 6}">
+                        <table class="expense-box">
+                            <colgroup><col /><col class="amount-col" /></colgroup>
+                            <tr><th th:text="${section.label}"></th><th>ΠΟΣΟ</th></tr>
+                            <tr th:each="item : ${section.items}"><td th:text="${item.description}"></td><td th:text="${item.amount}"></td></tr>
+                            <tr th:each="i : ${#numbers.sequence(1, section.emptyRows)}"><td>&#160;</td><td>&#160;</td></tr>
+                            <tr class="expense-total"><td>ΣΥΝΟΛΟ</td><td th:text="${section.total}"></td></tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+            <table class="grand-total-box">
+                <tr><td class="grand-label">ΓΕΝΙΚΟ ΣΥΝΟΛΟ</td><td class="grand-total" th:text="${grandTotal}"></td></tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<table class="allocations-table">
+    <thead>
+    <tr>
+        <th rowspan="2">Α/Α</th>
+        <th rowspan="2">ΟΝΟΜΑΤΕΠΩΝΥΜΟ</th>
+        <th rowspan="2">ΑΡ. ΔΙΑΜ.</th>
+        <th colspan="3">ΧΙΛΙΟΣΤΑ</th>
+        <th colspan="8">ΠΟΣΟ ΑΝΑΛΟΓΙΑΣ ΣΕ ΕΥΡΩ</th>
+        <th rowspan="2">ΓΕΝΙΚΟ ΣΥΝΟΛΟ</th>
+    </tr>
+    <tr>
+        <th>ΚΟΙΝ/ΤΑ</th><th>ΑΣΑΝΣΕΡ</th><th>ΘΕΡ/ΝΣΗ</th>
+        <th>ΚΟΙΝ/ΤΑ</th><th>ΑΣΑΝΣΕΡ</th><th>ΘΕΡ/ΝΣΗ</th><th>ΙΣΑ ΜΕΡΗ</th><th>BOILER</th><th>ΕΙΔΙΚΕΣ</th><th>ΙΔΙΟΚΤΗΤΩΝ</th><th>ΛΟΙΠΑ</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="row : ${apartmentRows}">
+        <td th:text="${row.index}"></td>
+        <td class="text-left" th:text="${row.name}"></td>
+        <td th:text="${row.apartment}"></td>
+        <td th:text="${row.commonPercent}"></td>
+        <td th:text="${row.elevatorPercent}"></td>
+        <td th:text="${row.heatingPercent}"></td>
+        <td th:text="${row.commonAmount}"></td>
+        <td th:text="${row.elevatorAmount}"></td>
+        <td th:text="${row.heatingAmount}"></td>
+        <td th:text="${row.equalAmount}"></td>
+        <td th:text="${row.boilerAmount}"></td>
+        <td th:text="${row.specialAmount}"></td>
+        <td th:text="${row.ownersAmount}"></td>
+        <td th:text="${row.otherAmount}"></td>
+        <td th:text="${row.total}"></td>
+    </tr>
+    </tbody>
+    <tfoot>
+    <tr>
+        <th colspan="3" style="text-align:right;">ΓΕΝΙΚΑ ΣΥΝΟΛΑ =&gt;</th>
+        <th th:text="${commonPercentTotal}"></th>
+        <th th:text="${elevatorPercentTotal}"></th>
+        <th th:text="${heatingPercentTotal}"></th>
+        <th th:text="${categoryTotals[T(com.buildingmanager.commonExpenseItem.ExpenseCategory).COMMON]}"></th>
+        <th th:text="${categoryTotals[T(com.buildingmanager.commonExpenseItem.ExpenseCategory).ELEVATOR]}"></th>
+        <th th:text="${categoryTotals[T(com.buildingmanager.commonExpenseItem.ExpenseCategory).HEATING]}"></th>
+        <th th:text="${categoryTotals[T(com.buildingmanager.commonExpenseItem.ExpenseCategory).EQUAL]}"></th>
+        <th th:text="${categoryTotals[T(com.buildingmanager.commonExpenseItem.ExpenseCategory).BOILER]}"></th>
+        <th th:text="${categoryTotals[T(com.buildingmanager.commonExpenseItem.ExpenseCategory).SPECIAL]}"></th>
+        <th th:text="${categoryTotals[T(com.buildingmanager.commonExpenseItem.ExpenseCategory).OWNERS]}"></th>
+        <th th:text="${categoryTotals[T(com.buildingmanager.commonExpenseItem.ExpenseCategory).OTHER]}"></th>
+        <th th:text="${grandTotal}"></th>
+    </tr>
+    </tfoot>
+</table>
+
+<div class="footer-note">Building Manager Network</div>
+</body>
+</html>

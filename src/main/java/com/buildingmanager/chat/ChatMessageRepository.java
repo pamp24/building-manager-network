@@ -10,4 +10,8 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Intege
     List<ChatMessage> findByConversation_IdOrderByCreatedAtAsc(Integer conversationId);
 
     Optional<ChatMessage> findFirstByConversation_IdOrderByCreatedAtDesc(Integer conversationId);
+
+    boolean existsByConversation_Id(Integer conversationId);
+
+    Optional<ChatMessage> findByIdAndConversation_Id(Integer id, Integer conversationId);
 }

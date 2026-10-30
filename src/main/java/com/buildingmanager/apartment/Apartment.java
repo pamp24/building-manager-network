@@ -61,6 +61,9 @@ public class Apartment extends BaseEntity {
 
 
     public String fullApartmentName() {
+        if (number != null && floor != null && !floor.isBlank() && number.startsWith(floor)) {
+            return number;
+        }
         return number + " " + floor;
     }
 

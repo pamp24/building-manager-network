@@ -82,7 +82,10 @@ public class BuildingMemberService {
                     m.getBuilding() != null ? m.getBuilding().getName() : null,
                     ap != null ? ap.getNumber() : null,
                     ap != null ? ap.getFloor() : null,
-                    ap != null ? ap.getId() : null
+                    ap != null ? ap.getId() : null,
+                    m.getStatus() == BuildingMemberStatus.JOINED && m.getUser() != null
+                            && m.getBuilding() != null && m.getBuilding().getManager() != null
+                            && m.getUser().getId().equals(m.getBuilding().getManager().getId())
             ));
         }
 
@@ -116,7 +119,8 @@ public class BuildingMemberService {
                     invite.getApartment().getBuilding().getName(),
                     invite.getApartment().getNumber(),
                     invite.getApartment().getFloor(),
-                    invite.getApartment().getId()
+                    invite.getApartment().getId(),
+                    false
             ));
         }
 
@@ -148,9 +152,51 @@ public class BuildingMemberService {
         return buildingMemberRepository.findByUserId(userId);
     }
 
+    @Transactional
     @Auditable(action = AuditAction.DELETE, entityType = "BuildingMember")
     public void removeMember(Integer memberId) {
+        BuildingMember member = buildingMemberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("Member not found"));
+        clearDesignation(member);
         buildingMemberRepository.deleteById(memberId);
+    }
+
+    @Transactional
+    public void assignBuildingManager(Integer buildingId, Integer memberId, Authentication auth) {
+        User actor = getConnectedUser(auth);
+        Building building = buildingRepository.findByIdForUpdate(buildingId)
+                .orElseThrow(() -> new EntityNotFoundException("Building not found"));
+        String role = actor.getRole() == null ? "" : actor.getRole().getName();
+        boolean admin = "Admin".equalsIgnoreCase(role);
+        boolean responsiblePm = "PropertyManager".equalsIgnoreCase(role)
+                && ((building.getPropertyManager() != null
+                        && actor.getId().equals(building.getPropertyManager().getId()))
+                    || (actor.getCompany() != null && building.getCompany() != null
+                        && actor.getCompany().getId().equals(building.getCompany().getId())));
+        if (!admin && !responsiblePm) {
+            throw new AccessDeniedException("Only the responsible property manager or an admin can assign the manager");
+        }
+        if (building.getCompany() == null) {
+            throw new IllegalArgumentException("Building is not company-managed");
+        }
+        BuildingMember member = buildingMemberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("Member not found"));
+        if (member.getBuilding() == null || !buildingId.equals(member.getBuilding().getId())
+                || member.getUser() == null || member.getStatus() != BuildingMemberStatus.JOINED) {
+            throw new IllegalArgumentException("Member must be joined to this building");
+        }
+        building.setManager(member.getUser());
+        buildingRepository.save(building);
+    }
+
+    private void clearDesignation(BuildingMember member) {
+        if (member.getBuilding() == null || member.getUser() == null) return;
+        Building building = buildingRepository.findByIdForUpdate(member.getBuilding().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Building not found"));
+        if (building.getManager() != null && member.getUser().getId().equals(building.getManager().getId())) {
+            building.setManager(null);
+            buildingRepository.save(building);
+        }
     }
 
     @Transactional
@@ -647,6 +693,7 @@ public class BuildingMemberService {
         }
 
         if (member.getStatus() == BuildingMemberStatus.LEFT) {
+            clearDesignation(member);
             return;
         }
 
@@ -702,6 +749,7 @@ public class BuildingMemberService {
          * για το ιστορικό των support tickets.
          */
         member.setStatus(BuildingMemberStatus.REMOVED);
+        clearDesignation(member);
         buildingMemberRepository.save(member);
 
         recalculateGlobalUserRole(member.getUser());

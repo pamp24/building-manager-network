@@ -110,12 +110,30 @@ public class EmailService {
      */
     @Async
     public void sendNotificationEmail(String to, String username, String subject, String message) throws MessagingException {
+        sendNotificationEmail(to, username, subject, message, null);
+    }
+
+    /**
+     * Γενική ειδοποίηση με επιπλέον δεδομένα πλαισίου (πολυκατοικία, διαχειριστής,
+     * διεύθυνση, διαμέρισμα παραλήπτη) για πιο πλούσιο template.
+     */
+    @Async
+    public void sendNotificationEmail(
+            String to,
+            String username,
+            String subject,
+            String message,
+            Map<String, Object> extra
+    ) throws MessagingException {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, MULTIPART_MODE_MIXED, UTF_8.name());
 
         Map<String, Object> properties = new HashMap<>();
         properties.put("username", username);
         properties.put("message", message);
+        if (extra != null) {
+            properties.putAll(extra);
+        }
 
         Context context = new Context();
         context.setVariables(properties);

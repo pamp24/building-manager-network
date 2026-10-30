@@ -20,5 +20,7 @@ public class BuildingMemberDTO {
     private String apartmentNumber;
     private String floor;
     private Integer apartmentId;
+    @com.fasterxml.jackson.annotation.JsonProperty("isBuildingManager")
+    private boolean buildingManager;
 }
 

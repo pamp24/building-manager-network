@@ -19,9 +19,19 @@ import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -29,6 +39,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.math.RoundingMode;
 
 @Service
@@ -44,6 +56,7 @@ public class CommonExpenseStatementService {
     private final ObjectMapper objectMapper;
     private final NotificationPreferenceService notificationPreferenceService;
     private final EmailService emailService;
+    private final StatementPdfService statementPdfService;
 
     private static BigDecimal bd(BigDecimal v) {
         return v == null ? BigDecimal.ZERO : v;
@@ -81,6 +94,11 @@ public class CommonExpenseStatementService {
     @Auditable(action = AuditAction.CREATE)
     public CommonExpenseStatement createAndSend(CommonExpenseStatement statement) {
 
+        if (statement.getId() != null || statement.getItems().stream().anyMatch(i -> i.getId() != null)) {
+            throw new IllegalArgumentException("Creation requires a new statement and new items without IDs.");
+        }
+        statement.setStatus(StatementStatus.ISSUED);
+
         // 1) buildingId
         Integer buildingId = statement.getBuilding().getId();
 
@@ -110,11 +128,23 @@ public class CommonExpenseStatementService {
             statement.setStatus(StatementStatus.ISSUED);
         }
 
-        // 6) save statement
-        CommonExpenseStatement saved = commonExpenseStatementRepository.save(statement);
-
         // 7) apartments
         List<Apartment> apartments = apartmentRepository.findAllByBuilding_Id(buildingId);
+        Set<Integer> apartmentIds = new HashSet<>();
+        apartments.forEach(a -> apartmentIds.add(a.getId()));
+        for (CommonExpenseItem item : statement.getItems()) {
+            if (item.getCategory() == ExpenseCategory.SPECIAL) {
+                List<Integer> selected = item.getSelectedApartmentIds();
+                if (selected == null || selected.isEmpty() || selected.contains(null)
+                        || new HashSet<>(selected).size() != selected.size() || !apartmentIds.containsAll(selected)) {
+                    throw new IllegalArgumentException("SPECIAL expenses require distinct apartment IDs belonging to the statement building.");
+                }
+                if (item.getPrice() == null || item.getPrice().signum() < 0
+                        || item.getPrice().stripTrailingZeros().scale() > 2) {
+                    throw new IllegalArgumentException("SPECIAL expense price must be non-negative and have at most two decimal places.");
+                }
+            }
+        }
 
         // 7b) Έλεγχος χιλιοστών: το άθροισμα των commonPercent πρέπει να είναι 1000
         BigDecimal sumCommonPercent = apartments.stream()
@@ -129,10 +159,16 @@ public class CommonExpenseStatementService {
             );
         }
 
+        CommonExpenseStatement saved = commonExpenseStatementRepository.save(statement);
+
         // 8) allocations
         for (CommonExpenseItem item : saved.getItems()) {
             BigDecimal itemTotal = bd(item.getPrice());
-            int n = apartments.size();
+            List<Apartment> itemApartments = item.getCategory() == ExpenseCategory.SPECIAL
+                    ? apartments.stream().filter(a -> item.getSelectedApartmentIds().contains(a.getId()))
+                            .sorted(Comparator.comparing(Apartment::getId)).toList()
+                    : apartments;
+            int n = itemApartments.size();
 
             boolean proportional = switch (item.getCategory()) {
                 case COMMON, ELEVATOR, HEATING -> true;
@@ -149,7 +185,7 @@ public class CommonExpenseStatementService {
             BigDecimal flooredSum = BigDecimal.ZERO;
 
             for (int idx = 0; idx < n; idx++) {
-                Apartment apt = apartments.get(idx);
+                Apartment apt = itemApartments.get(idx);
 
                 BigDecimal exact;
                 if (proportional) {
@@ -182,7 +218,7 @@ public class CommonExpenseStatementService {
             }
 
             for (int idx = 0; idx < n; idx++) {
-                Apartment apt = apartments.get(idx);
+                Apartment apt = itemApartments.get(idx);
                 BigDecimal share = shares[idx];
 
                 CommonExpenseAllocation allocation = CommonExpenseAllocation.builder()
@@ -257,6 +293,7 @@ public class CommonExpenseStatementService {
             }
         }
 
+        statementPdfService.regenerateAllPdfs(saved);
         return saved;
     }
 
@@ -265,6 +302,9 @@ public class CommonExpenseStatementService {
     @Transactional
     @Auditable(action = AuditAction.CREATE, description = "Saved draft statement")
     public CommonExpenseStatement saveDraft(CommonExpenseStatement statement) {
+        if (statement.getId() != null || statement.getItems().stream().anyMatch(i -> i.getId() != null)) {
+            throw new IllegalArgumentException("Creation requires a new statement and new items without IDs.");
+        }
         Integer buildingId = statement.getBuilding().getId();
 
         // Υπολογισμός sequence
@@ -312,6 +352,46 @@ public class CommonExpenseStatementService {
     public CommonExpenseStatement getById(Integer id) {
         return commonExpenseStatementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Δεν βρέθηκε κατάσταση με id " + id));
+    }
+
+    @Transactional
+    public ResponseEntity<Resource> downloadPdf(Integer id) {
+        CommonExpenseStatement statement = commonExpenseStatementRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Δεν βρέθηκε κατάσταση με id " + id));
+
+        statementPdfService.regeneratePdf(statement);
+        Path pdfPath = statementPdfService.ensurePdfExists(statement);
+
+        try {
+            InputStream stream = Files.newInputStream(pdfPath);
+            String filename = "statement_" + (statement.getCode() == null ? id : statement.getCode()) + ".pdf";
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename(filename).build().toString())
+                    .body(new InputStreamResource(stream));
+        } catch (IOException exception) {
+            throw new RuntimeException("Αποτυχία ανάγνωσης του PDF κοινοχρήστων.", exception);
+        }
+    }
+
+    @Transactional
+    public ResponseEntity<Resource> downloadApartmentPdf(Integer statementId, Integer apartmentId) {
+        CommonExpenseStatement statement = commonExpenseStatementRepository.findById(statementId)
+                .orElseThrow(() -> new RuntimeException("Δεν βρέθηκε κατάσταση με id " + statementId));
+
+        statementPdfService.regenerateApartmentPdf(statement, apartmentId);
+        Path pdfPath = statementPdfService.ensureApartmentPdfExists(statement, apartmentId);
+
+        try {
+            InputStream stream = Files.newInputStream(pdfPath);
+            String filename = "statement_" + (statement.getCode() == null ? statementId : statement.getCode()) + "_apartment_" + apartmentId + ".pdf";
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename(filename).build().toString())
+                    .body(new InputStreamResource(stream));
+        } catch (IOException exception) {
+            throw new RuntimeException("Αποτυχία ανάγνωσης του PDF διαμερίσματος.", exception);
+        }
     }
 
     public List<CommonExpenseStatementDTO> getStatementsByBuilding(Integer buildingId) {
@@ -366,9 +446,11 @@ public class CommonExpenseStatementService {
                 .anyMatch(item -> item.getAllocations() != null && !item.getAllocations().isEmpty());
 
         if (statement.getStatus() == StatementStatus.DRAFT && !hasAllocations) {
+            statementPdfService.deleteAllPdfs(statement);
             commonExpenseStatementRepository.delete(statement);
             log.info("Hard delete statement id={}", id);
         } else {
+            statementPdfService.deleteAllPdfs(statement);
             commonExpenseStatementRepository.delete(statement);
             log.info("Soft delete statement id={}", id);
         }
@@ -395,6 +477,7 @@ public class CommonExpenseStatementService {
     }
 
     @Auditable(action = AuditAction.UPDATE)
+    @Transactional
     public CommonExpenseStatementDTO updateStatement(Integer id, CommonExpenseStatementDTO dto) {
         if (commonExpenseAllocationRepository.hasAnyPaymentForStatement(id)) {
             throw new IllegalStateException("Δεν επιτρέπεται επεξεργασία/διαγραφή μετά από πληρωμή.");
@@ -402,6 +485,12 @@ public class CommonExpenseStatementService {
 
         CommonExpenseStatement entity = commonExpenseStatementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Δεν βρέθηκε statement με id " + id));
+
+        if (entity.getStatus() != StatementStatus.DRAFT
+                || (entity.getAllocations() != null && !entity.getAllocations().isEmpty())
+                || entity.getItems().stream().anyMatch(i -> i.getAllocations() != null && !i.getAllocations().isEmpty())) {
+            throw new IllegalStateException("Only drafts without allocations can be edited.");
+        }
 
         entity.setCode(dto.getCode());
         entity.setType(dto.getType());
@@ -419,6 +508,8 @@ public class CommonExpenseStatementService {
             item.setCategory(ExpenseCategory.valueOf(itemDto.getCategory()));
             item.setDescriptionItem(itemDto.getDescriptionItem());
             item.setPrice(itemDto.getPrice());
+            item.setSelectedApartmentIds(itemDto.getSelectedApartmentIds() == null
+                    ? new ArrayList<>() : new ArrayList<>(itemDto.getSelectedApartmentIds()));
             item.setStatement(entity);
             entity.getItems().add(item);
         });
@@ -447,6 +538,10 @@ public class CommonExpenseStatementService {
 
         // αποθήκευση
         CommonExpenseStatement saved = commonExpenseStatementRepository.save(entity);
+
+        if (saved.getStatus() != StatementStatus.DRAFT) {
+            statementPdfService.regenerateAllPdfs(saved);
+        }
 
         // Επιστρέφουμε DTO
         return CommonExpenseStatementMapper.toDTO(saved);

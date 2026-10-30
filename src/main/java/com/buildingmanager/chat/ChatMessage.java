@@ -35,4 +35,10 @@ public class ChatMessage {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "edited_at")
+    private LocalDateTime editedAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }

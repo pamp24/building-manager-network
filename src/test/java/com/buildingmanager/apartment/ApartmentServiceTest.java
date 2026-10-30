@@ -55,6 +55,25 @@ class ApartmentServiceTest {
     }
 
     @Test
+    void paginatesAfterOrderingAllApartments() {
+        when(buildingPermissionService.canViewBuilding(manager, 10)).thenReturn(true);
+        Apartment roof = Apartment.builder().id(1).floor("Δώμα").number("1").build();
+        Apartment first = Apartment.builder().id(2).floor("Α΄").number("1").build();
+        Apartment basement = Apartment.builder().id(3).floor("Υπόγειο").number("1").build();
+        when(apartmentRepository.findAllByBuilding_Id(10)).thenReturn(List.of(roof, first, basement));
+        when(apartmentMapper.toApartmentResponse(any(Apartment.class), any())).thenAnswer(invocation -> {
+            Apartment apartment = invocation.getArgument(0);
+            return ApartmentResponse.builder().id(apartment.getId()).build();
+        });
+
+        var page = service.findAllApartmentsByBuilding(10, 1, 1, authentication);
+
+        assertThat(page.getContent()).extracting(ApartmentResponse::getId).containsExactly(2);
+        assertThat(page.getTotalElements()).isEqualTo(3);
+        assertThat(page.getTotalPages()).isEqualTo(3);
+    }
+
+    @Test
     void redistributeCommonPercent_distributesRemainderEqually() {
         when(buildingPermissionService.canManageBuilding(manager, 10)).thenReturn(true);
 

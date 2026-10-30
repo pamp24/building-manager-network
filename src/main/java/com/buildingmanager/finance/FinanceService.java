@@ -1,6 +1,7 @@
 package com.buildingmanager.finance;
 
 import com.buildingmanager.apartment.Apartment;
+import com.buildingmanager.apartment.ApartmentOrder;
 import com.buildingmanager.apartment.ApartmentRepository;
 import com.buildingmanager.building.Building;
 import com.buildingmanager.building.BuildingRepository;
@@ -166,7 +167,8 @@ public class FinanceService {
         List<MemberPaymentStatus> result = new ArrayList<>();
         if (lastStatement == null) return result;
 
-        List<Apartment> apartments = apartmentRepository.findAllByBuilding_Id(buildingId);
+        List<Apartment> apartments = apartmentRepository.findAllByBuilding_Id(buildingId).stream()
+                .sorted(ApartmentOrder.COMPARATOR).toList();
         for (Apartment apt : apartments) {
             List<CommonExpenseAllocation> allocations = allocationRepository.findByStatementAndApartment(lastStatement, apt);
             BigDecimal totalDue = BigDecimal.ZERO;

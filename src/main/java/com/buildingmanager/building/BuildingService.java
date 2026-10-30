@@ -17,6 +17,7 @@ import com.buildingmanager.user.User;
 import com.buildingmanager.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -34,6 +35,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -56,6 +59,7 @@ public class BuildingService {
     private final RoleRepository roleRepository;
     private final BuildingPermissionService buildingPermissionService;
     private final UserBuildingPermissionRepository userBuildingPermissionRepository;
+    private final Validator validator;
 
     private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp");
 
@@ -135,6 +139,73 @@ public class BuildingService {
         );
 
         return saved.getId();
+    }
+
+    @Transactional
+    public List<Integer> createCompanyBulk(List<BuildingRequest> requests, Authentication auth) {
+        User user = freshUser(auth);
+        if (user.getRole() == null || !"PropertyManager".equals(user.getRole().getName()) || user.getCompany() == null) {
+            throw new AccessDeniedException("A PropertyManager with a company is required");
+        }
+
+        List<BulkBuildingValidationException.Error> errors = new ArrayList<>();
+        if (requests == null || requests.isEmpty() || requests.size() > 500) {
+            errors.add(new BulkBuildingValidationException.Error(0, "rows", "Provide between 1 and 500 rows"));
+            throw new BulkBuildingValidationException(errors);
+        }
+        Map<List<String>, Integer> addresses = new HashMap<>();
+        for (int i = 0; i < requests.size(); i++) {
+            BuildingRequest r = requests.get(i);
+            int row = i + 1;
+            if (r == null) {
+                errors.add(new BulkBuildingValidationException.Error(row, "row", "Row must not be null"));
+                continue;
+            }
+            validator.validate(r).forEach(v -> errors.add(new BulkBuildingValidationException.Error(row, v.getPropertyPath().toString(), v.getMessage())));
+            if (r.id() != null) errors.add(new BulkBuildingValidationException.Error(row, "id", "Must be omitted or null"));
+            if (r.managerId() != null) errors.add(new BulkBuildingValidationException.Error(row, "managerId", "Must be omitted or null"));
+            try {
+                if (Integer.parseInt(r.floors()) < 0) throw new NumberFormatException();
+            } catch (NumberFormatException e) {
+                errors.add(new BulkBuildingValidationException.Error(row, "floors", "Must be a non-negative integer"));
+            }
+            if (r.apartmentsNum() != null && r.apartmentsNum() < 0) errors.add(new BulkBuildingValidationException.Error(row, "apartmentsNum", "Must be non-negative"));
+            if (r.parkingSpacesNum() != null && r.parkingSpacesNum() < 0) errors.add(new BulkBuildingValidationException.Error(row, "parkingSpacesNum", "Must be non-negative"));
+            if (r.storageNum() != null && r.storageNum() < 0) errors.add(new BulkBuildingValidationException.Error(row, "storageNum", "Must be non-negative"));
+            if (!Double.isFinite(r.sqMetersTotal()) || r.sqMetersTotal() < 0) errors.add(new BulkBuildingValidationException.Error(row, "sqMetersTotal", "Must be a finite non-negative number"));
+            if (!Double.isFinite(r.sqMetersCommonSpaces()) || r.sqMetersCommonSpaces() < 0 || r.sqMetersCommonSpaces() > r.sqMetersTotal()) errors.add(new BulkBuildingValidationException.Error(row, "sqMetersCommonSpaces", "Must be non-negative and no greater than total area"));
+            if (r.heatingCapacityLitres() != null && (!Double.isFinite(r.heatingCapacityLitres()) || r.heatingCapacityLitres() < 0)) errors.add(new BulkBuildingValidationException.Error(row, "heatingCapacityLitres", "Must be a finite non-negative number"));
+            if (r.heatingType() != null) {
+                try { HeatingType.valueOf(r.heatingType().toUpperCase(Locale.ROOT)); }
+                catch (IllegalArgumentException e) { errors.add(new BulkBuildingValidationException.Error(row, "heatingType", "Invalid heating type")); }
+            }
+            Map<String, String> strings = new HashMap<>();
+            strings.put("name", r.name()); strings.put("street1", r.street1()); strings.put("stNumber1", r.stNumber1());
+            strings.put("street2", r.street2()); strings.put("stNumber2", r.stNumber2()); strings.put("city", r.city());
+            strings.put("region", r.region()); strings.put("postalCode", r.postalCode()); strings.put("country", r.country());
+            strings.put("state", r.state()); strings.put("buildingDescription", r.buildingDescription());
+            strings.forEach((field, value) -> { if (value != null && value.length() > 255) errors.add(new BulkBuildingValidationException.Error(row, field, "Must be at most 255 characters")); });
+            if (r.street1() != null && !r.street1().isBlank() && r.stNumber1() != null && !r.stNumber1().isBlank() && r.city() != null && !r.city().isBlank() && r.postalCode() != null && !r.postalCode().isBlank() && r.country() != null && !r.country().isBlank()) {
+                List<String> key = List.of(r.street1(), r.stNumber1(), r.city(), r.postalCode(), r.country()).stream().map(s -> s.trim().toLowerCase(Locale.ROOT)).toList();
+                Integer previous = addresses.putIfAbsent(key, row);
+                if (previous != null) errors.add(new BulkBuildingValidationException.Error(row, "street1", "Duplicate address in batch (row " + previous + ")"));
+            }
+        }
+        if (!errors.isEmpty()) throw new BulkBuildingValidationException(errors);
+
+        Role role = roleRepository.findByName("PropertyManager").orElseThrow(() -> new IllegalStateException("Role PropertyManager not found"));
+        List<Integer> ids = new ArrayList<>();
+        for (BuildingRequest request : requests) {
+            Building building = buildingMapper.toBuilding(request);
+            building.setBuildingCode(generateBuildingCode());
+            building.setCompany(user.getCompany());
+            building.setPropertyManager(user);
+            building.setManager(null);
+            Building saved = buildingRepository.save(building);
+            buildingMemberRepository.save(BuildingMember.builder().building(saved).user(user).role(role).status(BuildingMemberStatus.JOINED).build());
+            ids.add(saved.getId());
+        }
+        return ids;
     }
 
 

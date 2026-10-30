@@ -24,11 +24,11 @@ public class BuildingResponse {
     private String country;
     private String state;
     private Integer floors;
-    private int apartmentsNum;
+    private Integer apartmentsNum;
     private double sqMetersTotal;
     private double sqMetersCommonSpaces;
     private boolean parkingExist;
-    private int parkingSpacesNum;
+    private Integer parkingSpacesNum;
     private String buildingDescription;
     private String profileImageUrl;
     private boolean hasCentralHeating;
