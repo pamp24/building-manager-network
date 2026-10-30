@@ -217,4 +217,10 @@ public class AuthenticationService {
         return UserDTO.fromUser(user);
     }
 
+    public Integer getJoinedBuildingId(Integer userId) {
+        return buildingMemberRepository.findFirstByUserIdAndStatus(userId, BuildingMemberStatus.JOINED)
+                .map(member -> member.getBuilding().getId())
+                .orElse(null);
+    }
+
 }

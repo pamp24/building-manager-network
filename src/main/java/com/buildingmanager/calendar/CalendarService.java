@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -196,6 +197,11 @@ public class CalendarService {
                 .filter(user -> !user.getId().equals(creatorUserId))
                 .toList();
 
+        com.buildingmanager.building.Building building = event.getBuilding();
+        String buildingName = building != null ? building.getName() : null;
+        String address = building != null ? buildAddress(building) : null;
+        String managerName = building != null ? buildManagerName(building) : null;
+
         targets.forEach(user -> {
             var prefs = notificationPreferenceService.getPreferencesForUser(user.getId());
 
@@ -216,7 +222,8 @@ public class CalendarService {
                             user.getEmail(),
                             user.getFullName(),
                             "Νέα ανακοίνωση στην πολυκατοικία",
-                            message
+                            message,
+                            buildEmailContext(buildingId, user, buildingName, address, managerName)
                     );
                 } catch (MessagingException e) {
                     // Μην αποτυγχάνει η δημιουργία ανακοίνωσης αν αποτύχει ένα email
@@ -228,5 +235,62 @@ public class CalendarService {
                 smsService.sendSms(user.getPhoneNumber(), user.getFullName(), message);
             }
         });
+    }
+
+    /**
+     * Δημιουργεί το πλαίσιο (context) του email: όνομα πολυκατοικίας, διαχειριστής,
+     * διεύθυνση και διαμέρισμα του παραλήπτη (όροφος + αριθμός).
+     */
+    private java.util.Map<String, Object> buildEmailContext(
+            Integer buildingId,
+            User user,
+            String buildingName,
+            String address,
+            String managerName
+    ) {
+        java.util.Map<String, Object> ctx = new HashMap<>();
+        ctx.put("buildingName", buildingName);
+        ctx.put("managerName", managerName);
+        ctx.put("buildingAddress", address);
+
+        buildingMemberRepository.findByBuilding_IdAndUser_Id(buildingId, user.getId())
+                .stream()
+                .map(com.buildingmanager.buildingMember.BuildingMember::getApartment)
+                .filter(apartment -> apartment != null)
+                .findFirst()
+                .ifPresent(apartment -> {
+                    if (apartment.getFloor() != null || apartment.getNumber() != null) {
+                        String label = (apartment.getFloor() != null ? apartment.getFloor() : "")
+                                + (apartment.getFloor() != null && apartment.getNumber() != null ? " - " : "")
+                                + (apartment.getNumber() != null ? apartment.getNumber() : "");
+                        ctx.put("apartmentLabel", label);
+                    }
+                });
+
+        return ctx;
+    }
+
+    private static String buildManagerName(com.buildingmanager.building.Building building) {
+        if (building.getManager() != null && building.getManager().getFullName() != null) {
+            return building.getManager().getFullName();
+        }
+        if (building.getPropertyManager() != null && building.getPropertyManager().getFullName() != null) {
+            return building.getPropertyManager().getFullName();
+        }
+        return null;
+    }
+
+    private static String buildAddress(com.buildingmanager.building.Building building) {
+        StringBuilder sb = new StringBuilder();
+        if (building.getStreet1() != null) sb.append(building.getStreet1());
+        if (building.getStNumber1() != null) {
+            if (sb.length() > 0) sb.append(" ");
+            sb.append(building.getStNumber1());
+        }
+        if (building.getCity() != null) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(building.getCity());
+        }
+        return sb.length() > 0 ? sb.toString() : null;
     }
 }

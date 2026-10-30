@@ -68,6 +68,10 @@ public class BuildingPermissionService {
                         || "BUILDING_MANAGER".equals(role)
                         || "PROPERTYMANAGER".equals(role)
                         || "PROPERTY_MANAGER".equals(role)
+                        || buildingRepository.findById(buildingId)
+                        .map(building -> building.getManager() != null
+                                && user.getId().equals(building.getManager().getId()))
+                        .orElse(false)
         );
     }
 

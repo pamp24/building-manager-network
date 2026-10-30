@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="el" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        @page { size: A4 portrait; margin: 8mm; }
+        body { font-family: AppSans, Arial, sans-serif; color: #243447; font-size: 11px; margin: 0; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #cfd8e3; padding: 3px 4px; vertical-align: top; }
+        .brand th, .soft { background: #e6f3f7; color: #16384a; }
+        .total { background: #fff1b8; font-weight: 700; }
+        .logo { width: 117px; height: auto; display: block; }
+        .title { font-size: 18px; font-weight: 700; }
+        .section-label { width: 120px; text-align: center; background: #e6f3f7; color: #16384a; font-weight: 700; white-space: normal; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .announcement { white-space: pre-line; min-height: 70px; }
+        .footer { margin-top: 8px; font-size: 11px; }
+        .empty-row td { color: transparent; height: 18px; }
+    </style>
+</head>
+<body>
+<table class="brand">
+    <tr>
+        <th style="width:140px;"><img class="logo" th:src="${logoDataUri}" alt="Oikio" /></th>
+        <th>
+            <div class="title">ΕΙΔΟΠΟΙΗΤΗΡΙΟ ΔΙΑΜΕΡΙΣΜΑΤΟΣ</div>
+        </th>
+        <th style="width:180px;" class="text-center">ΜΗΝΑΣ</th>
+        <th style="width:180px;" class="text-center" th:text="${statementMonth}"></th>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <div th:text="${issuerName}"></div>
+            <div th:text="${issuerAddress}"></div>
+            <div th:text="${issuerCity}"></div>
+            <div th:text="${issuerPhone}"></div>
+        </td>
+        <th class="text-center">ΗΜΕΡΟΜΗΝΙΑ</th>
+        <td class="text-center" th:text="${statementDate}"></td>
+    </tr>
+    <tr>
+        <th>ΚΩΔΙΚΟΣ</th>
+        <th>ΔΙΕΥΘΥΝΣΗ</th>
+        <th>ΠΕΡΙΟΧΗ</th>
+        <th>ΟΝΟΜΑ ΕΝΟΙΚΟΥ - ΔΙΑΜΕΡΙΣΜΑ</th>
+    </tr>
+    <tr>
+        <td th:text="${statementCode}"></td>
+        <td th:text="${buildingAddress}"></td>
+        <td th:text="${buildingCity}"></td>
+        <td th:text="${tenantApartmentName}"></td>
+    </tr>
+    <tr>
+        <th colspan="3">ΓΕΝΙΚΟ ΣΥΝΟΛΟ ΠΟΛ/ΚΙΑΣ</th>
+        <td class="total text-right" th:text="${buildingGrandTotal}"></td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <th colspan="2" class="soft">ΑΝΑΛΥΣΗ ΕΞΟΔΩΝ ΚΑΤΑ ΚΑΤΗΓΟΡΙΑ</th>
+        <th class="soft">ΣΥΝΟΛΟ ΕΞΟΔΩΝ</th>
+        <th class="soft">ΧΙΛΙΟΣΤΑ ΔΙΑΜ/ΤΟΣ</th>
+        <th class="soft">ΧΙΛΙΟΣΤΑ ΠΟΛ/ΚΙΑΣ</th>
+        <th class="soft">ΕΠΙΒ/ΝΣΗ ΔΙΑΜ/ΤΟΣ</th>
+    </tr>
+    <tbody th:each="section : ${noticeSections}">
+    <tr>
+        <td class="section-label" th:text="${section.label}"></td>
+        <td>
+            <div th:each="item : ${section.items}">
+                <span th:text="${item.description}"></span>
+                <span style="float:right;" th:text="${item.amount}"></span>
+            </div>
+            <div th:each="i : ${#numbers.sequence(1, section.emptyRows)}" style="height:18px;"></div>
+        </td>
+        <td class="text-right" th:text="${section.buildingTotal}"></td>
+        <td class="text-right" th:text="${section.apartmentPercent}"></td>
+        <td class="text-right" th:text="${section.buildingPercent}"></td>
+        <td class="text-right" th:text="${section.apartmentCharge}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<table>
+    <tr>
+        <th>ΟΝΟΜΑ ΔΙΑΧΕΙΡΙΣΤΗ-ΔΙΑΜΕΡΙΣΜΑ</th>
+        <th>ΑΝΑΚΟΙΝΩΣΗ</th>
+        <th>ΠΟΣΟ ΠΟΥ ΠΡΕΠΕΙ ΝΑ ΠΛΗΡΩΣΕΙ</th>
+    </tr>
+    <tr>
+        <td th:text="${managerApartmentName}"></td>
+        <td class="announcement" th:text="${description}"></td>
+        <td class="total text-right" th:text="${apartmentTotal}"></td>
+    </tr>
+    <tr>
+        <th>Ημερομηνία και ώρα είσπραξης</th>
+        <td colspan="2" th:text="${collectionDateText}"></td>
+    </tr>
+    <tr>
+        <th>ΓΙΑ ΠΛΗΡΩΜΗ ΜΕΣΩ ΤΡΑΠΕΖΗΣ, ΚΩΔΙΚΟΣ ΗΛΕΚΤΡΟΝΙΚΗΣ ΠΛΗΡΩΜΗΣ</th>
+        <td colspan="2" class="total text-center" th:text="${paymentCode}"></td>
+    </tr>
+</table>
+
+<div class="footer">Building Manager Network</div>
+</body>
+</html>

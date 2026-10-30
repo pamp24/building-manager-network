@@ -1,6 +1,7 @@
 package com.buildingmanager.payment;
 
 import com.buildingmanager.apartment.Apartment;
+import com.buildingmanager.apartment.ApartmentOrder;
 import com.buildingmanager.apartment.ApartmentRepository;
 import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocation;
 import com.buildingmanager.commonExpenseAllocation.CommonExpenseAllocationRepository;
@@ -25,6 +26,7 @@ import java.time.LocalTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -249,7 +251,17 @@ public class PaymentService {
     }
 
     public List<StatementUserPaymentDTO> getUserPaymentsForStatement(Integer statementId) {
-        return paymentRepository.findUserPaymentsByStatement(statementId);
+        return sortApartmentPayments(paymentRepository.findUserPaymentsByStatement(statementId));
+    }
+
+    private List<StatementUserPaymentDTO> sortApartmentPayments(List<StatementUserPaymentDTO> payments) {
+        return payments.stream()
+                .sorted((a, b) -> {
+                    int result = ApartmentOrder.compare(
+                            a.getApartmentFloor(), a.getApartmentNumber(), b.getApartmentFloor(), b.getApartmentNumber());
+                    return result != 0 ? result : Comparator.nullsLast(Integer::compareTo)
+                            .compare(a.getApartmentId(), b.getApartmentId());
+                }).toList();
     }
 
     public CommonStatementSummaryDTO getBuildingSummary(Integer buildingId) {
@@ -261,7 +273,7 @@ public class PaymentService {
         LocalDateTime startOfMonth = now.withDayOfMonth(1).atStartOfDay();
         LocalDateTime endOfMonth = now.withDayOfMonth(now.lengthOfMonth()).atTime(LocalTime.MAX);
 
-        return paymentRepository.findUserPaymentsByBuildingAndCurrentMonth(buildingId, startOfMonth, endOfMonth);
+        return sortApartmentPayments(paymentRepository.findUserPaymentsByBuildingAndCurrentMonth(buildingId, startOfMonth, endOfMonth));
     }
 
     private YearMonth parseIsoMonth(String month) {
@@ -332,6 +344,6 @@ public class PaymentService {
     }
 
     public List<StatementUserPaymentDTO> getUserPaymentsForLastStatement(Integer buildingId) {
-        return paymentRepository.findUserPaymentsByLastStatement(buildingId);
+        return sortApartmentPayments(paymentRepository.findUserPaymentsByLastStatement(buildingId));
     }
 }

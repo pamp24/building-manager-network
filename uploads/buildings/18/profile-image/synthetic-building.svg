@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="640" viewBox="0 0 960 640" role="img" aria-labelledby="title description">
+  <title id="title">Synthetic building illustration</title>
+  <desc id="description">A fictional apartment building, drawn for local development. This is not a photograph of the real property.</desc>
+  <rect width="960" height="640" fill="#e9e1d1"/>
+  <circle cx="765" cy="130" r="68" fill="#e8bb73"/>
+  <path d="M0 510 Q180 465 340 510 T690 505 T960 490 V640 H0Z" fill="#879a80"/>
+  <path d="M205 530V180L480 110 755 180V530Z" fill="#b66f55"/>
+  <path d="M230 200H730V530H230Z" fill="#f5ecdc"/>
+  <path d="M210 190 480 120 750 190" fill="none" stroke="#704c45" stroke-width="18"/>
+  <g fill="#78969a" stroke="#526d71" stroke-width="8">
+    <path d="M270 235h100v85H270z M430 235h100v85H430z M590 235h100v85H590z"/>
+    <path d="M270 355h100v85H270z M430 355h100v85H430z M590 355h100v85H590z"/>
+  </g>
+  <g stroke="#f5ecdc" stroke-width="7"><path d="M320 235v85 M480 235v85 M640 235v85 M320 355v85 M480 355v85 M640 355v85"/></g>
+  <path d="M430 530v-62q0-42 50-42t50 42v62" fill="#704c45"/>
+  <path d="M160 530h640" stroke="#536c59" stroke-width="16"/>
+  <text x="480" y="594" text-anchor="middle" fill="#344b48" font-family="sans-serif" font-size="24" letter-spacing="2">SYNTHETIC TEST ILLUSTRATION</text>
+</svg>

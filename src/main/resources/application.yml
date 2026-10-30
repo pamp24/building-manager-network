@@ -9,6 +9,20 @@ spring:
 springdoc:
   default-produces-media-type: application/json
 
+contact:
+  admin-email: ${CONTACT_ADMIN_EMAIL:}
+  sender-email: ${CONTACT_SENDER_EMAIL:}
+
+# Business VAT defaults to 24% and must be reviewed for the applicable tax rules.
+# Individual plan prices include VAT; business plan prices exclude VAT.
+pricing:
+  annual-discount-basis-points: ${PRICING_ANNUAL_DISCOUNT_BASIS_POINTS:1500}
+  business-vat-basis-points: ${PRICING_BUSINESS_VAT_BASIS_POINTS:2400}
+  individual-plus-monthly-cents: ${PRICING_INDIVIDUAL_PLUS_MONTHLY_CENTS:990}
+  individual-plus-extra-apartment-cents: ${PRICING_INDIVIDUAL_PLUS_EXTRA_APARTMENT_CENTS:100}
+  business-starter-monthly-cents: ${PRICING_BUSINESS_STARTER_MONTHLY_CENTS:2990}
+  business-growth-monthly-cents: ${PRICING_BUSINESS_GROWTH_MONTHLY_CENTS:7990}
+
 server:
   error:
     include-message: always

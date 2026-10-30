@@ -7,6 +7,7 @@ import com.buildingmanager.commonExpenseItem.CommonExpenseItemDTO;
 import com.buildingmanager.commonExpenseItem.ExpenseCategory;
 
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 public class CommonExpenseStatementMapper {
 
@@ -76,6 +77,7 @@ public class CommonExpenseStatementMapper {
                 .category(item.getCategory() != null ? item.getCategory().name() : null) // Enum -> String
                 .descriptionItem(item.getDescriptionItem())
                 .price(item.getPrice())
+                .selectedApartmentIds(item.getSelectedApartmentIds() == null ? new ArrayList<>() : new ArrayList<>(item.getSelectedApartmentIds()))
                 .build();
     }
 
@@ -85,6 +87,7 @@ public class CommonExpenseStatementMapper {
                 .category(dto.getCategory() != null ? ExpenseCategory.valueOf(dto.getCategory()) : null) // String -> Enum
                 .descriptionItem(dto.getDescriptionItem())
                 .price(dto.getPrice())
+                .selectedApartmentIds(dto.getSelectedApartmentIds() == null ? new ArrayList<>() : new ArrayList<>(dto.getSelectedApartmentIds()))
                 .statement(statement)
                 .build();
     }

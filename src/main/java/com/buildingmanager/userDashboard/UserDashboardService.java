@@ -269,7 +269,8 @@ public class UserDashboardService {
                         item.getId(),
                         item.getCategory().name(),
                         item.getDescriptionItem(),
-                        item.getPrice()
+                        item.getPrice(),
+                        item.getSelectedApartmentIds()
                 ))
                 .toList();
     }

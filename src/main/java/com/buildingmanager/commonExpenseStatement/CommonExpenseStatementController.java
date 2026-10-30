@@ -3,6 +3,7 @@ package com.buildingmanager.commonExpenseStatement;
 import com.buildingmanager.building.Building;
 import com.buildingmanager.building.BuildingRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -57,6 +58,19 @@ public class CommonExpenseStatementController {
     public ResponseEntity<CommonExpenseStatementDTO> getById(@PathVariable Integer id) {
         CommonExpenseStatement entity = service.getById(id);
         return ResponseEntity.ok(CommonExpenseStatementMapper.toDTO(entity));
+    }
+
+    @GetMapping("/{id}/pdf")
+    public ResponseEntity<Resource> downloadPdf(@PathVariable Integer id) {
+        return service.downloadPdf(id);
+    }
+
+    @GetMapping("/{statementId}/apartments/{apartmentId}/pdf")
+    public ResponseEntity<Resource> downloadApartmentPdf(
+            @PathVariable Integer statementId,
+            @PathVariable Integer apartmentId
+    ) {
+        return service.downloadApartmentPdf(statementId, apartmentId);
     }
 
     @DeleteMapping("/{id}")

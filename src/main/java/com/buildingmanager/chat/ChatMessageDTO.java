@@ -21,5 +21,7 @@ public class ChatMessageDTO {
     private String content;
     private String imageUrl;
     private LocalDateTime createdAt;
+    private LocalDateTime editedAt;
+    private LocalDateTime deletedAt;
     private boolean mine;
 }

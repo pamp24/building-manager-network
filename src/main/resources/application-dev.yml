@@ -1,3 +1,7 @@
+  contact:
+    admin-email: ${CONTACT_ADMIN_EMAIL:admin@oikio.local}
+    sender-email: ${CONTACT_SENDER_EMAIL:no-reply@oikio.local}
+
   spring:
     datasource:
       url: jdbc:postgresql://localhost:5432/postgres
@@ -45,4 +49,3 @@
           connectiontimeout: 5000
           timeout: 5000
           writetimeout: 5000
-

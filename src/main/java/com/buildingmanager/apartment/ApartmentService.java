@@ -11,6 +11,7 @@ import com.buildingmanager.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -143,7 +144,11 @@ public class ApartmentService {
             throw new AccessDeniedException("Δεν έχεις πρόσβαση στα διαμερίσματα αυτής της πολυκατοικίας");
         }
 
-        Page<Apartment> apartments = apartmentRepository.findAllByBuildingId(buildingId, pageable);
+        List<Apartment> ordered = apartmentRepository.findAllByBuilding_Id(buildingId).stream()
+                .sorted(ApartmentOrder.COMPARATOR).toList();
+        int start = (int) Math.min(pageable.getOffset(), ordered.size());
+        int end = (int) Math.min((long) start + size, ordered.size());
+        Page<Apartment> apartments = new PageImpl<>(ordered.subList(start, end), pageable, ordered.size());
         List<ApartmentResponse> apartmentResponses = apartments.stream()
                 .map(f -> (ApartmentResponse) apartmentMapper.toApartmentResponse(f, userEntity.getId()))
                 .toList();
@@ -232,6 +237,7 @@ public class ApartmentService {
         List<Apartment> result = new ArrayList<>();
         result.addAll(asResident);
         result.addAll(asOwner);
+        result.sort(ApartmentOrder.COMPARATOR);
         return result;
     }
 
@@ -251,10 +257,9 @@ public class ApartmentService {
         Apartment userApartment = userApartments.get(0);
         Integer buildingId = userApartment.getBuilding().getId();
 
-        Pageable pageable = PageRequest.of(0, 100);
-        Page<Apartment> apartmentsPage = apartmentRepository.findAllByBuildingId(buildingId, pageable);
-
-        return apartmentsPage.getContent().stream()
+        return apartmentRepository.findAllByBuilding_Id(buildingId).stream()
+                .sorted(ApartmentOrder.COMPARATOR)
+                .limit(100)
                 .map(apartment -> apartmentMapper.toApartmentResponse(apartment, user.getId()))
                 .toList();
     }
@@ -268,6 +273,7 @@ public class ApartmentService {
                 .findByOwnerOrResident(user, user);
 
         return apartments.stream()
+                .sorted(ApartmentOrder.COMPARATOR)
                 .map(apartmentMapper::toApartmentResponse)
                 .toList();
     }
@@ -281,6 +287,7 @@ public class ApartmentService {
 
         return apartmentRepository.findAvailableApartmentsForRole(buildingId, role)
                 .stream()
+                .sorted(ApartmentOrder.COMPARATOR)
                 .map(apartmentMapper::toApartmentResponse)
                 .toList();
     }
@@ -502,7 +509,7 @@ public class ApartmentService {
                 : normalized;
     }
 
-    private void validateRequiredFields(
+    void validateRequiredFields(
             String ownerFirstName,
             String ownerLastName,
             String number,
@@ -542,7 +549,7 @@ public class ApartmentService {
     }
 
 
-    private void validateDuplicateApartment(
+    void validateDuplicateApartment(
             Integer buildingId,
             String floor,
             String number,
@@ -575,7 +582,7 @@ public class ApartmentService {
         }
     }
 
-    private void validateParking(
+    void validateParking(
             Integer buildingId,
             Integer apartmentId,
             Boolean hadParking,
@@ -638,7 +645,7 @@ public class ApartmentService {
         }
     }
 
-    private void validateStorage(
+    void validateStorage(
             Integer buildingId,
             Integer apartmentId,
             Boolean hadStorage,
@@ -701,7 +708,7 @@ public class ApartmentService {
         }
     }
 
-    private void validateSquareMeters(
+    void validateSquareMeters(
             String squareMetersValue
     ) {
 
@@ -786,7 +793,7 @@ public class ApartmentService {
 
     }
 
-    private void validateResident(
+    void validateResident(
             Boolean rented,
             String residentFirstName,
             String residentLastName
@@ -854,6 +861,7 @@ public class ApartmentService {
                         buildingId
                 )
                 .stream()
+                .sorted(ApartmentOrder.COMPARATOR)
                 .map(apartment ->
                         apartmentMapper.toApartmentResponse(
                                 apartment,

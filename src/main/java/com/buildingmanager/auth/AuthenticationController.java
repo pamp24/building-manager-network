@@ -76,6 +76,8 @@ public class AuthenticationController {
 
         User user = (User) authentication.getPrincipal();
 
+        Integer currentBuildingId = authenticationService.getJoinedBuildingId(user.getId());
+
         UserResponse response = UserResponse.builder()
                 .id(user.getId())
                 .firstName(user.getFirstName())
@@ -86,6 +88,8 @@ public class AuthenticationController {
                 .role(user.getRole() != null ? user.getRole().getName() : null)
                 .profileImageUrl(user.getProfileImageUrl())
                 .professionalsFavoritesOnly(user.isProfessionalsFavoritesOnly())
+                .currentBuildingId(currentBuildingId)
+                .buildingMember(currentBuildingId != null)
                 .build();
 
         return ResponseEntity.ok(response);

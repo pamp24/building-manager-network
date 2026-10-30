@@ -109,14 +109,24 @@ public class ChatService {
                     return conversationRepository.save(newConv);
                 });
 
+        conversation = conversationRepository.findForUpdate(conversation.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Conversation not found"));
         ensureParticipant(conversation, user);
         ensureParticipant(conversation, other);
+        participantRepository.findByConversation_IdAndUser_Id(conversation.getId(), user.getId())
+                .ifPresent(participant -> participant.setHiddenAt(null));
         return toDTO(conversation, user);
     }
 
+    @Transactional
     public List<ConversationDTO> listConversations(Authentication auth) {
         User user = freshUser(auth);
         return participantRepository.findByUser_Id(user.getId()).stream()
+                .filter(participant -> participant.getHiddenAt() == null)
+                .filter(participant -> participant.getConversation().getType() != ConversationType.PRIVATE
+                        || messageRepository.existsByConversation_Id(participant.getConversation().getId()))
+                .filter(participant -> participant.getConversation().getType() != ConversationType.BUILDING
+                        || permissionService.canViewBuilding(user, participant.getConversation().getBuilding().getId()))
                 .map(participant -> toDTO(participant.getConversation(), user))
                 .sorted(Comparator.comparing(
                         ConversationDTO::getLastMessageAt,
@@ -125,6 +135,7 @@ public class ChatService {
                 .toList();
     }
 
+    @Transactional
     public List<ChatMessageDTO> listMessages(Integer conversationId, Authentication auth) {
         User user = freshUser(auth);
         Conversation conversation = conversationRepository.findById(conversationId)
@@ -138,12 +149,12 @@ public class ChatService {
     @Transactional
     public ChatMessageDTO sendMessage(Integer conversationId, SendMessageRequest request, Authentication auth) {
         User user = freshUser(auth);
-        Conversation conversation = conversationRepository.findById(conversationId)
+        Conversation conversation = conversationRepository.findForUpdate(conversationId)
                 .orElseThrow(() -> new EntityNotFoundException("Conversation not found"));
         checkAccess(conversation, user);
 
-        String content = request.getContent().trim();
-        if (content.isEmpty()) {
+        String content = request.getContent() == null ? "" : request.getContent().trim();
+        if (content.isEmpty() || content.length() > 4000) {
             throw new IllegalArgumentException("Το μήνυμα δεν μπορεί να είναι κενό");
         }
 
@@ -154,6 +165,7 @@ public class ChatService {
                 .createdAt(LocalDateTime.now())
                 .build();
         message = messageRepository.save(message);
+        reopenParticipants(conversationId);
         return toMessageDTO(message, user);
     }
 
@@ -165,7 +177,7 @@ public class ChatService {
             Authentication auth
     ) {
         User user = freshUser(auth);
-        Conversation conversation = conversationRepository.findById(conversationId)
+        Conversation conversation = conversationRepository.findForUpdate(conversationId)
                 .orElseThrow(() -> new EntityNotFoundException("Conversation not found"));
         checkAccess(conversation, user);
 
@@ -174,6 +186,10 @@ public class ChatService {
         }
         if (file.getSize() > MAX_IMAGE_SIZE_BYTES) {
             throw new IllegalArgumentException("Το αρχείο ξεπερνά το μέγιστο μέγεθος των 10MB");
+        }
+        String content = caption != null ? caption.trim() : "";
+        if (content.length() > 4000) {
+            throw new IllegalArgumentException("Caption too long");
         }
 
         String originalFilename = file.getOriginalFilename();
@@ -191,8 +207,6 @@ public class ChatService {
         }
 
         String imageUrl = "/uploads/chat/" + conversationId + "/" + fileName;
-        String content = caption != null ? caption.trim() : "";
-
         ChatMessage message = ChatMessage.builder()
                 .conversation(conversation)
                 .sender(user)
@@ -201,7 +215,66 @@ public class ChatService {
                 .createdAt(LocalDateTime.now())
                 .build();
         message = messageRepository.save(message);
+        reopenParticipants(conversationId);
         return toMessageDTO(message, user);
+    }
+
+    @Transactional
+    public void hideConversation(Integer conversationId, Authentication auth) {
+        User user = freshUser(auth);
+        Conversation conversation = conversationRepository.findForUpdate(conversationId)
+                .orElseThrow(() -> new EntityNotFoundException("Conversation not found"));
+        checkAccess(conversation, user);
+        ConversationParticipant participant = participantRepository
+                .findByConversation_IdAndUser_Id(conversationId, user.getId())
+                .orElseThrow(() -> new AccessDeniedException("Not a participant"));
+        participant.setHiddenAt(LocalDateTime.now());
+    }
+
+    @Transactional
+    public ChatMessageDTO editMessage(Integer conversationId, Integer messageId, EditMessageRequest request, Authentication auth) {
+        User user = freshUser(auth);
+        ChatMessage message = ownMessage(conversationId, messageId, user);
+        String content = request.getContent() == null ? "" : request.getContent().trim();
+        if (content.length() > 4000 || (content.isEmpty() && message.getImageUrl() == null)) {
+            throw new IllegalArgumentException("Invalid message content");
+        }
+        message.setContent(content);
+        message.setEditedAt(LocalDateTime.now());
+        return toMessageDTO(message, user);
+    }
+
+    @Transactional
+    public ChatMessageDTO deleteMessage(Integer conversationId, Integer messageId, Authentication auth) {
+        User user = freshUser(auth);
+        ChatMessage message = ownMessage(conversationId, messageId, user);
+        message.setContent("");
+        message.setImageUrl(null);
+        message.setDeletedAt(LocalDateTime.now());
+        return toMessageDTO(message, user);
+    }
+
+    private ChatMessage ownMessage(Integer conversationId, Integer messageId, User user) {
+        Conversation conversation = conversationRepository.findForUpdate(conversationId)
+                .orElseThrow(() -> new EntityNotFoundException("Conversation not found"));
+        checkAccess(conversation, user);
+        if (participantRepository.findByConversation_IdAndUser_Id(conversationId, user.getId()).isEmpty()) {
+            throw new AccessDeniedException("Not a participant");
+        }
+        ChatMessage message = messageRepository.findByIdAndConversation_Id(messageId, conversationId)
+                .orElseThrow(() -> new EntityNotFoundException("Message not found"));
+        if (!message.getSender().getId().equals(user.getId())) {
+            throw new AccessDeniedException("Not the message sender");
+        }
+        if (message.getDeletedAt() != null) {
+            throw new IllegalArgumentException("Message has been deleted");
+        }
+        return message;
+    }
+
+    private void reopenParticipants(Integer conversationId) {
+        participantRepository.findByConversation_Id(conversationId)
+                .forEach(participant -> participant.setHiddenAt(null));
     }
 
     private String extractImageExtension(String fileName) {
@@ -241,6 +314,10 @@ public class ChatService {
     private void checkAccess(Conversation conversation, User user) {
         if (isAdmin(user)) {
             return;
+        }
+        if (conversation.getType() == ConversationType.BUILDING
+                && !permissionService.canViewBuilding(user, conversation.getBuilding().getId())) {
+            throw new AccessDeniedException("No access to building");
         }
         boolean participant = participantRepository
                 .findByConversation_IdAndUser_Id(conversation.getId(), user.getId())
@@ -309,7 +386,7 @@ public class ChatService {
                 .buildingId(conversation.getBuilding() != null ? conversation.getBuilding().getId() : null)
                 .name(name)
                 .avatar(avatar)
-                .lastMessage(last != null ? last.getContent() : null)
+                .lastMessage(last != null && last.getDeletedAt() == null ? last.getContent() : null)
                 .lastMessageAt(last != null ? last.getCreatedAt() : null)
                 .members(members)
                 .build();
@@ -334,6 +411,8 @@ public class ChatService {
                 .content(message.getContent())
                 .imageUrl(message.getImageUrl())
                 .createdAt(message.getCreatedAt())
+                .editedAt(message.getEditedAt())
+                .deletedAt(message.getDeletedAt())
                 .mine(sender.getId().equals(currentUser.getId()))
                 .build();
     }

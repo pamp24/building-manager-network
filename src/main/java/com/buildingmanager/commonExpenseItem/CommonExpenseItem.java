@@ -28,6 +28,12 @@ public class CommonExpenseItem extends BaseEntity {
     @Column(precision = 12, scale = 2)
     private BigDecimal price;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "common_expense_item_selected_apartments", joinColumns = @JoinColumn(name = "item_id"))
+    @Column(name = "apartment_id", nullable = false)
+    @Builder.Default
+    private List<Integer> selectedApartmentIds = new ArrayList<>();
+
     @ManyToOne
     @JoinColumn(name = "statement_id")
     private CommonExpenseStatement statement;

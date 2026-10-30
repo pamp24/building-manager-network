@@ -49,6 +49,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(req -> req
                         // Επιτρέπουμε preflight requests
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/pricing").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/pricing/quote").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/contact").permitAll()
 
                         // Public endpoints
                         .requestMatchers(

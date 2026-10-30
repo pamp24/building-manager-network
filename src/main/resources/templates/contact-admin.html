@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="el" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Νέο μήνυμα επικοινωνίας</title></head>
+<body style="margin:0;padding:0;background-color:#f3f6f5;font-family:Arial,sans-serif;color:#203531;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3f6f5;"><tr><td align="center" style="padding:24px 12px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background-color:#ffffff;">
+<tr><td style="padding:24px 28px;background-color:#174d43;color:#ffffff;font-size:24px;font-weight:bold;">Oikio</td></tr>
+<tr><td style="padding:32px 28px;font-size:16px;line-height:1.6;">
+<p style="margin:0 0 8px;color:#44766b;font-size:12px;font-weight:bold;">ΕΠΙΚΟΙΝΩΝΙΑ</p>
+<h1 style="margin:0 0 20px;font-size:24px;line-height:1.3;">Νέο μήνυμα επικοινωνίας</h1>
+<p>Υποβλήθηκε νέο μήνυμα με τα παρακάτω στοιχεία:</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3f6f5;font-size:15px;line-height:1.6;"><tr><td style="padding:18px;overflow-wrap:anywhere;">
+<p style="margin:0 0 8px;"><strong>Όνομα:</strong> <span th:text="${contact.firstName}">Όνομα</span></p>
+<p style="margin:0 0 8px;"><strong>Επώνυμο:</strong> <span th:text="${contact.lastName}">Επώνυμο</span></p>
+<p style="margin:0 0 8px;"><strong>Email:</strong> <span th:text="${contact.email}">Email</span></p>
+<p style="margin:0;"><strong>Τηλέφωνο:</strong> <span th:text="${contact.phone != null ? contact.phone : '-'}">-</span></p>
+</td></tr></table>
+<p style="margin:24px 0 8px;"><strong>Μήνυμα</strong></p>
+<p style="margin:0;white-space:pre-wrap;overflow-wrap:anywhere;" th:text="${contact.message}">Μήνυμα</p>
+</td></tr><tr><td style="padding:20px 28px;border-top:1px solid #e3ebe8;color:#6b807a;font-size:12px;">Oikio | Μήνυμα από τη φόρμα επικοινωνίας</td></tr>
+</table></td></tr></table></body></html>

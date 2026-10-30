@@ -1,6 +1,9 @@
 package com.buildingmanager.permission;
 
 import com.buildingmanager.building.Building;
+import com.buildingmanager.building.BuildingRepository;
+import com.buildingmanager.user.UserRepository;
+import com.buildingmanager.buildingNotificationSettings.BuildingNotificationSettingsService;
 import com.buildingmanager.buildingMember.BuildingMemberRepository;
 import com.buildingmanager.buildingMember.BuildingMemberStatus;
 import com.buildingmanager.role.Role;
@@ -26,6 +29,9 @@ class BuildingPermissionServiceTest {
     private BuildingMemberRepository buildingMemberRepository;
     @Mock
     private UserBuildingPermissionRepository permissionRepository;
+    @Mock private BuildingRepository buildingRepository;
+    @Mock private UserRepository userRepository;
+    @Mock private BuildingNotificationSettingsService notificationSettingsService;
 
     private User adminUser;
     private User buildingManagerUser;
@@ -35,7 +41,8 @@ class BuildingPermissionServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new BuildingPermissionService(buildingMemberRepository, permissionRepository);
+        service = new BuildingPermissionService(buildingMemberRepository, permissionRepository,
+                userRepository, buildingRepository, notificationSettingsService);
 
         building = new Building();
         building.setId(1);
@@ -179,6 +186,16 @@ class BuildingPermissionServiceTest {
     void canManageBuilding_notJoinedNoPermission_returnsFalse() {
         boolean result = service.canManageBuilding(regularUser, 1);
         assertThat(result).isFalse();
+    }
+
+    @Test
+    void designatedManagerRequiresJoinedMembership() {
+        building.setManager(regularUser);
+        when(buildingMemberRepository.existsByUserIdAndBuildingIdAndStatus(1, 1, BuildingMemberStatus.JOINED))
+                .thenReturn(true, false);
+        when(buildingRepository.findById(1)).thenReturn(Optional.of(building));
+        assertThat(service.canManageBuilding(regularUser, 1)).isTrue();
+        assertThat(service.canManageBuilding(regularUser, 1)).isFalse();
     }
 
     @Test
