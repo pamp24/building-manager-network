@@ -1,0 +1,101 @@
+2026-11-22 11:15:27.056 [background-preinit] INFO  o.h.validator.internal.util.Version [,] - HV000001: Hibernate Validator 8.0.1.Final
+2026-11-22 11:15:27.095 [main] INFO  c.b.BuildingManagerNetworkApiApplication [,] - Starting BuildingManagerNetworkApiApplication using Java 23.0.2 with PID 20904 (C:\Users\FotisPamp\Documents\GitHub\building-manager-network\target\classes started by FotisPamp in C:\Users\FotisPamp\Documents\GitHub\building-manager-network)
+2026-11-22 11:15:27.096 [main] INFO  c.b.BuildingManagerNetworkApiApplication [,] - The following 1 profile is active: "dev"
+2026-11-22 11:15:30.214 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [,] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-22 11:15:30.324 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [,] - Finished Spring Data repository scanning in 105 ms. Found 32 JPA repository interfaces.
+2026-11-22 11:15:31.287 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer [,] - Tomcat initialized with port 8080 (http)
+2026-11-22 11:15:31.294 [main] INFO  o.a.coyote.http11.Http11NioProtocol [,] - Initializing ProtocolHandler ["http-nio-8080"]
+2026-11-22 11:15:31.295 [main] INFO  o.a.catalina.core.StandardService [,] - Starting service [Tomcat]
+2026-11-22 11:15:31.296 [main] INFO  o.a.catalina.core.StandardEngine [,] - Starting Servlet engine: [Apache Tomcat/10.1.20]
+2026-11-22 11:15:31.353 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] [,] - Initializing Spring embedded WebApplicationContext
+2026-11-22 11:15:31.353 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext [,] - Root WebApplicationContext: initialization completed in 4196 ms
+2026-11-22 11:15:31.753 [main] INFO  o.h.jpa.internal.util.LogHelper [,] - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-11-22 11:15:31.791 [main] INFO  org.hibernate.Version [,] - HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-11-22 11:15:31.816 [main] INFO  o.h.c.i.RegionFactoryInitiator [,] - HHH000026: Second-level cache disabled
+2026-11-22 11:15:31.991 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo [,] - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-22 11:15:32.011 [main] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Starting...
+2026-11-22 11:15:32.161 [main] INFO  com.zaxxer.hikari.pool.HikariPool [,] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@53f94afe
+2026-11-22 11:15:32.163 [main] INFO  com.zaxxer.hikari.HikariDataSource [,] - HikariPool-1 - Start completed.
+2026-11-22 11:15:32.213 [main] WARN  org.hibernate.orm.deprecation [,] - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-11-22 11:15:33.560 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator [,] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-22 11:15:33.958 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean [,] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-22 11:15:34.206 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory [,] - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-11-22 11:15:36.894 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration [,] - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-22 11:15:37.309 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver [,] - Exposing 4 endpoint(s) beneath base path '/actuator'
+2026-11-22 11:15:37.385 [main] INFO  o.s.s.web.DefaultSecurityFilterChain [,] - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@11baa5af, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@37cf40c9, org.springframework.security.web.context.SecurityContextHolderFilter@700f53ae, org.springframework.security.web.header.HeaderWriterFilter@41114478, org.springframework.web.filter.CorsFilter@1079337, org.springframework.security.web.authentication.logout.LogoutFilter@4542ede7, com.buildingmanager.security.JwtFilter@4c2370b5, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@14cf5829, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@e78956f, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@114e7f60, org.springframework.security.web.session.SessionManagementFilter@5a4c77fa, org.springframework.security.web.access.ExceptionTranslationFilter@6656e0cb, org.springframework.security.web.access.intercept.AuthorizationFilter@710ff255]
+2026-11-22 11:15:38.067 [main] INFO  o.a.coyote.http11.Http11NioProtocol [,] - Starting ProtocolHandler ["http-nio-8080"]
+2026-11-22 11:15:38.084 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer [,] - Tomcat started on port 8080 (http) with context path ''
+2026-11-22 11:15:38.098 [main] INFO  c.b.BuildingManagerNetworkApiApplication [,] - Started BuildingManagerNetworkApiApplication in 11.494 seconds (process running for 15.216)
+2026-11-22 11:15:44.697 [http-nio-8080-exec-2] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] [,] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-11-22 11:15:44.698 [http-nio-8080-exec-2] INFO  o.s.web.servlet.DispatcherServlet [,] - Initializing Servlet 'dispatcherServlet'
+2026-11-22 11:15:44.699 [http-nio-8080-exec-2] INFO  o.s.web.servlet.DispatcherServlet [,] - Completed initialization in 1 ms
+2026-11-22 11:15:45.809 [AsyncReporter{org.springframework.boot.actuate.autoconfigure.tracing.zipkin.ZipkinRestTemplateSender@b6136eb}] WARN  z.r.AsyncReporter$BoundedAsyncReporter [,] - Spans were dropped due to exceptions. All subsequent errors will be logged at FINE level.
+2026-11-22 11:15:45.809 [AsyncReporter{org.springframework.boot.actuate.autoconfigure.tracing.zipkin.ZipkinRestTemplateSender@b6136eb}] WARN  z.r.AsyncReporter$BoundedAsyncReporter [,] - Dropped 31 spans due to ResourceAccessException(I/O error on POST request for "http://localhost:9411/api/v2/spans": Connection refused: getsockopt)
+org.springframework.web.client.ResourceAccessException: I/O error on POST request for "http://localhost:9411/api/v2/spans": Connection refused: getsockopt
+	at org.springframework.web.client.RestTemplate.createResourceAccessException(RestTemplate.java:915)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:895)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:790)
+	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:672)
+	at org.springframework.boot.actuate.autoconfigure.tracing.zipkin.ZipkinRestTemplateSender$RestTemplateHttpPostCall.doExecute(ZipkinRestTemplateSender.java:68)
+	at org.springframework.boot.actuate.autoconfigure.tracing.zipkin.ZipkinRestTemplateSender$RestTemplateHttpPostCall.doExecute(ZipkinRestTemplateSender.java:48)
+	at zipkin2.Call$Base.execute(Call.java:391)
+	at zipkin2.reporter.AsyncReporter$BoundedAsyncReporter.flush(AsyncReporter.java:299)
+	at zipkin2.reporter.AsyncReporter$Flusher.run(AsyncReporter.java:378)
+	at java.base/java.lang.Thread.run(Thread.java:1575)
+Caused by: java.net.ConnectException: Connection refused: getsockopt
+	at java.base/sun.nio.ch.Net.pollConnect(Native Method)
+	at java.base/sun.nio.ch.Net.pollConnectNow(Net.java:682)
+	at java.base/sun.nio.ch.NioSocketImpl.timedFinishConnect(NioSocketImpl.java:542)
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:592)
+	at java.base/java.net.Socket.connect(Socket.java:760)
+	at java.base/sun.net.NetworkClient.doConnect(NetworkClient.java:178)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:531)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:636)
+	at java.base/sun.net.www.http.HttpClient.<init>(HttpClient.java:280)
+	at java.base/sun.net.www.http.HttpClient.New(HttpClient.java:386)
+	at java.base/sun.net.www.http.HttpClient.New(HttpClient.java:408)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getNewHttpClient(HttpURLConnection.java:1310)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:1243)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:1129)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.connect(HttpURLConnection.java:1058)
+	at org.springframework.http.client.SimpleClientHttpRequest.executeInternal(SimpleClientHttpRequest.java:79)
+	at org.springframework.http.client.AbstractStreamingClientHttpRequest.executeInternal(AbstractStreamingClientHttpRequest.java:70)
+	at org.springframework.http.client.AbstractClientHttpRequest.execute(AbstractClientHttpRequest.java:66)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:889)
+	... 8 common frames omitted
+2026-11-22 11:15:48.288 [http-nio-8080-exec-4] INFO  c.b.u.UserDashboardService [6b02b2c41e1d38fdb998186c1043e47b,c7234ae79b9bfc5f] - Loading dashboard history for user 1
+2026-11-22 11:15:48.289 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6b02b2c476caaa678fdb4561e427864d,0a62b01e2a2b29b0] -   Loading dashboard for user 1
+2026-11-22 11:15:48.302 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6b02b2c476caaa678fdb4561e427864d,0a62b01e2a2b29b0] - Selected OWNER apartment 1
+2026-11-22 11:15:48.308 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6b02b2c476caaa678fdb4561e427864d,0a62b01e2a2b29b0] - Last statement = 17 (2026-10)
+2026-11-22 11:15:48.323 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6b02b2c476caaa678fdb4561e427864d,0a62b01e2a2b29b0] - Found 1 allocations for apartment 1
+2026-11-22 11:15:48.323 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6b02b2c476caaa678fdb4561e427864d,0a62b01e2a2b29b0] - Final amount due: 19.46
+2026-11-22 11:15:48.415 [http-nio-8080-exec-6] INFO  c.b.u.UserDashboardService [6b02b2c4215755084f0eb6b03f4021e7,13edb81b4898f94f] -   Loading dashboard for user 1
+2026-11-22 11:15:48.423 [http-nio-8080-exec-6] INFO  c.b.u.UserDashboardService [6b02b2c4215755084f0eb6b03f4021e7,13edb81b4898f94f] - Selected OWNER apartment 1
+2026-11-22 11:15:48.425 [http-nio-8080-exec-1] INFO  c.b.u.UserDashboardService [6b02b2c42060841d0db93528395dfabc,db52425caf648ffe] - Loading dashboard history for user 1
+2026-11-22 11:15:48.426 [http-nio-8080-exec-6] INFO  c.b.u.UserDashboardService [6b02b2c4215755084f0eb6b03f4021e7,13edb81b4898f94f] - Last statement = 17 (2026-10)
+2026-11-22 11:15:48.438 [http-nio-8080-exec-6] INFO  c.b.u.UserDashboardService [6b02b2c4215755084f0eb6b03f4021e7,13edb81b4898f94f] - Found 1 allocations for apartment 1
+2026-11-22 11:15:48.439 [http-nio-8080-exec-6] INFO  c.b.u.UserDashboardService [6b02b2c4215755084f0eb6b03f4021e7,13edb81b4898f94f] - Final amount due: 19.46
+2026-11-22 11:25:53.031 [http-nio-8080-exec-6] INFO  c.b.u.UserDashboardService [6b02b521f2ee00ef2f8643226296b3cc,94207c32c69afdb3] -   Loading dashboard for user 1
+2026-11-22 11:25:53.031 [http-nio-8080-exec-4] INFO  c.b.u.UserDashboardService [6b02b521e4902bbb134190fb135c4648,10d2de9896ac10ab] - Loading dashboard history for user 1
+2026-11-22 11:25:53.037 [http-nio-8080-exec-6] INFO  c.b.u.UserDashboardService [6b02b521f2ee00ef2f8643226296b3cc,94207c32c69afdb3] - Selected OWNER apartment 1
+2026-11-22 11:25:53.038 [http-nio-8080-exec-6] INFO  c.b.u.UserDashboardService [6b02b521f2ee00ef2f8643226296b3cc,94207c32c69afdb3] - Last statement = 17 (2026-10)
+2026-11-22 11:25:53.044 [http-nio-8080-exec-6] INFO  c.b.u.UserDashboardService [6b02b521f2ee00ef2f8643226296b3cc,94207c32c69afdb3] - Found 1 allocations for apartment 1
+2026-11-22 11:25:53.044 [http-nio-8080-exec-6] INFO  c.b.u.UserDashboardService [6b02b521f2ee00ef2f8643226296b3cc,94207c32c69afdb3] - Final amount due: 19.46
+2026-11-22 11:25:53.065 [http-nio-8080-exec-7] INFO  c.b.u.UserDashboardService [6b02b521c97b9051fd32cd1a90b902f7,3a1279721b8c74ea] -   Loading dashboard for user 1
+2026-11-22 11:25:53.070 [http-nio-8080-exec-7] INFO  c.b.u.UserDashboardService [6b02b521c97b9051fd32cd1a90b902f7,3a1279721b8c74ea] - Selected OWNER apartment 1
+2026-11-22 11:25:53.074 [http-nio-8080-exec-7] INFO  c.b.u.UserDashboardService [6b02b521c97b9051fd32cd1a90b902f7,3a1279721b8c74ea] - Last statement = 17 (2026-10)
+2026-11-22 11:25:53.078 [http-nio-8080-exec-7] INFO  c.b.u.UserDashboardService [6b02b521c97b9051fd32cd1a90b902f7,3a1279721b8c74ea] - Found 1 allocations for apartment 1
+2026-11-22 11:25:53.079 [http-nio-8080-exec-7] INFO  c.b.u.UserDashboardService [6b02b521c97b9051fd32cd1a90b902f7,3a1279721b8c74ea] - Final amount due: 19.46
+2026-11-22 11:25:53.081 [http-nio-8080-exec-8] INFO  c.b.u.UserDashboardService [6b02b521a9d4e08aea2e35e748c52ce3,4e0b6faa9d512a72] - Loading dashboard history for user 1
+2026-11-22 13:49:41.370 [http-nio-8080-exec-8] INFO  c.b.u.UserDashboardService [6b02d6d547ba4b6496653d4ad64480f9,8045d01da6c387b6] -   Loading dashboard for user 1
+2026-11-22 13:49:41.370 [http-nio-8080-exec-3] INFO  c.b.u.UserDashboardService [6b02d6d52c921dddc4df715a139e6495,2f2ede629e8c06b9] - Loading dashboard history for user 1
+2026-11-22 13:49:41.382 [http-nio-8080-exec-8] INFO  c.b.u.UserDashboardService [6b02d6d547ba4b6496653d4ad64480f9,8045d01da6c387b6] - Selected OWNER apartment 1
+2026-11-22 13:49:41.386 [http-nio-8080-exec-8] INFO  c.b.u.UserDashboardService [6b02d6d547ba4b6496653d4ad64480f9,8045d01da6c387b6] - Last statement = 17 (2026-10)
+2026-11-22 13:49:41.393 [http-nio-8080-exec-8] INFO  c.b.u.UserDashboardService [6b02d6d547ba4b6496653d4ad64480f9,8045d01da6c387b6] - Found 1 allocations for apartment 1
+2026-11-22 13:49:41.394 [http-nio-8080-exec-8] INFO  c.b.u.UserDashboardService [6b02d6d547ba4b6496653d4ad64480f9,8045d01da6c387b6] - Final amount due: 19.46
+2026-11-22 13:49:41.420 [http-nio-8080-exec-7] INFO  c.b.u.UserDashboardService [6b02d6d5791b5fe04ac9b08fe5a88ef5,b4e79f3ea4b6da27] -   Loading dashboard for user 1
+2026-11-22 13:49:41.425 [http-nio-8080-exec-7] INFO  c.b.u.UserDashboardService [6b02d6d5791b5fe04ac9b08fe5a88ef5,b4e79f3ea4b6da27] - Selected OWNER apartment 1
+2026-11-22 13:49:41.426 [http-nio-8080-exec-7] INFO  c.b.u.UserDashboardService [6b02d6d5791b5fe04ac9b08fe5a88ef5,b4e79f3ea4b6da27] - Last statement = 17 (2026-10)
+2026-11-22 13:49:41.431 [http-nio-8080-exec-7] INFO  c.b.u.UserDashboardService [6b02d6d5791b5fe04ac9b08fe5a88ef5,b4e79f3ea4b6da27] - Found 1 allocations for apartment 1
+2026-11-22 13:49:41.431 [http-nio-8080-exec-7] INFO  c.b.u.UserDashboardService [6b02d6d5791b5fe04ac9b08fe5a88ef5,b4e79f3ea4b6da27] - Final amount due: 19.46
+2026-11-22 13:49:41.447 [http-nio-8080-exec-2] INFO  c.b.u.UserDashboardService [6b02d6d5a28a5083ebbb4211a1e313b7,07c3f0713438812d] - Loading dashboard history for user 1
